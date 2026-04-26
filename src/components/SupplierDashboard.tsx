@@ -1,15 +1,26 @@
 import React, { useState, useRef } from "react";
-import { Store, Truck, MapPin, X, ImagePlus, Link as LinkIcon } from "lucide-react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { Store, Truck, MapPin, X, ImagePlus, Link as LinkIcon, Navigation } from "lucide-react";
+import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from "react-leaflet";
 import L from "leaflet";
 import { useAppContext } from "../store/AppContext";
 import { Restaurant, MenuItem } from "../types";
+import { FuelEstimateCard } from "./FuelEstimateCard";
 
 // Setup custom leaflet icons because default paths get broken in bundlers
 const customIcon = new L.Icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
   iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+// A green icon for the supplier
+const supplierIcon = new L.Icon({
+  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png",
+  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
@@ -36,12 +47,19 @@ export function SupplierDashboard() {
   // Default map center (London)
   const defaultCenter: [number, number] = [51.505, -0.09];
   const [mapCenter, setMapCenter] = useState<[number, number]>(defaultCenter);
+  
+  // Simulated supplier location (can be made draggable if desired, static for now)
+  const [supplierLocation] = useState<[number, number]>([51.52, -0.11]);
 
   const handleMarkerClick = (restaurant: Restaurant) => {
     setSelectedRestaurant(restaurant);
-    setMapCenter([restaurant.lat, restaurant.lng]);
+    // Center between supplier and restaurant to show the route
+    const midLat = (supplierLocation[0] + restaurant.lat) / 2;
+    const midLng = (supplierLocation[1] + restaurant.lng) / 2;
+    setMapCenter([midLat, midLng]);
     setDealItem(null);
   };
+
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -122,7 +140,12 @@ export function SupplierDashboard() {
               </div>
 
               <div className="p-4">
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">Menu & Market Deals</h3>
+                <FuelEstimateCard 
+                  restaurant={selectedRestaurant} 
+                  supplierLocation={supplierLocation} 
+                />
+
+                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3 mt-4">Menu & Market Deals</h3>
                 
                 {selectedRestaurant.menu.length === 0 ? (
                   <p className="text-slate-500 text-sm">This restaurant hasn't added any menu items yet.</p>
@@ -239,7 +262,23 @@ export function SupplierDashboard() {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
-          <MapUpdater center={mapCenter} zoom={selectedRestaurant ? 15 : 13} />
+          <MapUpdater center={mapCenter} zoom={selectedRestaurant ? 14 : 13} />
+
+          {/* Supplier Marker */}
+          <Marker position={supplierLocation} icon={supplierIcon}>
+            <Popup>
+              <div className="font-semibold text-emerald-700">Your Base Location</div>
+              <div className="text-xs text-slate-500">Origin for deliveries</div>
+            </Popup>
+          </Marker>
+
+          {/* Route Line (if a restaurant is selected) */}
+          {selectedRestaurant && (
+            <Polyline 
+              positions={[supplierLocation, [selectedRestaurant.lat, selectedRestaurant.lng]]} 
+              pathOptions={{ color: '#10b981', weight: 4, opacity: 0.7, dashArray: '10, 10' }} 
+            />
+          )}
 
           {restaurants.map(restaurant => (
             <Marker 

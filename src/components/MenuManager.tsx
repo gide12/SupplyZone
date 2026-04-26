@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { MenuItem, Category } from "../types";
-import { Plus, Edit2, Trash2, X, Check } from "lucide-react";
+import { Plus, Edit2, Trash2, X, Check, Sparkles } from "lucide-react";
 import { useAppContext } from "../store/AppContext";
+import { PredictSupplyModal } from "./PredictSupplyModal";
 
 export function MenuManager() {
   const { restaurants, activeRestaurantId, addMenuItem, updateMenuItem, deleteMenuItem } = useAppContext();
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
+  const [isPredictModalOpen, setIsPredictModalOpen] = useState(false);
   
   const restaurant = restaurants.find(r => r.id === activeRestaurantId);
 
@@ -64,13 +66,22 @@ export function MenuManager() {
           <p className="text-sm text-slate-500">Add, update, or remove items from your menu.</p>
         </div>
         {!isAdding && (
-          <button
-            onClick={startAdd}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/20 hover:bg-blue-500 transition-all font-bold text-sm active:scale-95"
-          >
-            <Plus className="w-4 h-4" />
-            Add Item
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsPredictModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded-xl transition-all font-bold text-sm active:scale-95"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span className="hidden sm:inline">Predict Needs</span>
+            </button>
+            <button
+              onClick={startAdd}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/20 hover:bg-blue-500 transition-all font-bold text-sm active:scale-95"
+            >
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">Add Item</span>
+            </button>
+          </div>
         )}
       </div>
 
@@ -259,6 +270,12 @@ export function MenuManager() {
           </div>
         )}
       </div>
+
+      <PredictSupplyModal 
+        isOpen={isPredictModalOpen} 
+        onClose={() => setIsPredictModalOpen(false)} 
+        menuItems={restaurant.menu} 
+      />
     </div>
   );
 }
