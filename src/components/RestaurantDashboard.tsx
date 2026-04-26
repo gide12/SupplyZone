@@ -2,6 +2,7 @@ import React from "react";
 import { Store, Map, Settings, Search } from "lucide-react";
 import { MenuManager } from "./MenuManager";
 import { useAppContext } from "../store/AppContext";
+import { MarioChef } from "./MarioChef";
 
 export function RestaurantDashboard() {
   const { restaurants, activeRestaurantId } = useAppContext();
@@ -36,23 +37,35 @@ export function RestaurantDashboard() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h-full flex flex-col md:flex-row gap-8">
         
         {/* Sidebar Nav */}
-        <aside className="w-full md:w-64 flex-shrink-0 space-y-1">
-          <button className="w-full flex items-center gap-3 px-4 py-3 bg-blue-50 text-blue-700 border border-blue-100 rounded-xl font-bold transition-colors">
-            <Settings className="w-5 h-5" />
-            Menu Manager
-          </button>
-          <button className="w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 rounded-xl font-medium transition-colors">
-            <Store className="w-5 h-5" />
-            My Profile
-          </button>
-          <button className="w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-50 rounded-xl font-medium transition-colors cursor-not-allowed" title="Coming soon">
-            <Search className="w-5 h-5" />
-            Find Suppliers
-          </button>
-          <button className="w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-50 rounded-xl font-medium transition-colors cursor-not-allowed" title="Coming soon">
-            <Settings className="w-5 h-5" />
-            Settings
-          </button>
+        <aside className="w-full md:w-64 flex-shrink-0 flex flex-col min-h-[calc(100vh-8rem)]">
+          <div className="space-y-1">
+            <button className="w-full flex items-center gap-3 px-4 py-3 bg-blue-50 text-blue-700 border border-blue-100 rounded-xl font-bold transition-colors">
+              <Settings className="w-5 h-5" />
+              Menu Manager
+            </button>
+            <button className="w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 rounded-xl font-medium transition-colors">
+              <Store className="w-5 h-5" />
+              My Profile
+            </button>
+            <button className="w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-50 rounded-xl font-medium transition-colors cursor-not-allowed" title="Coming soon">
+              <Search className="w-5 h-5" />
+              Find Suppliers
+            </button>
+            <button className="w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-50 rounded-xl font-medium transition-colors cursor-not-allowed" title="Coming soon">
+              <Settings className="w-5 h-5" />
+              Settings
+            </button>
+          </div>
+
+          <div className="mt-8 md:mt-auto pt-8 flex justify-center hidden sm:flex pb-4">
+            <div className="relative group">
+              <div className="absolute inset-0 bg-blue-100/80 rounded-full blur-2xl group-hover:bg-blue-200 transition-colors"></div>
+              <MarioChef className="w-48 h-48 drop-shadow-2xl relative z-10 group-hover:scale-105 transition-transform duration-300" />
+              <div className="absolute -bottom-2 -right-4 bg-white px-3 py-1.5 rounded-2xl shadow-xl border border-slate-100 text-xs font-bold text-slate-700 z-20 transform group-hover:-translate-y-1 transition-transform">
+                Let's cook! 🍄
+              </div>
+            </div>
+          </div>
         </aside>
 
         {/* Main Content Area */}
