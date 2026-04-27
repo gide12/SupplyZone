@@ -1,10 +1,11 @@
 import React, { useState, useRef } from "react";
-import { Store, Truck, MapPin, X, ImagePlus, Link as LinkIcon, Navigation } from "lucide-react";
+import { Store, Truck, MapPin, X, ImagePlus, Link as LinkIcon, Navigation, MessageCircle } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from "react-leaflet";
 import L from "leaflet";
 import { useAppContext } from "../store/AppContext";
 import { Restaurant, MenuItem } from "../types";
 import { FuelEstimateCard } from "./FuelEstimateCard";
+import { ChatModal } from "./ChatModal";
 
 // Setup custom leaflet icons because default paths get broken in bundlers
 const customIcon = new L.Icon({
@@ -56,6 +57,7 @@ export function SupplierDashboard() {
   const [profileName, setProfileName] = useState(activeSupplier.name);
   const [profileLat, setProfileLat] = useState(activeSupplier.lat.toString());
   const [profileLng, setProfileLng] = useState(activeSupplier.lng.toString());
+  const [activeChatDeal, setActiveChatDeal] = useState<any | null>(null);
 
   const handleProfileSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -283,8 +285,14 @@ export function SupplierDashboard() {
                 </div>
                 
                 {/* Status update actions for accepted deals */}
-                {(deal.status === 'Accepted' || deal.status === 'On Delivery') && (
+                {['Accepted', 'On Delivery', 'Delivered'].includes(deal.status) && (
                   <div className="flex gap-3">
+                    <button 
+                      onClick={() => setActiveChatDeal(deal)}
+                      className="flex-1 py-2 bg-transparent border border-[#1A92D4] text-[#1A92D4] hover:bg-[#1A92D4] hover:text-white text-sm font-bold transition-colors game-text uppercase flex items-center justify-center gap-2"
+                    >
+                      <MessageCircle className="w-4 h-4" /> Chat
+                    </button>
                     {deal.status === 'Accepted' && (
                       <button 
                         onClick={() => updateDealStatus(deal.id, 'On Delivery')}
@@ -452,6 +460,13 @@ export function SupplierDashboard() {
         </MapContainer>
       </div>
 
+      {activeChatDeal && (
+        <ChatModal 
+          deal={activeChatDeal} 
+          onClose={() => setActiveChatDeal(null)} 
+          currentUserRole="supplier" 
+        />
+      )}
     </div>
   );
 }

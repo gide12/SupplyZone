@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { MenuItem, Category } from "../types";
-import { Plus, Edit2, Trash2, X, Check, Sparkles, MapPin, Search } from "lucide-react";
+import { Plus, Edit2, Trash2, X, Check, Sparkles, MapPin, Search, MessageCircle } from "lucide-react";
 import { useAppContext } from "../store/AppContext";
 import { PredictSupplyModal } from "./PredictSupplyModal";
+import { ChatModal } from "./ChatModal";
 
 const MOCK_SUPPLIERS = [
   { id: "s-1", name: "FreshLogistics Inc.", distance: "1.2 miles" },
@@ -16,6 +17,7 @@ export function MenuManager() {
   const [isAdding, setIsAdding] = useState(false);
   const [isPredictModalOpen, setIsPredictModalOpen] = useState(false);
   const [findingSuppliersFor, setFindingSuppliersFor] = useState<string | null>(null);
+  const [activeChatDeal, setActiveChatDeal] = useState<any | null>(null);
 
   
   const restaurant = restaurants.find(r => r.id === activeRestaurantId);
@@ -299,32 +301,45 @@ export function MenuManager() {
                                     </div>
                                     <div className="flex items-center justify-between mt-3">
                                       {deal.status === 'Pending' ? (
-                                        <div className="flex gap-2 w-full">
-                                          <button 
-                                            onClick={() => updateDealStatus(deal.id, 'Accepted')} 
-                                            className="flex-1 py-2 game-btn game-btn-green text-sm"
-                                          >
-                                            <span className="game-text text-lg">Accept</span>
-                                          </button>
-                                          <button 
-                                            onClick={() => updateDealStatus(deal.id, 'Rejected')} 
-                                            className="flex-1 py-2 game-btn game-btn-red text-sm"
-                                          >
-                                            <span className="game-text text-lg">Reject</span>
-                                          </button>
-                                        </div>
-                                      ) : (
-                                        <span className={`text-lg font-bold px-2 py-1 border w-full text-center game-text shadow-none ${
-                                          deal.status === 'Accepted' ? 'bg-[#37B34A] text-white border-[#37B34A]' : 
-                                          deal.status === 'Rejected' ? 'bg-[--color-gta-red] text-white border-[--color-gta-red]' : 
-                                          deal.status === 'On Delivery' ? 'bg-[#F1B51A] text-black border-[#F1B51A]' : 
-                                          deal.status === 'Delivered' ? 'bg-purple-600 text-white border-purple-600' : 
-                                          'bg-transparent text-gray-400 border-gray-600'
-                                        }`}>
-                                          {deal.status}
-                                        </span>
-                                      )}
-                                    </div>
+                                          <div className="flex gap-2 w-full">
+                                            <button 
+                                              onClick={() => updateDealStatus(deal.id, 'Accepted')} 
+                                              className="flex-1 py-2 game-btn game-btn-green text-sm"
+                                            >
+                                              <span className="game-text text-lg">Accept</span>
+                                            </button>
+                                            <button 
+                                              onClick={() => updateDealStatus(deal.id, 'Rejected')} 
+                                              className="flex-1 py-2 game-btn game-btn-red text-sm"
+                                            >
+                                              <span className="game-text text-lg">Reject</span>
+                                            </button>
+                                          </div>
+                                        ) : (
+                                          <div className="flex w-full items-center gap-2">
+                                            <span className={`text-lg font-bold px-2 py-1 border flex-1 text-center game-text shadow-none ${
+                                              deal.status === 'Accepted' ? 'bg-[#37B34A] text-white border-[#37B34A]' : 
+                                              deal.status === 'Rejected' ? 'bg-[--color-gta-red] text-white border-[--color-gta-red]' : 
+                                              deal.status === 'On Delivery' ? 'bg-[#F1B51A] text-black border-[#F1B51A]' : 
+                                              deal.status === 'Delivered' ? 'bg-purple-600 text-white border-purple-600' : 
+                                              'bg-transparent text-gray-400 border-gray-600'
+                                            }`}>
+                                              {deal.status}
+                                            </span>
+                                            {/* Show Chat button if deal is Accepted or further along */}
+                                            {['Accepted', 'On Delivery', 'Delivered'].includes(deal.status) && (
+                                              <button 
+                                                onClick={() => setActiveChatDeal(deal)}
+                                                className="p-1 px-3 game-btn game-btn-blue text-white self-stretch flex items-center justify-center shrink-0"
+                                                title="Chat with Supplier"
+                                              >
+                                                <MessageCircle className="w-5 h-5 mr-1" />
+                                                <span className="game-text font-bold text-sm">Chat</span>
+                                              </button>
+                                            )}
+                                          </div>
+                                        )}
+                                      </div>
                                   </div>
                                 );
                               })}
@@ -372,6 +387,14 @@ export function MenuManager() {
         onClose={() => setIsPredictModalOpen(false)} 
         menuItems={restaurant.menu} 
       />
+
+      {activeChatDeal && (
+        <ChatModal 
+          deal={activeChatDeal} 
+          onClose={() => setActiveChatDeal(null)} 
+          currentUserRole="restaurant" 
+        />
+      )}
     </div>
   );
 }

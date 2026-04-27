@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { MenuItem, Restaurant, Deal, Category, SupplierProfile } from "../types";
+import { MenuItem, Restaurant, Deal, Category, SupplierProfile, ChatMessage } from "../types";
 import { v4 as uuidv4 } from "uuid";
 
 interface AppContextType {
@@ -19,6 +19,9 @@ interface AppContextType {
   // Deal actions
   proposeDeal: (deal: Omit<Deal, "id" | "status">) => void;
   updateDealStatus: (dealId: string, status: "Pending" | "Accepted" | "Rejected" | "On Delivery" | "Delivered") => void;
+  // Chat actions
+  messages: ChatMessage[];
+  sendMessage: (dealId: string, text: string, senderId: string, senderRole: "restaurant" | "supplier") => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -74,6 +77,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return saved ? JSON.parse(saved) : { id: "s-1", name: "FreshLogistics Inc.", lat: 51.52, lng: -0.11 };
   });
 
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    const saved = localStorage.getItem("supplymap_messages");
+    return saved ? JSON.parse(saved) : [];
+  });
+
   const [currentUserMode, setCurrentUserMode] = useState<"restaurant" | "supplier">("restaurant");
   // Simulating being logged in as the first restaurant
   const [activeRestaurantId] = useState<string>("r-1");
@@ -89,6 +97,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     localStorage.setItem("supplymap_supplier", JSON.stringify(activeSupplier));
   }, [activeSupplier]);
+
+  useEffect(() => {
+    localStorage.setItem("supplymap_messages", JSON.stringify(messages));
+  }, [messages]);
 
   const addMenuItem = (restaurantId: string, item: Omit<MenuItem, "id">) => {
     setRestaurants(prev => prev.map(r => 
@@ -137,6 +149,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setDeals(prev => prev.map(d => d.id === dealId ? { ...d, status } : d));
   };
 
+  const sendMessage = (dealId: string, text: string, senderId: string, senderRole: "restaurant" | "supplier") => {
+    const newMessage: ChatMessage = {
+      id: uuidv4(),
+      dealId,
+      senderId,
+      senderRole,
+      text,
+      timestamp: Date.now(),
+    };
+    setMessages(prev => [...prev, newMessage]);
+  };
+
   return (
     <AppContext.Provider value={{
       restaurants,
@@ -151,7 +175,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       activeSupplier,
       updateSupplierProfile,
       proposeDeal,
-      updateDealStatus
+      updateDealStatus,
+      messages,
+      sendMessage
     }}>
       {children}
     </AppContext.Provider>

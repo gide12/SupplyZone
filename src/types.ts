@@ -24,6 +24,15 @@ export interface SupplierProfile {
   lng: number;
 }
 
+export interface ChatMessage {
+  id: string;
+  dealId: string;
+  senderId: string;
+  senderRole: "restaurant" | "supplier";
+  text: string;
+  timestamp: number;
+}
+
 export interface Deal {
   id: string;
   restaurantId: string;
