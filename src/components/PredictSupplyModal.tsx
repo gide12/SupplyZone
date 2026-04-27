@@ -80,39 +80,39 @@ export function PredictSupplyModal({ isOpen, onClose, menuItems }: PredictSupply
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="game-panel w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10">
+        <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-[--color-gta-panel] gta-header sticky top-0 z-10">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center shadow-inner">
-              <Sparkles className="w-5 h-5" />
+            <div className="w-10 h-10 bg-purple-600 border border-purple-800 flex items-center justify-center shadow-none">
+              <Sparkles className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-800">AI Supply Predictor</h2>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Estimate your monthly needs</p>
+              <h2 className="text-2xl font-bold text-white shadow-none game-title">AI Supply Predictor</h2>
+              <p className="text-sm font-bold text-gray-400 uppercase tracking-widest game-text shadow-none drop-shadow-none">Estimate your monthly needs</p>
             </div>
           </div>
           <button 
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+            className="p-2 bg-transparent hover:bg-white/10 border border-white/20 text-gray-400 hover:text-white shadow-none transition-all"
           >
             <X className="w-6 h-6" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto flex-1 bg-slate-50">
+        <div className="p-6 overflow-y-auto flex-1 bg-black/60 game-panel-inner mb-0">
           
-          <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 mb-6">
-            <label className="block text-sm font-bold text-slate-700 mb-2">
+          <div className="bg-black/40 p-5 border border-white/20 shadow-none mb-6">
+            <label className="block text-xl text-gray-300 mb-3 game-text">
               Expected Customers (Per Month)
             </label>
-            <div className="flex gap-3">
+            <div className="flex gap-4">
               <input 
                 type="number" 
-                className="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="flex-1 px-4 py-3 bg-black/60 border border-white/20 text-2xl font-bold text-white focus:outline-none focus:border-[#37B34A] game-text shadow-none"
                 value={customers}
                 onChange={(e) => setCustomers(parseInt(e.target.value) || 0)}
                 min="1"
@@ -120,34 +120,34 @@ export function PredictSupplyModal({ isOpen, onClose, menuItems }: PredictSupply
               <button 
                 onClick={handlePredict}
                 disabled={loading}
-                className="px-6 py-3 bg-purple-600 hover:bg-purple-500 disabled:bg-purple-300 text-white font-bold rounded-xl shadow-lg shadow-purple-600/20 transition-all flex items-center gap-2"
+                className="px-6 py-3 bg-purple-600 hover:bg-purple-500 disabled:bg-black disabled:text-gray-500 text-white font-bold border border-purple-800 shadow-none transition-all flex items-center gap-2 game-text text-xl uppercase"
               >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
+                {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Sparkles className="w-6 h-6" />}
                 {loading ? "Predicting..." : "Predict"}
               </button>
             </div>
-            <p className="mt-3 text-xs text-slate-500">
+            <p className="mt-4 text-sm text-gray-400 font-bold game-text">
               Our AI will analyze your current menu ({menuItems.length} items) and estimate the required stock.
             </p>
           </div>
 
           {predictions && (
             <div className="space-y-4">
-              <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-purple-500" />
+              <h3 className="font-bold text-white text-2xl flex items-center gap-3 drop-shadow-none game-title mb-4">
+                <Sparkles className="w-8 h-8 text-[#F1B51A] drop-shadow-none" />
                 Predicted Needs
               </h3>
               
-              <div className="grid grid-cols-1 gap-3">
+              <div className="grid grid-cols-1 gap-4">
                 {predictions.map((pred, idx) => (
-                  <div key={idx} className="bg-white border text-left border-purple-100 p-4 rounded-2xl shadow-sm">
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-bold text-slate-800">{pred.itemName}</h4>
-                      <span className="px-3 py-1 bg-purple-50 text-purple-700 rounded-lg text-sm font-bold border border-purple-100">
+                  <div key={idx} className="bg-black/40 border border-white/20 text-left p-5 shadow-none">
+                    <div className="flex justify-between items-start mb-3 border-b border-white/10 pb-2">
+                      <h4 className="font-bold text-white text-2xl game-text">{pred.itemName}</h4>
+                      <span className="px-3 py-1 bg-transparent border border-[#37B34A] text-[#37B34A] text-xl font-bold shadow-none game-text">
                         {pred.predictedQuantity}
                       </span>
                     </div>
-                    <p className="text-sm text-slate-600 leading-relaxed">
+                    <p className="text-lg text-gray-300 font-bold leading-relaxed game-text">
                       {pred.reason}
                     </p>
                   </div>

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { MenuItem, Restaurant, Deal, Category } from "../types";
+import { MenuItem, Restaurant, Deal, Category, SupplierProfile } from "../types";
 import { v4 as uuidv4 } from "uuid";
 
 interface AppContextType {
@@ -12,8 +12,13 @@ interface AppContextType {
   addMenuItem: (restaurantId: string, item: Omit<MenuItem, "id">) => void;
   updateMenuItem: (restaurantId: string, itemId: string, item: Omit<MenuItem, "id">) => void;
   deleteMenuItem: (restaurantId: string, itemId: string) => void;
+  updateRestaurantProfile: (id: string, name: string, lat: number, lng: number) => void;
   // Supplier actions
+  activeSupplier: SupplierProfile;
+  updateSupplierProfile: (name: string, lat: number, lng: number) => void;
+  // Deal actions
   proposeDeal: (deal: Omit<Deal, "id" | "status">) => void;
+  updateDealStatus: (dealId: string, status: "Pending" | "Accepted" | "Rejected" | "On Delivery" | "Delivered") => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -44,12 +49,29 @@ const defaultRestaurants: Restaurant[] = [
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [restaurants, setRestaurants] = useState<Restaurant[]>(() => {
     const saved = localStorage.getItem("supplymap_restaurants");
-    return saved ? JSON.parse(saved) : defaultRestaurants;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.map((r: any) => ({
+          ...r,
+          lat: r.lat ?? (51.505 + (Math.random() * 0.1 - 0.05)),
+          lng: r.lng ?? (-0.09 + (Math.random() * 0.1 - 0.05)),
+        }));
+      } catch (e) {
+        return defaultRestaurants;
+      }
+    }
+    return defaultRestaurants;
   });
 
   const [deals, setDeals] = useState<Deal[]>(() => {
     const saved = localStorage.getItem("supplymap_deals");
     return saved ? JSON.parse(saved) : [];
+  });
+
+  const [activeSupplier, setActiveSupplier] = useState<SupplierProfile>(() => {
+    const saved = localStorage.getItem("supplymap_supplier");
+    return saved ? JSON.parse(saved) : { id: "s-1", name: "FreshLogistics Inc.", lat: 51.52, lng: -0.11 };
   });
 
   const [currentUserMode, setCurrentUserMode] = useState<"restaurant" | "supplier">("restaurant");
@@ -63,6 +85,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     localStorage.setItem("supplymap_deals", JSON.stringify(deals));
   }, [deals]);
+
+  useEffect(() => {
+    localStorage.setItem("supplymap_supplier", JSON.stringify(activeSupplier));
+  }, [activeSupplier]);
 
   const addMenuItem = (restaurantId: string, item: Omit<MenuItem, "id">) => {
     setRestaurants(prev => prev.map(r => 
@@ -88,6 +114,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ));
   };
 
+  const updateRestaurantProfile = (id: string, name: string, lat: number, lng: number) => {
+    setRestaurants(prev => prev.map(r => 
+      r.id === id ? { ...r, name, lat, lng } : r
+    ));
+  };
+
+  const updateSupplierProfile = (name: string, lat: number, lng: number) => {
+    setActiveSupplier(prev => ({ ...prev, name, lat, lng }));
+  };
+
   const proposeDeal = (deal: Omit<Deal, "id" | "status">) => {
     const newDeal: Deal = {
       ...deal,
@@ -95,6 +131,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       status: "Pending",
     };
     setDeals(prev => [...prev, newDeal]);
+  };
+
+  const updateDealStatus = (dealId: string, status: "Pending" | "Accepted" | "Rejected" | "On Delivery" | "Delivered") => {
+    setDeals(prev => prev.map(d => d.id === dealId ? { ...d, status } : d));
   };
 
   return (
@@ -107,7 +147,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       addMenuItem,
       updateMenuItem,
       deleteMenuItem,
-      proposeDeal
+      updateRestaurantProfile,
+      activeSupplier,
+      updateSupplierProfile,
+      proposeDeal,
+      updateDealStatus
     }}>
       {children}
     </AppContext.Provider>

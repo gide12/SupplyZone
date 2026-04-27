@@ -12,28 +12,28 @@ function RoleSwitcher() {
   const { currentUserMode, setCurrentUserMode } = useAppContext();
 
   return (
-    <div className="fixed bottom-6 right-6 z-[9999] bg-slate-100 p-1.5 rounded-xl shadow-xl border border-slate-200 flex gap-1">
+    <div className="fixed bottom-6 right-6 z-[9999] game-panel p-2 flex gap-2">
       <button
         onClick={() => setCurrentUserMode("restaurant")}
-        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-all ${
+        className={`flex items-center gap-2 px-4 py-2 text-sm game-btn ${
           currentUserMode === "restaurant" 
-            ? "bg-white text-blue-600 font-bold shadow-sm" 
-            : "text-slate-500 hover:text-slate-700 font-medium"
+            ? "bg-[#1A92D4] text-white border-[#1A92D4] font-bold shadow-sm" 
+            : "bg-transparent text-gray-400 border-white/20 hover:text-white"
         }`}
       >
         <Store className="w-4 h-4" />
-        <span className="hidden sm:inline">Restaurant Mode</span>
+        <span className="hidden sm:inline game-text">Restaurant Mode</span>
       </button>
       <button
         onClick={() => setCurrentUserMode("supplier")}
-        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-all ${
+        className={`flex items-center gap-2 px-4 py-2 text-sm game-btn ${
           currentUserMode === "supplier" 
-            ? "bg-white text-blue-600 font-bold shadow-sm" 
-            : "text-slate-500 hover:text-slate-700 font-medium"
+            ? "bg-[#37B34A] text-white border-[#37B34A] font-bold shadow-sm" 
+            : "bg-transparent text-gray-400 border-white/20 hover:text-white"
         }`}
       >
         <Truck className="w-4 h-4" />
-        <span className="hidden sm:inline">Supplier Portal</span>
+        <span className="hidden sm:inline game-text">Supplier Portal</span>
       </button>
     </div>
   );

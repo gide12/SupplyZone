@@ -35,8 +35,9 @@ function MapUpdater({ center, zoom }: { center: [number, number]; zoom: number }
 }
 
 export function SupplierDashboard() {
-  const { restaurants, proposeDeal, deals } = useAppContext();
+  const { restaurants, proposeDeal, deals, updateDealStatus, activeSupplier, updateSupplierProfile } = useAppContext();
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
+  const [activeTab, setActiveTab] = useState<"market" | "orders" | "profile">("market");
   
   // Deal form state
   const [dealItem, setDealItem] = useState<MenuItem | null>(null);
@@ -49,7 +50,18 @@ export function SupplierDashboard() {
   const [mapCenter, setMapCenter] = useState<[number, number]>(defaultCenter);
   
   // Simulated supplier location (can be made draggable if desired, static for now)
-  const [supplierLocation] = useState<[number, number]>([51.52, -0.11]);
+  const supplierLocation: [number, number] = [activeSupplier.lat, activeSupplier.lng];
+
+  // Profile Form State
+  const [profileName, setProfileName] = useState(activeSupplier.name);
+  const [profileLat, setProfileLat] = useState(activeSupplier.lat.toString());
+  const [profileLng, setProfileLng] = useState(activeSupplier.lng.toString());
+
+  const handleProfileSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateSupplierProfile(profileName, parseFloat(profileLat), parseFloat(profileLng));
+    alert("Profile updated successfully!");
+  };
 
   const handleMarkerClick = (restaurant: Restaurant) => {
     setSelectedRestaurant(restaurant);
@@ -86,174 +98,312 @@ export function SupplierDashboard() {
     alert("Deal proposed successfully!");
   };
 
-  return (
-    <div className="flex h-screen bg-slate-50 flex-col md:flex-row overflow-hidden">
-      
-      {/* Sidebar: List of Restaurants or Selected Restaurant Detail */}
-      <div className="w-full md:w-96 bg-white border-r border-slate-200 flex flex-col h-full shadow-xl z-10">
-        <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200">
-              <Truck className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-xl font-bold tracking-tight text-slate-900">SupplyMap</span>
-          </div>
-          <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-bold rounded uppercase">Supplier</span>
-        </div>
+  const renderMarketList = () => (
+    <div className="p-4">
+      <h2 className="text-sm font-bold text-[#37B34A] uppercase tracking-wide mb-4 game-text border-b border-white/20 pb-1">Restaurants nearby</h2>
+      <div className="space-y-4">
+        {restaurants.map(restaurant => (
+          <button
+            key={restaurant.id}
+            onClick={() => handleMarkerClick(restaurant)}
+            className="w-full text-left p-4 game-panel-inner hover:bg-white/10 transition-all focus:outline-none cursor-pointer border-l-4 border-l-transparent hover:border-l-[#37B34A] group"
+          >
+            <h3 className="font-bold text-white text-2xl game-text group-hover:text-[#37B34A]">{restaurant.name}</h3>
+            <p className="text-sm text-gray-300 mt-2 flex items-center gap-2 game-text">
+              <Store className="w-5 h-5 text-gray-400" /> {restaurant.menu.length} menu items
+            </p>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 
-        <div className="flex-1 overflow-y-auto w-full">
-          {!selectedRestaurant ? (
-            // LIST VIEW
-            <div className="p-4">
-              <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">Restaurants nearby</h2>
-              <div className="space-y-3">
-                {restaurants.map(restaurant => (
-                  <button
-                    key={restaurant.id}
-                    onClick={() => handleMarkerClick(restaurant)}
-                    className="w-full text-left p-4 rounded-xl border border-slate-100 hover:bg-slate-50 transition-colors bg-white focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer"
-                  >
-                    <h3 className="font-bold text-slate-800">{restaurant.name}</h3>
-                    <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                      <Store className="w-4 h-4" /> {restaurant.menu.length} menu items
-                    </p>
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : (
-            // DETAIL VIEW
-            <div className="p-0">
-              {/* Back button area */}
-              <div className="p-4 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center sticky top-0">
-                <h2 className="text-lg font-bold text-slate-800 truncate">{selectedRestaurant.name}</h2>
-                <button 
-                  onClick={() => {
-                    setSelectedRestaurant(null);
-                    setDealItem(null);
-                    setMapCenter(defaultCenter);
-                  }}
-                  className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-white border rounded-full transition-colors border-transparent hover:border-slate-200 shadow-sm"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+  const renderMarketDetail = () => (
+    <div className="p-0">
+      <div className="p-4 bg-black/60 border-b border-white/10 flex justify-between items-center sticky top-0 z-10 gta-header">
+        <h2 className="text-2xl font-bold text-[#37B34A] truncate game-text">{selectedRestaurant?.name}</h2>
+        <button 
+          onClick={() => {
+            setSelectedRestaurant(null);
+            setDealItem(null);
+            setMapCenter(defaultCenter);
+          }}
+          className="p-2 text-white bg-[--color-gta-red] hover:bg-red-500 rounded-none transition-colors active:scale-95 border border-[--color-gta-red]"
+        >
+          <X className="w-6 h-6" />
+        </button>
+      </div>
 
-              <div className="p-4">
-                <FuelEstimateCard 
-                  restaurant={selectedRestaurant} 
-                  supplierLocation={supplierLocation} 
-                />
+      <div className="p-4 game-panel-inner rounded-none min-h-screen bg-transparent">
+        {selectedRestaurant && (
+          <FuelEstimateCard 
+            restaurant={selectedRestaurant} 
+            supplierLocation={supplierLocation} 
+          />
+        )}
 
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3 mt-4">Menu & Market Deals</h3>
+        <h3 className="text-lg font-bold text-[#37B34A] uppercase tracking-wide mb-3 mt-6 game-text border-b border-white/20 pb-1">Menu & Market Deals</h3>
+        
+        {!selectedRestaurant || selectedRestaurant.menu.length === 0 ? (
+          <p className="text-gray-400 text-lg game-text font-bold">This restaurant hasn't added any menu items yet.</p>
+        ) : (
+          <div className="space-y-5">
+            {selectedRestaurant.menu.map(item => (
+              <div key={item.id} className="game-panel-inner p-4 hover:border-[#37B34A] transition-colors group">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="font-bold text-xl text-white game-text group-hover:text-[#37B34A]">{item.name}</span>
+                  <span className="text-sm font-bold text-gray-500 game-text">#SKU-{item.id.substring(0,4).toUpperCase()}</span>
+                </div>
+                <div className="flex items-center justify-between mb-3 border-b border-white/10 pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-sm text-white bg-black/50 game-text uppercase px-2 py-1 border border-white/20">{item.category}</span>
+                    {item.quantity && (
+                      <span className="px-2 py-1 bg-black/50 text-[#1A92D4] text-sm font-bold uppercase border border-[#1A92D4]/50 game-text">
+                        Qty: {item.quantity}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-2xl font-bold text-[#37B34A] game-text">${item.price.toFixed(2)}</div>
+                </div>
                 
-                {selectedRestaurant.menu.length === 0 ? (
-                  <p className="text-slate-500 text-sm">This restaurant hasn't added any menu items yet.</p>
-                ) : (
-                  <div className="space-y-4">
-                    {selectedRestaurant.menu.map(item => (
-                      <div key={item.id} className="border border-slate-100 rounded-xl p-3 bg-white shadow-sm">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="font-bold text-sm text-slate-800">{item.name}</span>
-                          <span className="text-[10px] font-mono text-slate-400">#SKU-{item.id.substring(0,4).toUpperCase()}</span>
-                        </div>
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold text-xs text-slate-500">{item.category}</span>
-                            {item.quantity && (
-                              <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 text-[9px] font-bold rounded uppercase border border-blue-100">
-                                Qty: {item.quantity}
-                              </span>
-                            )}
-                          </div>
-                          <div className="text-sm font-bold text-blue-600">${item.price.toFixed(2)}</div>
-                        </div>
-                        
-                        {dealItem?.id === item.id ? (
-                          <div className="mt-4 p-4 bg-slate-900 rounded-2xl text-white space-y-4">
-                            <div>
-                              <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">Your Target Supply Bid</label>
-                              <div className="flex items-center border-b border-blue-500 pb-1">
-                                <span className="text-lg font-bold text-blue-600 mr-1">$</span>
-                                <input 
-                                  type="number" 
-                                  placeholder="0.00"
-                                  className="flex-1 w-full bg-transparent border-none focus:ring-0 text-lg font-bold text-blue-500 p-0 outline-none"
-                                  value={proposedPrice}
-                                  onChange={e => setProposedPrice(e.target.value)}
-                                />
-                              </div>
-                            </div>
-                            
-                            <div>
-                              <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1 flex items-center justify-between">
-                                <span>Product Photo (Optional)</span>
-                                <button 
-                                  onClick={() => fileInputRef.current?.click()}
-                                  className="flex items-center gap-1 text-blue-400 hover:text-blue-300 transition-colors"
-                                >
-                                  <ImagePlus className="w-3 h-3" /> Upload
-                                </button>
-                              </label>
-                              <input 
-                                type="file" 
-                                accept="image/*,video/*"
-                                className="hidden"
-                                ref={fileInputRef}
-                                onChange={handleFileChange}
-                              />
-                              <div className="flex items-center border-b border-slate-600 pb-1 mt-1">
-                                <span className="text-slate-400 mr-2"><LinkIcon className="w-4 h-4" /></span>
-                                <input 
-                                  type="text" 
-                                  placeholder="Or paste image URL"
-                                  className="flex-1 w-full bg-transparent border-none focus:ring-0 text-sm p-0 outline-none placeholder-slate-500 text-white"
-                                  value={mediaUrl}
-                                  onChange={e => setMediaUrl(e.target.value)}
-                                />
-                              </div>
-                              {mediaUrl && (
-                                <div className="mt-3 relative rounded-lg overflow-hidden border border-slate-700 bg-slate-800 h-24">
-                                  <img src={mediaUrl} alt="Preview" className="w-full h-full object-cover" />
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="flex gap-2 pt-2">
-                              <button 
-                                onClick={() => {
-                                  setDealItem(null);
-                                  setMediaUrl("");
-                                }}
-                                className="px-4 py-2.5 text-xs text-slate-400 hover:text-white rounded-xl font-bold transition-colors"
-                              >
-                                Cancel
-                              </button>
-                              <button 
-                                onClick={handleProposeDeal}
-                                className="flex-1 bg-blue-600 hover:bg-blue-500 py-2.5 rounded-xl text-xs font-bold transition-all shadow-lg shadow-blue-500/20 active:scale-95 text-white"
-                              >
-                                Send Proposal
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <button 
-                            onClick={() => setDealItem(item)}
-                            className="mt-3 w-full py-2 bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 rounded-xl text-xs font-bold transition-colors"
-                          >
-                            Propose Deal
-                          </button>
-                        )}
+                {dealItem?.id === item.id ? (
+                  <div className="mt-4 p-4 border border-white/20 bg-black/80 text-white space-y-4">
+                    <div>
+                      <label className="block text-sm uppercase font-bold text-gray-400 mb-2 game-text tracking-wider">Your Target Supply Bid</label>
+                      <div className="flex items-center border-b border-[#37B34A] pb-1">
+                        <span className="text-3xl font-bold text-[#37B34A] mr-2 game-text">$</span>
+                        <input 
+                          type="number" 
+                          placeholder="0.00"
+                          className="flex-1 w-full bg-transparent border-none focus:ring-0 text-3xl font-bold text-[#37B34A] p-0 outline-none game-text placeholder-gray-600"
+                          value={proposedPrice}
+                          onChange={e => setProposedPrice(e.target.value)}
+                        />
                       </div>
-                    ))}
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm uppercase font-bold text-gray-400 mb-2 flex items-center justify-between game-text tracking-wider">
+                        <span>Product Photo (Optional)</span>
+                        <button 
+                          onClick={() => fileInputRef.current?.click()}
+                          className="flex items-center gap-1 text-[#1A92D4] hover:text-white transition-colors bg-transparent px-2 py-1 border border-[#1A92D4]"
+                        >
+                          <ImagePlus className="w-4 h-4" /> Upload
+                        </button>
+                      </label>
+                      <input 
+                        type="file" 
+                        accept="image/*,video/*"
+                        className="hidden"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                      />
+                      <div className="flex items-center border-b border-white/20 pb-2 mt-2">
+                        <span className="text-gray-400 mr-2"><LinkIcon className="w-5 h-5" /></span>
+                        <input 
+                          type="text" 
+                          placeholder="Or paste image URL"
+                          className="flex-1 w-full bg-transparent border-none focus:ring-0 text-lg p-0 outline-none placeholder-gray-500 text-white game-text"
+                          value={mediaUrl}
+                          onChange={e => setMediaUrl(e.target.value)}
+                        />
+                      </div>
+                      {mediaUrl && (
+                        <div className="mt-3 relative border border-white/20 bg-black/50 h-32 p-1">
+                          <img src={mediaUrl} alt="Preview" className="w-full h-full object-contain filter grayscale hover:grayscale-0 transition-opacity" />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex gap-3 pt-4 border-t border-white/20">
+                      <button 
+                        onClick={() => {
+                          setDealItem(null);
+                          setMediaUrl("");
+                        }}
+                        className="px-4 py-2 border border-white/20 bg-transparent text-white hover:bg-white/10 game-text transition-colors text-lg"
+                      >
+                        Cancel
+                      </button>
+                      <button 
+                        onClick={handleProposeDeal}
+                        className="flex-1 game-btn game-btn-green py-2 text-lg font-bold transition-all text-white game-text px-4"
+                      >
+                        Send Proposal
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={() => setDealItem(item)}
+                    className="mt-3 w-full py-3 border border-white/20 bg-transparent text-white hover:bg-[#37B34A] hover:border-[#37B34A] hover:text-white text-lg font-bold game-text transition-colors uppercase"
+                  >
+                    Propose Deal
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const renderOrders = () => (
+    <div className="p-4">
+      <h2 className="text-sm font-bold text-[#37B34A] uppercase tracking-wide mb-4 game-text border-b border-white/20 pb-1">My Deal Bids & Orders</h2>
+      <div className="space-y-5">
+        {deals.filter(d => d.supplierId === "s-1").length === 0 ? (
+          <div className="text-center py-12 text-lg font-bold text-gray-500 border border-white/10 bg-transparent game-text">You haven't proposed any deals yet.</div>
+        ) : (
+          deals.filter(d => d.supplierId === "s-1").map((deal) => {
+            const restaurant = restaurants.find(r => r.id === deal.restaurantId);
+            const item = restaurant?.menu.find(m => m.id === deal.menuItemId);
+            
+            return (
+              <div key={deal.id} className="game-panel-inner p-4 hover:border-white/20 transition-colors">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <span className="font-bold text-xl text-white game-text">{item?.name || "Unknown Item"}</span>
+                    <div className="text-sm font-bold text-[#1A92D4] game-text uppercase mt-1">{restaurant?.name}</div>
+                  </div>
+                  <span className={`text-sm font-bold px-3 py-1 border uppercase game-text ${
+                    deal.status === 'Accepted' ? 'bg-[#37B34A] text-white border-[#37B34A]' :
+                    deal.status === 'Rejected' ? 'bg-[--color-gta-red] text-white border-[--color-gta-red]' :
+                    deal.status === 'On Delivery' ? 'bg-[#F1B51A] text-black border-[#F1B51A]' :
+                    deal.status === 'Delivered' ? 'bg-purple-600 text-white border-purple-600' :
+                    'bg-transparent text-gray-400 border-gray-600'
+                  }`}>
+                    {deal.status}
+                  </span>
+                </div>
+                <div className="text-2xl font-bold text-[#37B34A] mb-4 border-b border-white/10 pb-3 game-text">
+                  ${deal.proposedPrice.toFixed(2)}
+                </div>
+                
+                {/* Status update actions for accepted deals */}
+                {(deal.status === 'Accepted' || deal.status === 'On Delivery') && (
+                  <div className="flex gap-3">
+                    {deal.status === 'Accepted' && (
+                      <button 
+                        onClick={() => updateDealStatus(deal.id, 'On Delivery')}
+                        className="flex-1 py-2 bg-transparent border border-[#F1B51A] text-[#F1B51A] hover:bg-[#F1B51A] hover:text-black text-sm font-bold transition-colors game-text uppercase"
+                      >
+                        Mark On Delivery
+                      </button>
+                    )}
+                    {(deal.status === 'Accepted' || deal.status === 'On Delivery') && (
+                      <button 
+                        onClick={() => updateDealStatus(deal.id, 'Delivered')}
+                        className="flex-1 py-2 bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white text-sm font-bold transition-colors game-text uppercase"
+                      >
+                        Mark Delivered
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+
+  const renderProfile = () => (
+    <div className="p-4">
+      <h2 className="text-sm font-bold text-[#37B34A] uppercase tracking-wide mb-4 game-text border-b border-white/20 pb-1">Supplier Profile</h2>
+      <div className="game-panel-inner p-6 gta-header border-t-4 border-[#37B34A]">
+        <form onSubmit={handleProfileSave} className="space-y-5">
+          <div>
+            <label className="block text-xl text-gray-300 mb-2 game-text">Supplier Name</label>
+            <input
+              type="text"
+              value={profileName}
+              onChange={(e) => setProfileName(e.target.value)}
+              className="w-full p-3 rounded-none focus:outline-none game-text text-xl"
+              required
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-5">
+            <div>
+              <label className="block text-xl text-gray-300 mb-2 game-text">Latitude</label>
+              <input
+                type="number"
+                step="any"
+                value={profileLat}
+                onChange={(e) => setProfileLat(e.target.value)}
+                className="w-full p-3 rounded-none focus:outline-none game-text text-xl"
+                required
+              />
             </div>
-          )}
+            <div>
+              <label className="block text-xl text-gray-300 mb-2 game-text">Longitude</label>
+              <input
+                type="number"
+                step="any"
+                value={profileLng}
+                onChange={(e) => setProfileLng(e.target.value)}
+                className="w-full p-3 rounded-none focus:outline-none game-text text-xl"
+                required
+              />
+            </div>
+          </div>
+          <div className="pt-4">
+            <button type="submit" className="w-full py-3 game-btn game-btn-green font-bold transition-all text-xl game-text tracking-widest text-white uppercase rounded-none">
+              Save Profile
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex h-screen bg-transparent flex-col md:flex-row overflow-hidden relative">
+      
+      {/* Sidebar: List of Restaurants or Selected Restaurant Detail */}
+      <div className="w-full md:w-96 game-panel rounded-none flex flex-col h-full z-10 border-0 border-r border-white/10 shrink-0 relative">
+        <div className="flex items-center justify-between px-6 py-5 bg-[--color-gta-panel] gta-header">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-[#37B34A] border border-white/20 flex items-center justify-center shadow-none">
+              <Truck className="w-7 h-7 text-white" />
+            </div>
+            <span className="text-3xl font-bold tracking-tight text-white game-title drop-shadow-none">SupplyMap</span>
+          </div>
+          <span className="px-3 py-1 bg-[#1A92D4] border border-[#1A92D4] text-white text-xs font-bold uppercase game-text shadow-none">Supplier</span>
+        </div>
+
+        <div className="flex border-b border-white/10 bg-[--color-gta-panel]">
+          <button 
+            className={`flex-1 py-4 text-lg font-bold game-text uppercase border-r border-white/10 last:border-r-0 transition-colors ${activeTab === 'market' ? 'bg-[#37B34A] text-white' : 'text-gray-400 hover:bg-white/10'}`}
+            onClick={() => setActiveTab('market')}
+          >
+            Market
+          </button>
+          <button 
+            className={`flex-1 py-4 text-lg font-bold game-text uppercase border-r border-white/10 last:border-r-0 transition-colors ${activeTab === 'orders' ? 'bg-[#37B34A] text-white' : 'text-gray-400 hover:bg-white/10'}`}
+            onClick={() => setActiveTab('orders')}
+          >
+            Orders
+          </button>
+          <button 
+            className={`flex-1 py-4 text-lg font-bold game-text uppercase transition-colors ${activeTab === 'profile' ? 'bg-[#37B34A] text-white' : 'text-gray-400 hover:bg-white/10'}`}
+            onClick={() => setActiveTab('profile')}
+          >
+            Profile
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto w-full bg-transparent">
+          {activeTab === "market" && !selectedRestaurant && renderMarketList()}
+          {activeTab === "market" && selectedRestaurant && renderMarketDetail()}
+          {activeTab === "orders" && renderOrders()}
+          {activeTab === "profile" && renderProfile()}
         </div>
       </div>
+
 
       {/* Main Map Area */}
       <div className="flex-1 relative z-0 h-full min-h-[50vh]">
@@ -267,7 +417,7 @@ export function SupplierDashboard() {
           {/* Supplier Marker */}
           <Marker position={supplierLocation} icon={supplierIcon}>
             <Popup>
-              <div className="font-semibold text-emerald-700">Your Base Location</div>
+              <div className="font-semibold text-emerald-700">{activeSupplier.name} (You)</div>
               <div className="text-xs text-slate-500">Origin for deliveries</div>
             </Popup>
           </Marker>
@@ -275,26 +425,30 @@ export function SupplierDashboard() {
           {/* Route Line (if a restaurant is selected) */}
           {selectedRestaurant && (
             <Polyline 
-              positions={[supplierLocation, [selectedRestaurant.lat, selectedRestaurant.lng]]} 
+              positions={[supplierLocation, [selectedRestaurant.lat ?? 51.505, selectedRestaurant.lng ?? -0.09]]} 
               pathOptions={{ color: '#10b981', weight: 4, opacity: 0.7, dashArray: '10, 10' }} 
             />
           )}
 
-          {restaurants.map(restaurant => (
-            <Marker 
-              key={restaurant.id} 
-              position={[restaurant.lat, restaurant.lng]} 
-              icon={customIcon}
-              eventHandlers={{
-                click: () => handleMarkerClick(restaurant)
-              }}
-            >
-              <Popup>
-                <div className="font-semibold">{restaurant.name}</div>
-                <div className="text-xs text-gray-500 mt-1">{restaurant.menu.length} menu items</div>
-              </Popup>
-            </Marker>
-          ))}
+          {restaurants.map(restaurant => {
+            const lat = restaurant.lat ?? 51.505;
+            const lng = restaurant.lng ?? -0.09;
+            return (
+              <Marker 
+                key={restaurant.id} 
+                position={[lat, lng]} 
+                icon={customIcon}
+                eventHandlers={{
+                  click: () => handleMarkerClick(restaurant)
+                }}
+              >
+                <Popup>
+                  <div className="font-semibold">{restaurant.name}</div>
+                  <div className="text-xs text-gray-500 mt-1">{restaurant.menu?.length || 0} menu items</div>
+                </Popup>
+              </Marker>
+            );
+          })}
         </MapContainer>
       </div>
 
