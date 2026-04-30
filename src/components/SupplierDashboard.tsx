@@ -36,9 +36,15 @@ function MapUpdater({ center, zoom }: { center: [number, number]; zoom: number }
 }
 
 export function SupplierDashboard() {
-  const { restaurants, proposeDeal, deals, updateDealStatus, activeSupplier, updateSupplierProfile } = useAppContext();
+  const { restaurants, proposeDeal, deals, updateDealStatus, activeSupplier, updateSupplierProfile, messages } = useAppContext();
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
   const [activeTab, setActiveTab] = useState<"market" | "orders" | "profile">("market");
+  
+  // Calculate notifications
+  const totalUnreadOrders = deals.filter(d => d.supplierId === activeSupplier.id).reduce((count, deal) => {
+    const unreadCount = messages.filter(m => m.dealId === deal.id && m.senderRole === "restaurant" && !m.isRead).length;
+    return count + (unreadCount > 0 ? 1 : 0);
+  }, 0);
   
   // Deal form state
   const [dealItem, setDealItem] = useState<MenuItem | null>(null);
@@ -262,6 +268,7 @@ export function SupplierDashboard() {
           deals.filter(d => d.supplierId === "s-1").map((deal) => {
             const restaurant = restaurants.find(r => r.id === deal.restaurantId);
             const item = restaurant?.menu.find(m => m.id === deal.menuItemId);
+            const unreadCount = messages.filter(m => m.dealId === deal.id && m.senderRole === "restaurant" && !m.isRead).length;
             
             return (
               <div key={deal.id} className="game-panel-inner p-4 hover:border-white/20 transition-colors">
@@ -289,9 +296,14 @@ export function SupplierDashboard() {
                   <div className="flex gap-3">
                     <button 
                       onClick={() => setActiveChatDeal(deal)}
-                      className="flex-1 py-2 bg-transparent border border-[#1A92D4] text-[#1A92D4] hover:bg-[#1A92D4] hover:text-white text-sm font-bold transition-colors game-text uppercase flex items-center justify-center gap-2"
+                      className="flex-1 py-2 bg-transparent border border-[#1A92D4] text-[#1A92D4] hover:bg-[#1A92D4] hover:text-white text-sm font-bold transition-colors game-text uppercase flex items-center justify-center gap-2 relative"
                     >
                       <MessageCircle className="w-4 h-4" /> Chat
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full shadow-[0_0_10px_rgba(220,38,38,0.8)]">
+                          {unreadCount}
+                        </span>
+                      )}
                     </button>
                     {deal.status === 'Accepted' && (
                       <button 
@@ -391,10 +403,15 @@ export function SupplierDashboard() {
             Market
           </button>
           <button 
-            className={`flex-1 py-4 text-lg font-bold game-text uppercase border-r border-white/10 last:border-r-0 transition-colors ${activeTab === 'orders' ? 'bg-[#37B34A] text-white' : 'text-gray-400 hover:bg-white/10'}`}
+            className={`flex-1 py-4 text-lg font-bold game-text uppercase border-r border-white/10 last:border-r-0 transition-colors relative ${activeTab === 'orders' ? 'bg-[#37B34A] text-white' : 'text-gray-400 hover:bg-white/10'}`}
             onClick={() => setActiveTab('orders')}
           >
             Orders
+            {totalUnreadOrders > 0 && (
+              <span className="absolute top-2 right-2 bg-red-600 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full shadow-[0_0_10px_rgba(220,38,38,0.8)]">
+                {totalUnreadOrders}
+              </span>
+            )}
           </button>
           <button 
             className={`flex-1 py-4 text-lg font-bold game-text uppercase transition-colors ${activeTab === 'profile' ? 'bg-[#37B34A] text-white' : 'text-gray-400 hover:bg-white/10'}`}

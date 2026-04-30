@@ -22,6 +22,7 @@ interface AppContextType {
   // Chat actions
   messages: ChatMessage[];
   sendMessage: (dealId: string, text: string, senderId: string, senderRole: "restaurant" | "supplier") => void;
+  markMessagesAsRead: (dealId: string, readByRole: "restaurant" | "supplier") => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -157,8 +158,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       senderRole,
       text,
       timestamp: Date.now(),
+      isRead: false,
     };
     setMessages(prev => [...prev, newMessage]);
+  };
+
+  const markMessagesAsRead = (dealId: string, readByRole: "restaurant" | "supplier") => {
+    setMessages(prev => prev.map(m => {
+      // If message is in this deal, and was sent by the OTHER role, and is currently unread
+      if (m.dealId === dealId && m.senderRole !== readByRole && !m.isRead) {
+        return { ...m, isRead: true };
+      }
+      return m;
+    }));
   };
 
   return (
@@ -177,7 +189,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       proposeDeal,
       updateDealStatus,
       messages,
-      sendMessage
+      sendMessage,
+      markMessagesAsRead
     }}>
       {children}
     </AppContext.Provider>

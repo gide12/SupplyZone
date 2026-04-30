@@ -12,7 +12,7 @@ const MOCK_SUPPLIERS = [
 ];
 
 export function MenuManager() {
-  const { restaurants, activeRestaurantId, addMenuItem, updateMenuItem, deleteMenuItem, deals, proposeDeal, updateDealStatus } = useAppContext();
+  const { restaurants, activeRestaurantId, addMenuItem, updateMenuItem, deleteMenuItem, deals, proposeDeal, updateDealStatus, messages } = useAppContext();
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [isPredictModalOpen, setIsPredictModalOpen] = useState(false);
@@ -293,6 +293,7 @@ export function MenuManager() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               {itemDeals.map(deal => {
                                 const supplierName = MOCK_SUPPLIERS.find(s => s.id === deal.supplierId)?.name || "Unknown Supplier";
+                                const unreadCount = messages.filter(m => m.dealId === deal.id && m.senderRole === "supplier" && !m.isRead).length;
                                 return (
                                   <div key={deal.id} className="p-3 bg-black/40 border border-white/10 space-y-2 relative shadow-none">
                                     <div className="flex items-center justify-between">
@@ -330,11 +331,16 @@ export function MenuManager() {
                                             {['Accepted', 'On Delivery', 'Delivered'].includes(deal.status) && (
                                               <button 
                                                 onClick={() => setActiveChatDeal(deal)}
-                                                className="p-1 px-3 game-btn game-btn-blue text-white self-stretch flex items-center justify-center shrink-0"
+                                                className="p-1 px-3 game-btn game-btn-blue text-white self-stretch flex items-center justify-center shrink-0 relative"
                                                 title="Chat with Supplier"
                                               >
                                                 <MessageCircle className="w-5 h-5 mr-1" />
                                                 <span className="game-text font-bold text-sm">Chat</span>
+                                                {unreadCount > 0 && (
+                                                  <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full shadow-[0_0_10px_rgba(220,38,38,0.8)]">
+                                                    {unreadCount}
+                                                  </span>
+                                                )}
                                               </button>
                                             )}
                                           </div>

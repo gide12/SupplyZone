@@ -16,7 +16,7 @@ const MOCK_SUPPLIERS = [
 ];
 
 export function ChatModal({ deal, onClose, currentUserRole }: ChatModalProps) {
-  const { messages, sendMessage, restaurants, activeSupplier } = useAppContext();
+  const { messages, sendMessage, restaurants, activeSupplier, markMessagesAsRead } = useAppContext();
   const [inputText, setInputText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -43,6 +43,10 @@ export function ChatModal({ deal, onClose, currentUserRole }: ChatModalProps) {
     sendMessage(deal.id, inputText.trim(), senderId, currentUserRole);
     setInputText("");
   };
+
+  useEffect(() => {
+    markMessagesAsRead(deal.id, currentUserRole);
+  }, [dealMessages.length, deal.id, currentUserRole, markMessagesAsRead]);
 
   const getPartnerName = () => currentUserRole === "restaurant" ? supplierName : restaurantName;
 

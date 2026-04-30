@@ -31,6 +31,7 @@ export interface ChatMessage {
   senderRole: "restaurant" | "supplier";
   text: string;
   timestamp: number;
+  isRead: boolean;
 }
 
 export interface Deal {
