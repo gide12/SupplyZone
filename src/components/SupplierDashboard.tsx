@@ -6,6 +6,7 @@ import { useAppContext } from "../store/AppContext";
 import { Restaurant, MenuItem } from "../types";
 import { FuelEstimateCard } from "./FuelEstimateCard";
 import { ChatModal } from "./ChatModal";
+import { SupplierInventory } from "./SupplierInventory";
 
 // Setup custom leaflet icons because default paths get broken in bundlers
 const customIcon = new L.Icon({
@@ -36,9 +37,9 @@ function MapUpdater({ center, zoom }: { center: [number, number]; zoom: number }
 }
 
 export function SupplierDashboard() {
-  const { restaurants, proposeDeal, deals, updateDealStatus, activeSupplier, updateSupplierProfile, messages } = useAppContext();
+  const { restaurants, proposeDeal, deals, updateDealStatus, activeSupplier, updateSupplierProfile, messages, updateSupplierInventory, calculateDynamicPrice } = useAppContext();
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
-  const [activeTab, setActiveTab] = useState<"market" | "orders" | "profile">("market");
+  const [activeTab, setActiveTab] = useState<"market" | "orders" | "inventory" | "profile">("market");
   
   // Calculate notifications
   const totalUnreadOrders = deals.filter(d => d.supplierId === activeSupplier.id).reduce((count, deal) => {
@@ -94,7 +95,7 @@ export function SupplierDashboard() {
     
     proposeDeal({
       restaurantId: selectedRestaurant.id,
-      supplierId: "s-1", // Simulated supplier ID
+      supplierId: activeSupplier.id,
       menuItemId: dealItem.id,
       proposedPrice: Number(proposedPrice),
       mediaUrl: mediaUrl || undefined
@@ -262,10 +263,10 @@ export function SupplierDashboard() {
     <div className="p-4">
       <h2 className="text-sm font-bold text-[#37B34A] uppercase tracking-wide mb-4 game-text border-b border-white/20 pb-1">My Deal Bids & Orders</h2>
       <div className="space-y-5">
-        {deals.filter(d => d.supplierId === "s-1").length === 0 ? (
+        {deals.filter(d => d.supplierId === activeSupplier.id).length === 0 ? (
           <div className="text-center py-12 text-lg font-bold text-gray-500 border border-white/10 bg-transparent game-text">You haven't proposed any deals yet.</div>
         ) : (
-          deals.filter(d => d.supplierId === "s-1").map((deal) => {
+          deals.filter(d => d.supplierId === activeSupplier.id).map((deal) => {
             const restaurant = restaurants.find(r => r.id === deal.restaurantId);
             const item = restaurant?.menu.find(m => m.id === deal.menuItemId);
             const unreadCount = messages.filter(m => m.dealId === deal.id && m.senderRole === "restaurant" && !m.isRead).length;
@@ -397,24 +398,30 @@ export function SupplierDashboard() {
 
         <div className="flex border-b border-white/10 bg-[--color-gta-panel]">
           <button 
-            className={`flex-1 py-4 text-lg font-bold game-text uppercase border-r border-white/10 last:border-r-0 transition-colors ${activeTab === 'market' ? 'bg-[#37B34A] text-white' : 'text-gray-400 hover:bg-white/10'}`}
+            className={`flex-1 py-3 text-sm font-bold game-text uppercase border-r border-white/10 transition-colors ${activeTab === 'market' ? 'bg-[#37B34A] text-white' : 'text-gray-400 hover:bg-white/10'}`}
             onClick={() => setActiveTab('market')}
           >
             Market
           </button>
           <button 
-            className={`flex-1 py-4 text-lg font-bold game-text uppercase border-r border-white/10 last:border-r-0 transition-colors relative ${activeTab === 'orders' ? 'bg-[#37B34A] text-white' : 'text-gray-400 hover:bg-white/10'}`}
+            className={`flex-1 py-3 text-sm font-bold game-text uppercase border-r border-white/10 transition-colors relative ${activeTab === 'orders' ? 'bg-[#37B34A] text-white' : 'text-gray-400 hover:bg-white/10'}`}
             onClick={() => setActiveTab('orders')}
           >
             Orders
             {totalUnreadOrders > 0 && (
-              <span className="absolute top-2 right-2 bg-red-600 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full shadow-[0_0_10px_rgba(220,38,38,0.8)]">
+              <span className="absolute top-1 right-1 bg-red-600 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full shadow-[0_0_10px_rgba(220,38,38,0.8)]">
                 {totalUnreadOrders}
               </span>
             )}
           </button>
           <button 
-            className={`flex-1 py-4 text-lg font-bold game-text uppercase transition-colors ${activeTab === 'profile' ? 'bg-[#37B34A] text-white' : 'text-gray-400 hover:bg-white/10'}`}
+            className={`flex-1 py-3 text-sm font-bold game-text uppercase border-r border-white/10 transition-colors ${activeTab === 'inventory' ? 'bg-[#37B34A] text-white' : 'text-gray-400 hover:bg-white/10'}`}
+            onClick={() => setActiveTab('inventory')}
+          >
+            Inventory
+          </button>
+          <button 
+            className={`flex-1 py-3 text-sm font-bold game-text uppercase transition-colors ${activeTab === 'profile' ? 'bg-[#37B34A] text-white' : 'text-gray-400 hover:bg-white/10'}`}
             onClick={() => setActiveTab('profile')}
           >
             Profile
@@ -425,6 +432,7 @@ export function SupplierDashboard() {
           {activeTab === "market" && !selectedRestaurant && renderMarketList()}
           {activeTab === "market" && selectedRestaurant && renderMarketDetail()}
           {activeTab === "orders" && renderOrders()}
+          {activeTab === "inventory" && <SupplierInventory />}
           {activeTab === "profile" && renderProfile()}
         </div>
       </div>

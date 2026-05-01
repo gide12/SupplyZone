@@ -9,26 +9,20 @@ interface ChatModalProps {
   currentUserRole: "restaurant" | "supplier";
 }
 
-const MOCK_SUPPLIERS = [
-  { id: "s-1", name: "FreshLogistics Inc.", distance: "1.2 miles" },
-  { id: "s-2", name: "Valley Farms", distance: "2.4 miles" },
-  { id: "s-3", name: "Metro Meat & Veg", distance: "0.8 miles" },
-];
-
 export function ChatModal({ deal, onClose, currentUserRole }: ChatModalProps) {
-  const { messages, sendMessage, restaurants, activeSupplier, markMessagesAsRead } = useAppContext();
+  const { messages, sendMessage, restaurants, activeSupplier, markMessagesAsRead, suppliers } = useAppContext();
   const [inputText, setInputText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const dealMessages = messages.filter(m => m.dealId === deal.id).sort((a, b) => a.timestamp - b.timestamp);
 
   const restaurant = restaurants.find(r => r.id === deal.restaurantId);
-  // Supplier can be from our activeSupplier state (s-1) or mock if it's the restaurant looking at others
+  // Supplier can be from our activeSupplier state (s-1) or fetch from suppliers array if it's the restaurant looking at others
   let supplierName = "Supplier";
   if (deal.supplierId === activeSupplier.id) {
     supplierName = activeSupplier.name;
   } else {
-    supplierName = MOCK_SUPPLIERS.find(s => s.id === deal.supplierId)?.name || "Supplier";
+    supplierName = suppliers.find(s => s.id === deal.supplierId)?.name || "Supplier";
   }
 
   const restaurantName = restaurant?.name || "Restaurant";

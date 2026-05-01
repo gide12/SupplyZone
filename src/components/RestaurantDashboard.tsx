@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { Store, Map, Settings, Search, User } from "lucide-react";
+import { Store, Map, Settings, Search, User, Package } from "lucide-react";
 import { MenuManager } from "./MenuManager";
+import { RestaurantInventory } from "./RestaurantInventory";
 import { useAppContext } from "../store/AppContext";
 
 export function RestaurantDashboard() {
   const { restaurants, activeRestaurantId, updateRestaurantProfile } = useAppContext();
-  const [activeTab, setActiveTab] = useState<"menu" | "profile">("menu");
+  const [activeTab, setActiveTab] = useState<"menu" | "inventory" | "profile">("menu");
   
   const restaurant = restaurants.find(r => r.id === activeRestaurantId);
 
@@ -57,6 +58,12 @@ export function RestaurantDashboard() {
               <span className="game-text">Menu Manager</span>
             </button>
             <button 
+              onClick={() => setActiveTab("inventory")}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded font-bold transition-colors game-btn ${activeTab === 'inventory' ? 'game-btn-blue text-lg' : 'bg-transparent text-white text-lg border-white/20 hover:bg-white/10'}`}>
+              <Package className="w-5 h-5" />
+              <span className="game-text">Inventory & AI</span>
+            </button>
+            <button 
               onClick={() => setActiveTab("profile")}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded font-bold transition-colors game-btn ${activeTab === 'profile' ? 'game-btn-blue text-lg' : 'bg-transparent text-white text-lg border-white/20 hover:bg-white/10'}`}>
               <User className="w-5 h-5" />
@@ -77,13 +84,15 @@ export function RestaurantDashboard() {
         <div className="flex-1 space-y-6">
           <header className="game-panel p-4 pb-2 mb-4 gta-header">
             <h1 className="text-3xl game-title">Welcome back, {restaurant.name}</h1>
-            <p className="mt-2 text-gray-300 text-lg game-text">Manage your {activeTab === "menu" ? "menu" : "profile"} and connect with suppliers below.</p>
+            <p className="mt-2 text-gray-300 text-lg game-text">Manage your {activeTab === "menu" ? "menu" : activeTab === "inventory" ? "inventory" : "profile"} and connect with suppliers below.</p>
           </header>
 
           {activeTab === "menu" ? (
             <div className="game-panel p-4">
               <MenuManager />
             </div>
+          ) : activeTab === "inventory" ? (
+            <RestaurantInventory />
           ) : (
             <div className="game-panel text-left p-6 max-w-2xl border-t-4 border-[#37B34A]">
               <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2 game-text border-b border-white/20 pb-2">

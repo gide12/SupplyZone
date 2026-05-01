@@ -9,12 +9,30 @@ export interface MenuItem {
   quantity?: string;
 }
 
+export interface RestaurantInventoryItem {
+  id: string;
+  name: string;
+  quantity: number;
+  spaceUsed: number;
+  expirationDate: string;
+}
+
 export interface Restaurant {
   id: string;
   name: string;
   lat: number;
   lng: number;
   menu: MenuItem[];
+  inventory?: RestaurantInventoryItem[];
+}
+
+export interface SupplierInventoryItem {
+  id: string;
+  name: string;
+  quantity: number;
+  basePrice: number;
+  spaceUsed?: number;
+  expirationDate?: string;
 }
 
 export interface SupplierProfile {
@@ -22,6 +40,7 @@ export interface SupplierProfile {
   name: string;
   lat: number;
   lng: number;
+  inventory: SupplierInventoryItem[];
 }
 
 export interface ChatMessage {

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { X, Sparkles, Loader2 } from "lucide-react";
 import { GoogleGenAI, Type } from "@google/genai";
-import { MenuItem } from "../types";
+import { MenuItem, RestaurantInventoryItem } from "../types";
 
 // Initialize Gemini (Ensure process.env.GEMINI_API_KEY is available in the environment)
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -10,15 +10,18 @@ interface PredictSupplyModalProps {
   isOpen: boolean;
   onClose: () => void;
   menuItems: MenuItem[];
+  inventory: RestaurantInventoryItem[];
 }
 
 interface PredictionResult {
   itemName: string;
   predictedQuantity: string;
+  capacityPercentage: number;
+  expiredAlert: string;
   reason: string;
 }
 
-export function PredictSupplyModal({ isOpen, onClose, menuItems }: PredictSupplyModalProps) {
+export function PredictSupplyModal({ isOpen, onClose, menuItems, inventory }: PredictSupplyModalProps) {
   const [customers, setCustomers] = useState<number>(100);
   const [loading, setLoading] = useState(false);
   const [predictions, setPredictions] = useState<PredictionResult[] | null>(null);
@@ -38,10 +41,20 @@ export function PredictSupplyModal({ isOpen, onClose, menuItems }: PredictSupply
       (item) => `- ${item.name} (Current stock/qty notation: ${item.quantity || "unknown"})`
     ).join("\n");
 
+    const inventoryContext = inventory.map(
+      (inv) => `- ${inv.name}: ${inv.quantity} units, Space Used: ${inv.spaceUsed} sqft, Expires: ${inv.expirationDate}`
+    ).join("\n");
+
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: `I run a restaurant and expect ${customers} customers this month. Given my menu items, predict the supply quantity I need to order for each item to serve them, and briefly explain why.\n\nMenu Items:\n${itemsContext}`,
+        model: "gemini-3.1-pro-preview",
+        contents: `I run a restaurant and expect ${customers} customers this month. Given my menu items and current inventory, predict the supply quantity I need to order for each item to serve them. Also include capacity usage percentage for each item ordered (relative to space used) and alert regarding expiring/expired items so I never run out of stock or have out of expired ingredients.
+
+Menu Items:
+${itemsContext}
+
+Current Inventory:
+${inventoryContext || "None"}`,
         config: {
           responseMimeType: "application/json",
           responseSchema: {
@@ -51,18 +64,26 @@ export function PredictSupplyModal({ isOpen, onClose, menuItems }: PredictSupply
               properties: {
                 itemName: {
                   type: Type.STRING,
-                  description: "The name of the menu item",
+                  description: "The name of the menu item or ingredient",
                 },
                 predictedQuantity: {
                   type: Type.STRING,
                   description: "The predicted quantity to order (e.g., '150 lbs', '20 packs')",
+                },
+                capacityPercentage: {
+                  type: Type.NUMBER,
+                  description: "Percentage of inventory capacity this order will take up (0-100)"
+                },
+                expiredAlert: {
+                  type: Type.STRING,
+                  description: "Alert text regarding expiration, e.g. 'Expires in 3 days' or 'OK'"
                 },
                 reason: {
                   type: Type.STRING,
                   description: "A short reason for the estimate",
                 },
               },
-              required: ["itemName", "predictedQuantity", "reason"],
+              required: ["itemName", "predictedQuantity", "capacityPercentage", "expiredAlert", "reason"],
             },
           },
         },
@@ -142,10 +163,23 @@ export function PredictSupplyModal({ isOpen, onClose, menuItems }: PredictSupply
                 {predictions.map((pred, idx) => (
                   <div key={idx} className="bg-black/40 border border-white/20 text-left p-5 shadow-none">
                     <div className="flex justify-between items-start mb-3 border-b border-white/10 pb-2">
-                      <h4 className="font-bold text-white text-2xl game-text">{pred.itemName}</h4>
+                      <div className="flex gap-2 items-center">
+                         <h4 className="font-bold text-white text-2xl game-text">{pred.itemName}</h4>
+                         {pred.expiredAlert && pred.expiredAlert !== 'OK' && (
+                           <span className="bg-red-500/20 text-red-500 text-xs px-2 py-1 font-bold border border-red-500/50">
+                             {pred.expiredAlert}
+                           </span>
+                         )}
+                      </div>
                       <span className="px-3 py-1 bg-transparent border border-[#37B34A] text-[#37B34A] text-xl font-bold shadow-none game-text">
                         {pred.predictedQuantity}
                       </span>
+                    </div>
+                    <div className="flex items-center justify-between mt-2 mb-3 bg-black/60 p-2 border border-white/10">
+                       <span className="text-gray-400 font-bold uppercase text-xs game-text">Capacity Utilization</span>
+                       <span className={`font-bold game-text ${pred.capacityPercentage > 80 ? 'text-red-500' : 'text-[#37B34A]'}`}>
+                          {pred.capacityPercentage}%
+                       </span>
                     </div>
                     <p className="text-lg text-gray-300 font-bold leading-relaxed game-text">
                       {pred.reason}

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { MenuItem, Restaurant, Deal, Category, SupplierProfile, ChatMessage } from "../types";
+import { MenuItem, Restaurant, Deal, Category, SupplierProfile, ChatMessage, SupplierInventoryItem, RestaurantInventoryItem } from "../types";
 import { v4 as uuidv4 } from "uuid";
 
 interface AppContextType {
@@ -13,9 +13,14 @@ interface AppContextType {
   updateMenuItem: (restaurantId: string, itemId: string, item: Omit<MenuItem, "id">) => void;
   deleteMenuItem: (restaurantId: string, itemId: string) => void;
   updateRestaurantProfile: (id: string, name: string, lat: number, lng: number) => void;
+  updateRestaurantInventory: (id: string, inventory: RestaurantInventoryItem[]) => void;
   // Supplier actions
+  suppliers: SupplierProfile[];
   activeSupplier: SupplierProfile;
-  updateSupplierProfile: (name: string, lat: number, lng: number) => void;
+  updateSupplierProfile: (id: string, name: string, lat: number, lng: number) => void;
+  updateSupplierInventory: (id: string, inventory: SupplierInventoryItem[]) => void;
+  // Dynamic Pricing
+  calculateDynamicPrice: (itemName: string) => { estimatedPrice: number; marketSupply: number; marketDemand: number };
   // Deal actions
   proposeDeal: (deal: Omit<Deal, "id" | "status">) => void;
   updateDealStatus: (dealId: string, status: "Pending" | "Accepted" | "Rejected" | "On Delivery" | "Delivered") => void;
@@ -50,6 +55,24 @@ const defaultRestaurants: Restaurant[] = [
   }
 ];
 
+const defaultSuppliers: SupplierProfile[] = [
+  { id: "s-1", name: "FreshLogistics Inc.", lat: 51.52, lng: -0.11, inventory: [
+      { id: "i-1", name: "Avocado Toast", quantity: 50, basePrice: 2.5, spaceUsed: 5.0, expirationDate: "2026-06-01" },
+      { id: "i-2", name: "Classic Cheeseburger", quantity: 100, basePrice: 3.0, spaceUsed: 10.0, expirationDate: "2026-05-15" },
+    ] 
+  },
+  { id: "s-2", name: "Valley Farms", lat: 51.49, lng: -0.08, inventory: [
+      { id: "i-3", name: "Truffle Pasta", quantity: 30, basePrice: 8.0, spaceUsed: 2.0, expirationDate: "2026-05-10" },
+      { id: "i-4", name: "Avocado Toast", quantity: 10, basePrice: 3.0, spaceUsed: 1.0, expirationDate: "2026-06-01" },
+    ]
+  },
+  { id: "s-3", name: "Metro Meat & Veg", lat: 51.515, lng: -0.105, inventory: [
+      { id: "i-5", name: "Classic Cheeseburger", quantity: 200, basePrice: 2.8, spaceUsed: 20.0, expirationDate: "2026-05-20" },
+      { id: "i-6", name: "Sweet Potato Fries", quantity: 150, basePrice: 1.5, spaceUsed: 15.0, expirationDate: "2026-07-01" },
+    ]
+  },
+];
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [restaurants, setRestaurants] = useState<Restaurant[]>(() => {
     const saved = localStorage.getItem("supplymap_restaurants");
@@ -68,6 +91,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return defaultRestaurants;
   });
 
+  const [suppliers, setSuppliers] = useState<SupplierProfile[]>(() => {
+    const saved = localStorage.getItem("supplymap_suppliers");
+    return saved ? JSON.parse(saved) : defaultSuppliers;
+  });
+
   const [deals, setDeals] = useState<Deal[]>(() => {
     const saved = localStorage.getItem("supplymap_deals");
     return saved ? JSON.parse(saved) : [];
@@ -75,7 +103,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [activeSupplier, setActiveSupplier] = useState<SupplierProfile>(() => {
     const saved = localStorage.getItem("supplymap_supplier");
-    return saved ? JSON.parse(saved) : { id: "s-1", name: "FreshLogistics Inc.", lat: 51.52, lng: -0.11 };
+    // Default to the first supplier in the defaultSuppliers list if no saved profile is found.
+    // Ensure that it has an inventory property.
+    return saved ? JSON.parse(saved) : defaultSuppliers[0];
   });
 
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
@@ -90,6 +120,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     localStorage.setItem("supplymap_restaurants", JSON.stringify(restaurants));
   }, [restaurants]);
+
+  useEffect(() => {
+    localStorage.setItem("supplymap_suppliers", JSON.stringify(suppliers));
+  }, [suppliers]);
 
   useEffect(() => {
     localStorage.setItem("supplymap_deals", JSON.stringify(deals));
@@ -133,8 +167,66 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ));
   };
 
-  const updateSupplierProfile = (name: string, lat: number, lng: number) => {
-    setActiveSupplier(prev => ({ ...prev, name, lat, lng }));
+  const updateRestaurantInventory = (id: string, inventory: RestaurantInventoryItem[]) => {
+    setRestaurants(prev => prev.map(r => 
+      r.id === id ? { ...r, inventory } : r
+    ));
+  };
+
+  const updateSupplierProfile = (id: string, name: string, lat: number, lng: number) => {
+    setSuppliers(prev => prev.map(s => s.id === id ? { ...s, name, lat, lng } : s));
+    if (activeSupplier.id === id) {
+      setActiveSupplier(prev => ({ ...prev, name, lat, lng }));
+    }
+  };
+
+  const updateSupplierInventory = (id: string, inventory: SupplierInventoryItem[]) => {
+    setSuppliers(prev => prev.map(s => s.id === id ? { ...s, inventory } : s));
+    if (activeSupplier.id === id) {
+      setActiveSupplier(prev => ({ ...prev, inventory }));
+    }
+  };
+
+  const calculateDynamicPrice = (itemName: string) => {
+    const marketDemand = restaurants.reduce((acc, r) => {
+      const hasItem = r.menu.some(m => m.name.toLowerCase() === itemName.toLowerCase());
+      return acc + (hasItem ? 100 : 0);
+    }, 0);
+
+    let marketSupply = 0;
+    let basePriceSum = 0;
+    let basePriceCount = 0;
+
+    suppliers.forEach(s => {
+      s.inventory?.forEach(i => {
+        if (i.name.toLowerCase() === itemName.toLowerCase()) {
+          marketSupply += i.quantity;
+          basePriceSum += i.basePrice;
+          basePriceCount++;
+        }
+      });
+    });
+
+    const averageBasePrice = basePriceCount > 0 ? (basePriceSum / basePriceCount) : 5.0;
+
+    let estimatedPrice = averageBasePrice;
+    if (marketDemand > 0 && marketSupply > 0) {
+       const demandSupplyRatio = marketDemand / marketSupply;
+       const multiplier = Math.min(2.5, Math.max(0.5, demandSupplyRatio));
+       estimatedPrice = averageBasePrice * multiplier;
+    } else if (marketDemand > 0 && marketSupply === 0) {
+       // High demand, no supply
+       estimatedPrice = averageBasePrice * 2.0;
+    } else if (marketDemand === 0 && marketSupply > 0) {
+       // No demand, high supply
+       estimatedPrice = averageBasePrice * 0.5;
+    }
+
+    return {
+      estimatedPrice: Number(estimatedPrice.toFixed(2)),
+      marketSupply,
+      marketDemand
+    };
   };
 
   const proposeDeal = (deal: Omit<Deal, "id" | "status">) => {
@@ -184,8 +276,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       updateMenuItem,
       deleteMenuItem,
       updateRestaurantProfile,
+      updateRestaurantInventory,
+      suppliers,
       activeSupplier,
       updateSupplierProfile,
+      updateSupplierInventory,
+      calculateDynamicPrice,
       proposeDeal,
       updateDealStatus,
       messages,

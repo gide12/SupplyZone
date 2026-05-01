@@ -4,18 +4,15 @@ import { Plus, Edit2, Trash2, X, Check, Sparkles, MapPin, Search, MessageCircle 
 import { useAppContext } from "../store/AppContext";
 import { PredictSupplyModal } from "./PredictSupplyModal";
 import { ChatModal } from "./ChatModal";
-
-const MOCK_SUPPLIERS = [
-  { id: "s-1", name: "FreshLogistics Inc.", distance: "1.2 miles" },
-  { id: "s-2", name: "Valley Farms", distance: "2.4 miles" },
-  { id: "s-3", name: "Metro Meat & Veg", distance: "0.8 miles" },
-];
+import { AIMarginPredictor } from "./AIMarginPredictor";
+import { Calculator } from "lucide-react";
 
 export function MenuManager() {
-  const { restaurants, activeRestaurantId, addMenuItem, updateMenuItem, deleteMenuItem, deals, proposeDeal, updateDealStatus, messages } = useAppContext();
+  const { restaurants, activeRestaurantId, addMenuItem, updateMenuItem, deleteMenuItem, deals, proposeDeal, updateDealStatus, messages, suppliers, calculateDynamicPrice } = useAppContext();
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [isPredictModalOpen, setIsPredictModalOpen] = useState(false);
+  const [isMarginPredictorOpen, setIsMarginPredictorOpen] = useState(false);
   const [findingSuppliersFor, setFindingSuppliersFor] = useState<string | null>(null);
   const [activeChatDeal, setActiveChatDeal] = useState<any | null>(null);
 
@@ -67,13 +64,21 @@ export function MenuManager() {
     
     // Simulate finding and proposing deals after 1.5 seconds
     setTimeout(() => {
-      // Pick 2 random mock suppliers to propose deals
-      const selectedSuppliers = [...MOCK_SUPPLIERS].sort(() => 0.5 - Math.random()).slice(0, 2);
+      const dynamicInfo = calculateDynamicPrice(item.name);
       
-      selectedSuppliers.forEach(supplier => {
-        // give a slightly different price (-10% to +10%)
+      // Filter suppliers that have the matching item, else pick random
+      let matchingSuppliers = suppliers.filter(s => s.inventory?.some(i => i.name.toLowerCase() === item.name.toLowerCase()));
+      
+      if (matchingSuppliers.length === 0) {
+          matchingSuppliers = [...suppliers].sort(() => 0.5 - Math.random()).slice(0, 2);
+      } else {
+          matchingSuppliers = matchingSuppliers.slice(0, 3); // Max 3 proposals
+      }
+      
+      matchingSuppliers.forEach(supplier => {
+        // give a slightly different price (-10% to +10%) based on dynamic price
         const randomModifier = (Math.random() * 0.2) - 0.1; 
-        const proposedPrice = item.price * (1 + randomModifier);
+        const proposedPrice = dynamicInfo.estimatedPrice * (1 + randomModifier);
         
         proposeDeal({
           restaurantId: restaurant.id,
@@ -102,6 +107,13 @@ export function MenuManager() {
         </div>
         {!isAdding && (
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsMarginPredictorOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-[#1A92D4] text-white border border-[#1A92D4] hover:bg-[#1A92D4]/80 transition-all font-bold text-sm"
+            >
+              <Calculator className="w-5 h-5" />
+              <span className="hidden sm:inline game-text text-lg mt-1">AI Margin Tool</span>
+            </button>
             <button
               onClick={() => setIsPredictModalOpen(true)}
               className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white border border-purple-800 hover:bg-purple-500 transition-all font-bold text-sm"
@@ -283,6 +295,31 @@ export function MenuManager() {
                       </div>
                       <p className="mt-3 text-lg text-gray-300 font-bold leading-snug">{item.description}</p>
                       
+                      {/* Dynamic Pricing Estimate */}
+                      {(() => {
+                        const dynamicInfo = calculateDynamicPrice(item.name);
+                        return (
+                          <div className="mt-3 inline-block bg-black/60 border border-t-[--color-gta-blue] p-2 bg-[--color-gta-panel] shadow-none">
+                             <div className="flex items-center space-x-4">
+                                <div className="game-text">
+                                  <span className="text-gray-400 text-xs font-bold uppercase tracking-wider block">Estimated Bid Cost</span>
+                                  <span className="text-[#1A92D4] text-xl font-bold">${dynamicInfo.estimatedPrice.toFixed(2)}</span>
+                                </div>
+                                <div className="flex gap-2">
+                                  <div className="text-center px-2 border-r border-white/20">
+                                    <span className="block text-[10px] text-gray-500 uppercase tracking-widest game-text font-bold">Demand</span>
+                                    <span className="block text-white text-sm game-text">{dynamicInfo.marketDemand}</span>
+                                  </div>
+                                  <div className="text-center px-2">
+                                    <span className="block text-[10px] text-gray-500 uppercase tracking-widest game-text font-bold">Supply</span>
+                                    <span className="block text-white text-sm game-text">{dynamicInfo.marketSupply}</span>
+                                  </div>
+                                </div>
+                             </div>
+                          </div>
+                        );
+                      })()}
+                      
                       {/* Deals & Negotiation UI */}
                       <div className="mt-4 pt-4 border-t border-white/20">
                         {itemDeals.length > 0 ? (
@@ -292,7 +329,7 @@ export function MenuManager() {
                             </h5>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               {itemDeals.map(deal => {
-                                const supplierName = MOCK_SUPPLIERS.find(s => s.id === deal.supplierId)?.name || "Unknown Supplier";
+                                const supplierName = suppliers.find(s => s.id === deal.supplierId)?.name || "Unknown Supplier";
                                 const unreadCount = messages.filter(m => m.dealId === deal.id && m.senderRole === "supplier" && !m.isRead).length;
                                 return (
                                   <div key={deal.id} className="p-3 bg-black/40 border border-white/10 space-y-2 relative shadow-none">
@@ -392,6 +429,12 @@ export function MenuManager() {
         isOpen={isPredictModalOpen} 
         onClose={() => setIsPredictModalOpen(false)} 
         menuItems={restaurant.menu} 
+        inventory={restaurant.inventory || []}
+      />
+
+      <AIMarginPredictor 
+        isOpen={isMarginPredictorOpen} 
+        onClose={() => setIsMarginPredictorOpen(false)} 
       />
 
       {activeChatDeal && (
