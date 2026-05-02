@@ -1,14 +1,58 @@
 import React, { useState } from "react";
-import { Store, Map, Settings, Search, User, Package } from "lucide-react";
+import { Store, Map, Settings, Search, User, Package, Bell, Info } from "lucide-react";
 import { MenuManager } from "./MenuManager";
 import { RestaurantInventory } from "./RestaurantInventory";
 import { useAppContext } from "../store/AppContext";
 
 export function RestaurantDashboard() {
-  const { restaurants, activeRestaurantId, updateRestaurantProfile } = useAppContext();
+  const { restaurants, activeRestaurantId, updateRestaurantProfile, suppliers } = useAppContext();
   const [activeTab, setActiveTab] = useState<"menu" | "inventory" | "profile">("menu");
+  const [showNotifications, setShowNotifications] = useState(false);
   
   const restaurant = restaurants.find(r => r.id === activeRestaurantId);
+
+  // Calculate notifications
+  const getNotifications = () => {
+    if (!restaurant) return [];
+    
+    // items restaurant buys (from inventory or menu)
+    const trackedItems = new Set([
+      ...(restaurant.inventory || []).map(i => i.name.toLowerCase()),
+      ...(restaurant.menu || []).map(m => m.name.toLowerCase())
+    ]);
+
+    const allSupplierItems = suppliers.flatMap(s => (s.inventory || []).map(i => ({ supplier: s.name, item: i.name, price: i.basePrice })));
+    
+    const itemGroups = allSupplierItems.reduce((acc, curr) => {
+      const key = curr.item.toLowerCase();
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(curr);
+      return acc;
+    }, {} as Record<string, {supplier: string, item: string, price: number}[]>);
+
+    const alerts: { id: string; message: string; subtext: string; isAlert: boolean }[] = [];
+
+    Object.entries(itemGroups).forEach(([key, items]) => {
+      if (trackedItems.has(key) && items.length > 1) {
+        const avgPrice = items.reduce((sum, i) => sum + i.price, 0) / items.length;
+        const lowestSupplier = [...items].sort((a,b) => a.price - b.price)[0];
+        
+        const percDrop = ((avgPrice - lowestSupplier.price) / avgPrice) * 100;
+        if (percDrop > 5) { // Notify if more than 5% lower than average
+          alerts.push({
+            id: `deal-${key}`,
+            message: `PRICE DROP: ${lowestSupplier.item} is ${Math.round(percDrop)}% below market avg!`,
+            subtext: `From ${lowestSupplier.supplier} at $${lowestSupplier.price.toFixed(2)}.`,
+            isAlert: true
+          });
+        }
+      }
+    });
+
+    return alerts;
+  };
+
+  const notifications = getNotifications();
 
   // Profile Form State
   const [profileName, setProfileName] = useState(restaurant?.name || "");
@@ -35,8 +79,41 @@ export function RestaurantDashboard() {
           <span className="text-2xl game-title tracking-tight">SupplyMap</span>
           <span className="ml-2 px-2 py-0.5 bg-[#37B34A] text-white border border-[#37B34A] text-xs rounded uppercase tracking-wider game-text shadow-none">Restaurant Portal</span>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="text-right hidden sm:block">
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <button 
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="w-10 h-10 bg-black/40 hover:bg-black/60 rounded flex items-center justify-center border border-white/20 transition-colors relative"
+            >
+              <Bell className="w-5 h-5 text-gray-300" />
+              {notifications.length > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                  {notifications.length}
+                </span>
+              )}
+            </button>
+            
+            {/* Notifications Dropdown */}
+            {showNotifications && (
+              <div className="absolute right-0 mt-2 w-80 bg-black border border-white/20 shadow-2xl p-4 z-50">
+                <h3 className="text-white font-bold text-lg game-text uppercase border-b border-white/20 pb-2 mb-3">Market Alerts</h3>
+                {notifications.length === 0 ? (
+                  <p className="text-gray-400 text-sm game-text italic text-center py-4">No new alerts at this time.</p>
+                ) : (
+                  <div className="space-y-3 max-h-64 overflow-y-auto">
+                    {notifications.map(note => (
+                      <div key={note.id} className="bg-[#1A92D4]/10 border border-[#1A92D4] p-3 text-left">
+                        <div className="text-white font-bold game-text text-sm leading-snug">{note.message}</div>
+                        <div className="text-gray-400 text-xs game-text mt-1">{note.subtext}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="text-right hidden sm:block border-l border-white/20 pl-4">
             <p className="text-xs text-gray-400 uppercase game-text">Logged in as</p>
             <p className="text-lg text-white game-text">{restaurant.name}</p>
           </div>
