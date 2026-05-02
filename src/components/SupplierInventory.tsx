@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Package, Trash2, Plus, BrainCircuit, Loader2 } from "lucide-react";
+import React, { useState, useRef } from "react";
+import { Package, Trash2, Plus, BrainCircuit, Loader2, UploadCloud, Camera } from "lucide-react";
 import { useAppContext } from "../store/AppContext";
 import { GoogleGenAI, Type } from "@google/genai";
 
@@ -36,6 +36,8 @@ export function SupplierInventory() {
     }[];
   } | null>(null);
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName || !newQuantity || !newBasePrice || !newSpace || !newExp) return;
@@ -59,6 +61,75 @@ export function SupplierInventory() {
 
   const handleRemove = (id: string) => {
     updateSupplierInventory(activeSupplier.id, inventory.filter(i => i.id !== id));
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setLoading(true);
+    try {
+      let contents: any[] = [];
+      const prompt = `Extract inventory items from this document (image of receipt/invoice or CSV text). Provide a JSON array. For each item: name, quantity (number), basePrice (number, if not provided guess e.g. 5.0), spaceUsed (number in sqft, if not provided guess e.g. 1.0 or 0.5), and expirationDate (YYYY-MM-DD, if not provided guess e.g. 1-2 weeks from now).`;
+
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        const base64Promise = new Promise<string>((resolve) => {
+          reader.onload = () => resolve((reader.result as string).split(',')[1]);
+        });
+        reader.readAsDataURL(file);
+        const base64 = await base64Promise;
+        contents = [
+          prompt,
+          { inlineData: { data: base64, mimeType: file.type } }
+        ];
+      } else {
+        const text = await file.text();
+        contents = [prompt + "\n\nFile Content:\n" + text];
+      }
+
+      const response = await ai.models.generateContent({
+        model: "gemini-3.1-pro-preview",
+        contents,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                name: { type: Type.STRING },
+                quantity: { type: Type.NUMBER },
+                basePrice: { type: Type.NUMBER },
+                spaceUsed: { type: Type.NUMBER },
+                expirationDate: { type: Type.STRING, description: "YYYY-MM-DD" },
+              },
+              required: ["name", "quantity", "basePrice", "spaceUsed", "expirationDate"]
+            }
+          }
+        }
+      });
+
+      if (response.text) {
+        const parsed = JSON.parse(response.text);
+        const newItems = parsed.map((item: any) => ({
+          id: `sinv-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          name: item.name,
+          quantity: item.quantity,
+          basePrice: item.basePrice,
+          spaceUsed: item.spaceUsed,
+          expirationDate: item.expirationDate
+        }));
+        
+        updateSupplierInventory(activeSupplier.id, [...inventory, ...newItems]);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to analyze uploaded file.");
+    } finally {
+      setLoading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
   const handleAICalculation = async () => {
@@ -166,6 +237,43 @@ export function SupplierInventory() {
               </div>
               <button type="submit" className="w-full py-2 game-btn game-btn-green text-white font-bold uppercase game-text mt-2 flex justify-center items-center gap-2"><Plus className="w-5 h-5"/> Add To Inventory</button>
             </form>
+
+            <div className="relative mt-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/20"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-black/80 text-gray-400 font-bold game-text uppercase tracking-widest text-xs">OR AI AUTO-IMPORT</span>
+              </div>
+            </div>
+
+            <div className="mt-4 flex gap-2">
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileUpload} 
+                accept="image/*,.csv,text/plain" 
+                className="hidden" 
+              />
+              <button 
+                type="button" 
+                onClick={() => fileInputRef.current?.click()}
+                disabled={loading}
+                className="flex-1 py-2 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-bold uppercase game-text flex flex-col items-center justify-center gap-1 transition-colors border border-purple-400"
+              >
+                <Camera className="w-5 h-5" />
+                <span className="text-[10px]">Photo/Receipt</span>
+              </button>
+              <button 
+                type="button" 
+                onClick={() => fileInputRef.current?.click()}
+                disabled={loading}
+                className="flex-1 py-2 bg-[#1A92D4] hover:bg-[#1A92D4]/80 disabled:opacity-50 text-white font-bold uppercase game-text flex flex-col items-center justify-center gap-1 transition-colors border border-[#1A92D4]"
+              >
+                <UploadCloud className="w-5 h-5" />
+                <span className="text-[10px]">Upload CSV/Excel</span>
+              </button>
+            </div>
           </div>
 
           <div className="mb-6">
