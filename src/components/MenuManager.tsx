@@ -8,13 +8,15 @@ import { AIMarginPredictor } from "./AIMarginPredictor";
 import { Calculator } from "lucide-react";
 
 export function MenuManager() {
-  const { restaurants, activeRestaurantId, addMenuItem, updateMenuItem, deleteMenuItem, deals, proposeDeal, updateDealStatus, messages, suppliers, calculateDynamicPrice } = useAppContext();
+  const { restaurants, activeRestaurantId, addMenuItem, updateMenuItem, deleteMenuItem, deals, proposeDeal, updateDealStatus, updateDeal, messages, suppliers, calculateDynamicPrice } = useAppContext();
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [isPredictModalOpen, setIsPredictModalOpen] = useState(false);
   const [isMarginPredictorOpen, setIsMarginPredictorOpen] = useState(false);
   const [findingSuppliersFor, setFindingSuppliersFor] = useState<string | null>(null);
   const [activeChatDeal, setActiveChatDeal] = useState<any | null>(null);
+  const [reviewingDeal, setReviewingDeal] = useState<any | null>(null);
+  const [reviewForm, setReviewForm] = useState({ rating: 5, text: "" });
 
   
   const restaurant = restaurants.find(r => r.id === activeRestaurantId);
@@ -353,12 +355,18 @@ export function MenuManager() {
                                     </div>
                                     <div className="flex items-center justify-between mt-3">
                                       {deal.status === 'Pending' ? (
-                                          <div className="flex gap-2 w-full">
+                                          <div className="flex gap-2 w-full flex-wrap">
                                             <button 
                                               onClick={() => updateDealStatus(deal.id, 'Accepted')} 
                                               className="flex-1 py-2 game-btn game-btn-green text-sm"
                                             >
                                               <span className="game-text text-lg">Accept</span>
+                                            </button>
+                                            <button 
+                                              onClick={() => updateDealStatus(deal.id, 'Sample Requested')} 
+                                              className="flex-1 py-2 game-btn game-btn-blue text-sm"
+                                            >
+                                              <span className="game-text text-lg">Sample</span>
                                             </button>
                                             <button 
                                               onClick={() => updateDealStatus(deal.id, 'Rejected')} 
@@ -367,10 +375,27 @@ export function MenuManager() {
                                               <span className="game-text text-lg">Reject</span>
                                             </button>
                                           </div>
+                                        ) : deal.status === 'Sample Requested' ? (
+                                          <div className="flex w-full items-center gap-2">
+                                            <span className="text-lg font-bold px-2 py-1 border flex-1 text-center game-text shadow-sm bg-gray-100 text-gray-500 border-gray-300">
+                                              Waiting for Sample
+                                            </span>
+                                          </div>
+                                        ) : deal.status === 'Sample Arrived' ? (
+                                          <div className="flex w-full items-center gap-2">
+                                            <button 
+                                              onClick={() => { setReviewingDeal(deal); setReviewForm({ rating: 5, text: "" }); }} 
+                                              className="flex-1 py-2 game-btn bg-purple-600 text-white text-sm"
+                                            >
+                                              <span className="game-text text-lg">Review Sample</span>
+                                            </button>
+                                          </div>
                                         ) : (
                                           <div className="flex w-full items-center gap-2">
                                             <span className={`text-lg font-bold px-2 py-1 border flex-1 text-center game-text shadow-sm ${
-                                              deal.status === 'Accepted' ? 'bg-[#00AA13] text-white border-[#00AA13]' : 
+                                              deal.status === 'Accepted' ? 'bg-[#00AA13] text-white border-[#00AA13]' :
+deal.status === 'Sample Requested' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+deal.status === 'Sample Arrived' ? 'bg-purple-100 text-purple-800 border-purple-200' : 
                                               deal.status === 'Rejected' ? 'bg-[#EE2737] text-white border-[--color-gta-red]' : 
                                               deal.status === 'On Delivery' ? 'bg-[#F1B51A] text-black border-[#F1B51A]' : 
                                               deal.status === 'Delivered' ? 'bg-purple-600 text-gray-900 border-purple-600' : 
@@ -397,6 +422,16 @@ export function MenuManager() {
                                           </div>
                                         )}
                                       </div>
+                                      {deal.review && (
+                                        <div className="mt-2 text-left bg-gray-50 border border-gray-100 p-2">
+                                          <div className="flex items-center gap-1 mb-1">
+                                            {[1,2,3,4,5].map(s => (
+                                               <span key={s} className={s <= (deal.rating || 5) ? 'text-[#F1B51A]' : 'text-gray-300'}>★</span>
+                                            ))}
+                                          </div>
+                                          <p className="text-sm font-bold game-text text-gray-700 italic">"{deal.review}"</p>
+                                        </div>
+                                      )}
                                   </div>
                                 );
                               })}
@@ -450,6 +485,58 @@ export function MenuManager() {
         isOpen={isMarginPredictorOpen} 
         onClose={() => setIsMarginPredictorOpen(false)} 
       />
+
+      {reviewingDeal && (
+        <div className="fixed inset-0 bg-white backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="game-panel w-full max-w-sm flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200 border-t-4 border-purple-600 p-6 bg-white relative">
+            <button onClick={() => setReviewingDeal(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-900 border border-gray-200 p-1">
+              <X className="w-5 h-5"/>
+            </button>
+            <h3 className="text-xl font-bold text-gray-900 game-title mb-4 border-b border-gray-100 pb-2">Review Sample</h3>
+            
+            <label className="block text-sm font-bold text-gray-400 mb-2 game-text">Rating (1-5)</label>
+            <div className="flex gap-2 mb-4">
+               {[1,2,3,4,5].map(num => (
+                 <button key={num} 
+                   onClick={() => setReviewForm({...reviewForm, rating: num})}
+                   className={`w-10 h-10 font-bold game-text text-xl border ${reviewForm.rating >= num ? 'bg-[#F1B51A] border-[#F1B51A] text-black' : 'bg-gray-100 border-gray-200 text-gray-400'}`}
+                 >
+                   {num}
+                 </button>
+               ))}
+            </div>
+
+            <label className="block text-sm font-bold text-gray-400 mb-2 game-text">Feedback</label>
+            <textarea 
+              className="w-full bg-white border border-gray-200 text-gray-900 p-3 game-text mb-4 resize-none h-24 focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600"
+              placeholder="How was the quality?"
+              value={reviewForm.text}
+              onChange={e => setReviewForm({...reviewForm, text: e.target.value})}
+            />
+
+            <div className="flex gap-2">
+               <button 
+                 onClick={() => {
+                   updateDeal(reviewingDeal.id, { review: reviewForm.text, rating: reviewForm.rating, status: 'Accepted' });
+                   setReviewingDeal(null);
+                 }}
+                 className="flex-1 py-3 game-btn game-btn-green"
+               >
+                 <span className="game-text text-sm">Accept Deal</span>
+               </button>
+               <button 
+                 onClick={() => {
+                   updateDeal(reviewingDeal.id, { review: reviewForm.text, rating: reviewForm.rating, status: 'Rejected' });
+                   setReviewingDeal(null);
+                 }}
+                 className="flex-1 py-3 game-btn game-btn-red"
+               >
+                 <span className="game-text text-sm">Reject Deal</span>
+               </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {activeChatDeal && (
         <ChatModal 

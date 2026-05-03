@@ -281,6 +281,8 @@ export function SupplierDashboard() {
                   </div>
                   <span className={`text-sm font-bold px-3 py-1 border  game-text ${
                     deal.status === 'Accepted' ? 'bg-[#00AA13] text-white border-[#00AA13]' :
+deal.status === 'Sample Requested' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+deal.status === 'Sample Arrived' ? 'bg-purple-100 text-purple-800 border-purple-200' :
                     deal.status === 'Rejected' ? 'bg-[#EE2737] text-white border-[--color-gta-red]' :
                     deal.status === 'On Delivery' ? 'bg-[#F1B51A] text-black border-[#F1B51A]' :
                     deal.status === 'Delivered' ? 'bg-purple-600 text-gray-900 border-purple-600' :
@@ -293,35 +295,55 @@ export function SupplierDashboard() {
                   Rp {deal.proposedPrice.toFixed(2)}
                 </div>
                 
-                {/* Status update actions for accepted deals */}
-                {['Accepted', 'On Delivery', 'Delivered'].includes(deal.status) && (
-                  <div className="flex gap-3">
-                    <button 
-                      onClick={() => setActiveChatDeal(deal)}
-                      className="flex-1 py-2 bg-white border border-[#EE2737] text-[#EE2737] hover:bg-[#EE2737] hover:text-white text-sm font-bold transition-colors game-text  flex items-center justify-center gap-2 relative"
-                    >
-                      <MessageCircle className="w-4 h-4" /> Chat
-                      {unreadCount > 0 && (
-                        <span className="absolute -top-2 -right-2 bg-red-600 text-gray-900 text-[10px] w-5 h-5 flex items-center justify-center rounded-full shadow-[0_0_10px_rgba(220,38,38,0.8)]">
-                          {unreadCount}
-                        </span>
+                {/* Status update actions for accepted/sample deals */}
+                {['Accepted', 'On Delivery', 'Delivered', 'Sample Requested', 'Sample Arrived'].includes(deal.status) && (
+                  <div className="flex flex-col gap-3">
+                    <div className="flex gap-3">
+                      <button 
+                        onClick={() => setActiveChatDeal(deal)}
+                        className="flex-1 py-2 bg-white border border-[#EE2737] text-[#EE2737] hover:bg-[#EE2737] hover:text-white text-sm font-bold transition-colors game-text flex items-center justify-center gap-2 relative"
+                      >
+                        <MessageCircle className="w-4 h-4" /> Chat
+                        {unreadCount > 0 && (
+                          <span className="absolute -top-2 -right-2 bg-red-600 text-gray-900 text-[10px] w-5 h-5 flex items-center justify-center rounded-full shadow-[0_0_10px_rgba(220,38,38,0.8)]">
+                            {unreadCount}
+                          </span>
+                        )}
+                      </button>
+                      {deal.status === 'Sample Requested' && (
+                        <button 
+                          onClick={() => updateDealStatus(deal.id, 'Sample Arrived')}
+                          className="flex-1 py-2 bg-white border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white text-sm font-bold transition-colors game-text"
+                        >
+                          Mark Sample Delivered
+                        </button>
                       )}
-                    </button>
-                    {deal.status === 'Accepted' && (
-                      <button 
-                        onClick={() => updateDealStatus(deal.id, 'On Delivery')}
-                        className="flex-1 py-2 bg-white border border-[#F1B51A] text-[#F1B51A] hover:bg-[#F1B51A] hover:text-black text-sm font-bold transition-colors game-text "
-                      >
-                        Mark On Delivery
-                      </button>
-                    )}
-                    {(deal.status === 'Accepted' || deal.status === 'On Delivery') && (
-                      <button 
-                        onClick={() => updateDealStatus(deal.id, 'Delivered')}
-                        className="flex-1 py-2 bg-white border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-gray-900 text-sm font-bold transition-colors game-text "
-                      >
-                        Mark Delivered
-                      </button>
+                      {deal.status === 'Accepted' && (
+                        <button 
+                          onClick={() => updateDealStatus(deal.id, 'On Delivery')}
+                          className="flex-1 py-2 bg-white border border-[#F1B51A] text-[#F1B51A] hover:bg-[#F1B51A] hover:text-black text-sm font-bold transition-colors game-text"
+                        >
+                          Mark On Delivery
+                        </button>
+                      )}
+                      {(deal.status === 'Accepted' || deal.status === 'On Delivery') && (
+                        <button 
+                          onClick={() => updateDealStatus(deal.id, 'Delivered')}
+                          className="flex-1 py-2 bg-white border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-gray-900 text-sm font-bold transition-colors game-text"
+                        >
+                          Mark Delivered
+                        </button>
+                      )}
+                    </div>
+                    {deal.review && (
+                      <div className="mt-2 text-left bg-gray-50 border border-gray-100 p-2">
+                        <div className="flex items-center gap-1 mb-1">
+                          {[1,2,3,4,5].map(s => (
+                             <span key={s} className={s <= (deal.rating || 5) ? 'text-[#F1B51A]' : 'text-gray-300'}>★</span>
+                          ))}
+                        </div>
+                        <p className="text-sm font-bold game-text text-gray-700 italic">"{deal.review}"</p>
+                      </div>
                     )}
                   </div>
                 )}
@@ -443,8 +465,9 @@ export function SupplierDashboard() {
       <div className="flex-1 relative z-0 h-full min-h-[50vh]">
         <MapContainer center={mapCenter} zoom={13} style={{ height: "100%", width: "100%" }}>
           <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+            subdomains={['mt0','mt1','mt2','mt3']}
+            attribution="&copy; Google"
           />
           <MapUpdater center={mapCenter} zoom={selectedRestaurant ? 14 : 13} />
 

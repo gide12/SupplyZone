@@ -23,7 +23,8 @@ interface AppContextType {
   calculateDynamicPrice: (itemName: string) => { estimatedPrice: number; marketSupply: number; marketDemand: number };
   // Deal actions
   proposeDeal: (deal: Omit<Deal, "id" | "status">) => void;
-  updateDealStatus: (dealId: string, status: "Pending" | "Accepted" | "Rejected" | "On Delivery" | "Delivered") => void;
+  updateDealStatus: (dealId: string, status: "Pending" | "Accepted" | "Rejected" | "On Delivery" | "Delivered" | "Sample Requested" | "Sample Arrived") => void;
+  updateDeal: (dealId: string, updates: Partial<Deal>) => void;
   // Chat actions
   messages: ChatMessage[];
   sendMessage: (dealId: string, text: string, senderId: string, senderRole: "restaurant" | "supplier") => void;
@@ -250,8 +251,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setDeals(prev => [...prev, newDeal]);
   };
 
-  const updateDealStatus = (dealId: string, status: "Pending" | "Accepted" | "Rejected" | "On Delivery" | "Delivered") => {
+  const updateDealStatus = (dealId: string, status: "Pending" | "Accepted" | "Rejected" | "On Delivery" | "Delivered" | "Sample Requested" | "Sample Arrived") => {
     setDeals(prev => prev.map(d => d.id === dealId ? { ...d, status } : d));
+  };
+
+  const updateDeal = (dealId: string, updates: Partial<Deal>) => {
+    setDeals(prev => prev.map(d => d.id === dealId ? { ...d, ...updates } : d));
   };
 
   const sendMessage = (dealId: string, text: string, senderId: string, senderRole: "restaurant" | "supplier") => {
@@ -296,6 +301,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       calculateDynamicPrice,
       proposeDeal,
       updateDealStatus,
+      updateDeal,
       messages,
       sendMessage,
       markMessagesAsRead,
