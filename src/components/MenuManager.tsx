@@ -100,30 +100,46 @@ export function MenuManager() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center bg-transparent">
+      <div className="flex justify-between items-center bg-white">
         <div>
-          <h2 className="text-3xl font-bold text-white border-b-4 border-[#37B34A] pb-2 game-text">Menu Management</h2>
-          <p className="text-lg text-gray-300 mt-2 font-bold game-text">Add, update, or remove items from your menu.</p>
+          <h2 className="text-3xl font-bold text-gray-900 border-b-4 border-[#00AA13] pb-2 game-text">Menu Management</h2>
+          <p className="text-lg text-gray-700 mt-2 font-bold game-text">Add, update, or remove items from your menu.</p>
         </div>
         {!isAdding && (
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsMarginPredictorOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-[#1A92D4] text-white border border-[#1A92D4] hover:bg-[#1A92D4]/80 transition-all font-bold text-sm"
-            >
-              <Calculator className="w-5 h-5" />
-              <span className="hidden sm:inline game-text text-lg mt-1">AI Margin Tool</span>
-            </button>
-            <button
-              onClick={() => setIsPredictModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white border border-purple-800 hover:bg-purple-500 transition-all font-bold text-sm"
-            >
-              <Sparkles className="w-5 h-5" />
-              <span className="hidden sm:inline game-text text-lg mt-1">Predict Needs</span>
-            </button>
+            <div className="relative group">
+              <button
+                className="flex items-center gap-2 px-4 py-2 game-btn game-btn-blue transition-all font-bold text-sm"
+              >
+                <Calculator className="w-5 h-5" />
+                <span className="hidden sm:inline game-text text-lg mt-1">Hitung</span>
+              </button>
+              <div className="absolute top-full right-0 pt-2 opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all z-50">
+                <div className="w-52 bg-white border border-gray-200 shadow-xl flex flex-col rounded overflow-hidden">
+                  <button onClick={() => setIsMarginPredictorOpen(true)} className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 border-b border-gray-100 transition-colors">
+                    <div className="w-8 h-8 rounded bg-[#EE2737]/10 flex items-center justify-center shrink-0">
+                      <Calculator className="w-4 h-4 text-[#EE2737]" />
+                    </div>
+                    <div>
+                      <div className="game-text text-gray-900 font-bold leading-tight">AI Margin</div>
+                      <div className="text-[10px] text-gray-400 game-text mt-0.5">Price calculator</div>
+                    </div>
+                  </button>
+                  <button onClick={() => setIsPredictModalOpen(true)} className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 transition-colors">
+                    <div className="w-8 h-8 rounded bg-purple-100 flex items-center justify-center shrink-0">
+                      <Sparkles className="w-4 h-4 text-purple-600" />
+                    </div>
+                    <div>
+                      <div className="game-text text-gray-900 font-bold leading-tight">Predict Needs</div>
+                      <div className="text-[10px] text-gray-400 game-text mt-0.5">Supply AI</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </div>
             <button
               onClick={startAdd}
-              className="flex items-center gap-2 px-4 py-2 game-btn game-btn-green text-white transition-all font-bold text-sm"
+              className="flex items-center gap-2 px-4 py-2 game-btn game-btn-green text-gray-900 transition-all font-bold text-sm"
             >
               <Plus className="w-5 h-5" />
               <span className="hidden sm:inline game-text text-lg mt-1">Add Item</span>
@@ -135,28 +151,27 @@ export function MenuManager() {
       <div className="space-y-4">
         {/* ADD NEW ITEM FORM */}
         {isAdding && (
-          <div className="p-4 bg-black/60 border border-white/20 space-y-4">
-            <h3 className="text-xl font-bold text-white game-text border-b border-[#37B34A] pb-2">New Menu Item</h3>
+          <div className="p-4 bg-white border border-gray-200 space-y-4">
+            <h3 className="text-xl font-bold text-gray-900 game-text border-b border-[#00AA13] pb-2">New Menu Item</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <input
                 type="text"
                 placeholder="Item Name"
-                className="px-4 py-3 bg-black/60 border border-white/20 text-white text-lg focus:outline-none focus:border-[#37B34A] game-text font-bold"
+                className="px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] game-text font-bold"
                 value={formData.name}
                 onChange={e => setFormData({ ...formData, name: e.target.value })}
               />
               <div className="flex gap-2 relative">
-                <span className="absolute left-4 top-3 text-white font-bold text-xl">$</span>
                 <input
                   type="number"
                   placeholder="Price"
                   step="0.01"
-                  className="px-4 py-3 pl-10 bg-black/60 border border-white/20 text-white text-lg focus:outline-none focus:border-[#37B34A] w-1/2 game-text font-bold"
+                  className="px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] w-1/2 game-text font-bold"
                   value={formData.price || ""}
                   onChange={e => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
                 />
                 <select
-                  className="px-4 py-3 bg-black/60 border border-white/20 text-white text-lg focus:outline-none focus:border-[#37B34A] w-1/2 game-text font-bold"
+                  className="px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] w-1/2 game-text font-bold"
                   value={formData.category}
                   onChange={e => setFormData({ ...formData, category: e.target.value as Category })}
                 >
@@ -169,14 +184,14 @@ export function MenuManager() {
               </div>
               <textarea
                 placeholder="Description"
-                className="px-4 py-3 bg-black/60 border border-white/20 text-white text-lg focus:outline-none focus:border-[#37B34A] md:col-span-2 resize-none h-24 game-text font-bold"
+                className="px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] md:col-span-2 resize-none h-24 game-text font-bold"
                 value={formData.description}
                 onChange={e => setFormData({ ...formData, description: e.target.value })}
               />
               <input
                 type="text"
                 placeholder="Required Quantity (e.g., 24 x 1L Bottles)"
-                className="px-4 py-3 bg-black/60 border border-white/20 text-white text-lg focus:outline-none focus:border-[#37B34A] md:col-span-2 game-text font-bold"
+                className="px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] md:col-span-2 game-text font-bold"
                 value={formData.quantity}
                 onChange={e => setFormData({ ...formData, quantity: e.target.value })}
               />
@@ -184,13 +199,13 @@ export function MenuManager() {
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={() => { setIsAdding(false); resetForm(); }}
-                className="px-6 py-2 text-lg font-bold text-white border border-white/20 hover:bg-white/10 transition-colors game-text bg-transparent"
+                className="px-6 py-2 text-lg font-bold text-gray-900 border border-gray-200 hover:bg-white/10 transition-colors game-text bg-white"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSaveAdd}
-                className="px-6 py-2 text-lg game-btn game-btn-green font-bold transition-all game-text text-white"
+                className="px-6 py-2 text-lg game-btn game-btn-green font-bold transition-all game-text text-gray-900"
               >
                 Save Item
               </button>
@@ -200,7 +215,7 @@ export function MenuManager() {
 
         {/* LIST OF ITEMS */}
         {restaurant.menu.length === 0 && !isAdding ? (
-          <div className="text-center py-12 text-gray-400 bg-transparent border border-dashed border-white/20 game-text font-bold text-xl">
+          <div className="text-center py-12 text-gray-400 bg-white border border-dashed border-gray-200 game-text font-bold text-xl">
             No items in your menu yet. Click "Add Item" to get started.
           </div>
         ) : (
@@ -208,7 +223,7 @@ export function MenuManager() {
             {restaurant.menu.map((item) => {
               const itemDeals = deals.filter(d => d.menuItemId === item.id);
               return (
-              <div key={item.id} className="bg-black/60 border border-white/20 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div key={item.id} className="bg-white border border-gray-200 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 
                 {isEditing === item.id ? (
                   /* EDIT MODE */
@@ -216,21 +231,20 @@ export function MenuManager() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <input
                         type="text"
-                        className="px-4 py-3 bg-black/60 border border-white/20 text-white text-lg focus:outline-none focus:border-[#37B34A] game-text font-bold"
+                        className="px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] game-text font-bold"
                         value={formData.name}
                         onChange={e => setFormData({ ...formData, name: e.target.value })}
                       />
                       <div className="flex gap-2 relative">
-                        <span className="absolute left-4 top-3 text-white font-bold text-xl">$</span>
                         <input
                           type="number"
                           step="0.01"
-                          className="px-4 py-3 pl-10 bg-black/60 border border-white/20 text-white text-lg focus:outline-none focus:border-[#37B34A] w-1/2 game-text font-bold"
+                          className="px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] w-1/2 game-text font-bold"
                           value={formData.price || ""}
                           onChange={e => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
                         />
                         <select
-                          className="px-4 py-3 bg-black/60 border border-white/20 text-white text-lg focus:outline-none focus:border-[#37B34A] w-1/2 game-text font-bold"
+                          className="px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] w-1/2 game-text font-bold"
                           value={formData.category}
                           onChange={e => setFormData({ ...formData, category: e.target.value as Category })}
                         >
@@ -242,14 +256,14 @@ export function MenuManager() {
                         </select>
                       </div>
                       <textarea
-                        className="px-4 py-3 bg-black/60 border border-white/20 text-white text-lg focus:outline-none focus:border-[#37B34A] md:col-span-2 resize-none h-24 game-text font-bold"
+                        className="px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] md:col-span-2 resize-none h-24 game-text font-bold"
                         value={formData.description}
                         onChange={e => setFormData({ ...formData, description: e.target.value })}
                       />
                       <input
                         type="text"
                         placeholder="Required Quantity (e.g., 24 x 1L Bottles)"
-                        className="px-4 py-3 bg-black/60 border border-white/20 text-white text-lg focus:outline-none focus:border-[#37B34A] md:col-span-2 game-text font-bold"
+                        className="px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] md:col-span-2 game-text font-bold"
                         value={formData.quantity}
                         onChange={e => setFormData({ ...formData, quantity: e.target.value })}
                       />
@@ -257,7 +271,7 @@ export function MenuManager() {
                     <div className="flex justify-end gap-2">
                       <button
                         onClick={() => setIsEditing(null)}
-                        className="p-3 text-white border border-white/20 bg-transparent hover:bg-white/10 transition-all"
+                        className="p-3 text-gray-900 border border-gray-200 bg-white hover:bg-white/10 transition-all"
                         title="Cancel"
                       >
                         <X className="w-6 h-6" />
@@ -277,42 +291,42 @@ export function MenuManager() {
                     <div className="flex-1">
                       <div className="flex items-start justify-between">
                         <div>
-                          <h4 className="font-bold text-white text-2xl game-text">{item.name}</h4>
+                          <h4 className="font-bold text-gray-900 text-2xl game-text">{item.name}</h4>
                           <div className="flex items-center gap-2 mt-2">
-                            <span className="inline-block px-2 py-1 bg-[#37B34A] border border-[#37B34A] text-white text-sm font-bold uppercase game-text shadow-none">
+                            <span className="inline-block px-2 py-1 bg-[#00AA13] border border-[#00AA13] text-white text-sm font-bold  game-text shadow-sm">
                               {item.category}
                             </span>
                             {item.quantity && (
-                              <span className="inline-block px-2 py-1 bg-transparent border border-white/20 text-[#1A92D4] text-sm font-bold uppercase game-text shadow-none">
+                              <span className="inline-block px-2 py-1 bg-white border border-gray-200 text-[#EE2737] text-sm font-bold  game-text shadow-sm">
                                 Qty: {item.quantity}
                               </span>
                             )}
                           </div>
                         </div>
-                        <div className="text-3xl font-bold text-[#37B34A] game-text">
-                          ${item.price.toFixed(2)}
+                        <div className="text-3xl font-bold text-[#00AA13] game-text">
+                          Rp {item.price.toFixed(2)}
                         </div>
                       </div>
-                      <p className="mt-3 text-lg text-gray-300 font-bold leading-snug">{item.description}</p>
+                      <p className="mt-3 text-lg text-gray-700 font-bold leading-snug">{item.description}</p>
                       
                       {/* Dynamic Pricing Estimate */}
                       {(() => {
                         const dynamicInfo = calculateDynamicPrice(item.name);
                         return (
-                          <div className="mt-3 inline-block bg-black/60 border border-t-[--color-gta-blue] p-2 bg-[--color-gta-panel] shadow-none">
+                          <div className="mt-3 inline-block bg-white border border-t-[--color-gta-blue] p-2 bg-[--color-gta-panel] shadow-sm">
                              <div className="flex items-center space-x-4">
                                 <div className="game-text">
-                                  <span className="text-gray-400 text-xs font-bold uppercase tracking-wider block">Estimated Bid Cost</span>
-                                  <span className="text-[#1A92D4] text-xl font-bold">${dynamicInfo.estimatedPrice.toFixed(2)}</span>
+                                  <span className="text-gray-400 text-xs font-bold  tracking-wider block">Estimated Bid Cost</span>
+                                  <span className="text-[#EE2737] text-xl font-bold">Rp {dynamicInfo.estimatedPrice.toFixed(2)}</span>
                                 </div>
                                 <div className="flex gap-2">
-                                  <div className="text-center px-2 border-r border-white/20">
-                                    <span className="block text-[10px] text-gray-500 uppercase tracking-widest game-text font-bold">Demand</span>
-                                    <span className="block text-white text-sm game-text">{dynamicInfo.marketDemand}</span>
+                                  <div className="text-center px-2 border-r border-gray-200">
+                                    <span className="block text-[10px] text-gray-400   game-text font-bold">Demand</span>
+                                    <span className="block text-gray-900 text-sm game-text">{dynamicInfo.marketDemand}</span>
                                   </div>
                                   <div className="text-center px-2">
-                                    <span className="block text-[10px] text-gray-500 uppercase tracking-widest game-text font-bold">Supply</span>
-                                    <span className="block text-white text-sm game-text">{dynamicInfo.marketSupply}</span>
+                                    <span className="block text-[10px] text-gray-400   game-text font-bold">Supply</span>
+                                    <span className="block text-gray-900 text-sm game-text">{dynamicInfo.marketSupply}</span>
                                   </div>
                                 </div>
                              </div>
@@ -321,10 +335,10 @@ export function MenuManager() {
                       })()}
                       
                       {/* Deals & Negotiation UI */}
-                      <div className="mt-4 pt-4 border-t border-white/20">
+                      <div className="mt-4 pt-4 border-t border-gray-200">
                         {itemDeals.length > 0 ? (
                           <div className="space-y-3">
-                            <h5 className="text-sm font-bold text-[#F1B51A] uppercase tracking-wider flex items-center gap-2 game-text">
+                            <h5 className="text-sm font-bold text-[#F1B51A]  tracking-wider flex items-center gap-2 game-text">
                               <MapPin className="w-5 h-5 text-[#F1B51A]" /> Nearby Supplier Bids
                             </h5>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -332,10 +346,10 @@ export function MenuManager() {
                                 const supplierName = suppliers.find(s => s.id === deal.supplierId)?.name || "Unknown Supplier";
                                 const unreadCount = messages.filter(m => m.dealId === deal.id && m.senderRole === "supplier" && !m.isRead).length;
                                 return (
-                                  <div key={deal.id} className="p-3 bg-black/40 border border-white/10 space-y-2 relative shadow-none">
+                                  <div key={deal.id} className="p-3 bg-white border border-gray-100 space-y-2 relative shadow-sm">
                                     <div className="flex items-center justify-between">
-                                      <span className="font-bold text-lg text-white truncate mr-2 game-text" title={supplierName}>{supplierName}</span>
-                                      <span className="font-bold text-2xl text-[#37B34A] game-text">${deal.proposedPrice.toFixed(2)}</span>
+                                      <span className="font-bold text-lg text-gray-900 truncate mr-2 game-text" title={supplierName}>{supplierName}</span>
+                                      <span className="font-bold text-2xl text-[#00AA13] game-text">Rp {deal.proposedPrice.toFixed(2)}</span>
                                     </div>
                                     <div className="flex items-center justify-between mt-3">
                                       {deal.status === 'Pending' ? (
@@ -355,12 +369,12 @@ export function MenuManager() {
                                           </div>
                                         ) : (
                                           <div className="flex w-full items-center gap-2">
-                                            <span className={`text-lg font-bold px-2 py-1 border flex-1 text-center game-text shadow-none ${
-                                              deal.status === 'Accepted' ? 'bg-[#37B34A] text-white border-[#37B34A]' : 
-                                              deal.status === 'Rejected' ? 'bg-[--color-gta-red] text-white border-[--color-gta-red]' : 
+                                            <span className={`text-lg font-bold px-2 py-1 border flex-1 text-center game-text shadow-sm ${
+                                              deal.status === 'Accepted' ? 'bg-[#00AA13] text-white border-[#00AA13]' : 
+                                              deal.status === 'Rejected' ? 'bg-[#EE2737] text-white border-[--color-gta-red]' : 
                                               deal.status === 'On Delivery' ? 'bg-[#F1B51A] text-black border-[#F1B51A]' : 
-                                              deal.status === 'Delivered' ? 'bg-purple-600 text-white border-purple-600' : 
-                                              'bg-transparent text-gray-400 border-gray-600'
+                                              deal.status === 'Delivered' ? 'bg-purple-600 text-gray-900 border-purple-600' : 
+                                              'bg-white text-gray-400 border-gray-600'
                                             }`}>
                                               {deal.status}
                                             </span>
@@ -368,13 +382,13 @@ export function MenuManager() {
                                             {['Accepted', 'On Delivery', 'Delivered'].includes(deal.status) && (
                                               <button 
                                                 onClick={() => setActiveChatDeal(deal)}
-                                                className="p-1 px-3 game-btn game-btn-blue text-white self-stretch flex items-center justify-center shrink-0 relative"
+                                                className="p-1 px-3 game-btn game-btn-blue text-gray-900 self-stretch flex items-center justify-center shrink-0 relative"
                                                 title="Chat with Supplier"
                                               >
                                                 <MessageCircle className="w-5 h-5 mr-1" />
                                                 <span className="game-text font-bold text-sm">Chat</span>
                                                 {unreadCount > 0 && (
-                                                  <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full shadow-[0_0_10px_rgba(220,38,38,0.8)]">
+                                                  <span className="absolute -top-2 -right-2 bg-red-600 text-gray-900 text-[10px] w-5 h-5 flex items-center justify-center rounded-full shadow-[0_0_10px_rgba(220,38,38,0.8)]">
                                                     {unreadCount}
                                                   </span>
                                                 )}
@@ -392,7 +406,7 @@ export function MenuManager() {
                           <button 
                             onClick={() => handleFindSuppliers(item)}
                             disabled={findingSuppliersFor === item.id}
-                            className={`flex items-center gap-2 px-4 py-2 border border-[#F1B51A] text-[#F1B51A] bg-transparent font-bold transition-all hover:bg-[#F1B51A] hover:text-black ${findingSuppliersFor === item.id ? 'bg-[#F1B51A] text-black opacity-80' : ''}`}
+                            className={`flex items-center gap-2 px-4 py-2 border border-[#F1B51A] text-[#F1B51A] bg-white font-bold transition-all hover:bg-[#F1B51A] hover:text-black ${findingSuppliersFor === item.id ? 'bg-[#F1B51A] text-black opacity-80' : ''}`}
                           >
                             <Search className={`w-6 h-6 ${findingSuppliersFor === item.id ? 'animate-spin' : ''}`} />
                             <span className="game-text text-xl pt-1">{findingSuppliersFor === item.id ? 'Finding...' : 'Find Nearby Suppliers'}</span>
@@ -405,13 +419,13 @@ export function MenuManager() {
                     <div className="flex flex-row md:flex-col gap-3 pt-3 md:pt-0 min-w-[50px] justify-start h-full self-start">
                       <button 
                         onClick={() => startEdit(item)}
-                        className="p-3 border border-white/20 bg-transparent text-[#1A92D4] hover:bg-[#1A92D4] hover:text-white transition-all hover:border-[#1A92D4]"
+                        className="p-3 border border-gray-200 bg-white text-[#EE2737] hover:bg-[#EE2737] hover:text-white transition-all hover:border-[#EE2737]"
                       >
                         <Edit2 className="w-5 h-5" />
                       </button>
                       <button 
                         onClick={() => deleteMenuItem(restaurant.id, item.id)}
-                        className="p-3 border border-white/20 bg-transparent text-[--color-gta-red] hover:bg-[--color-gta-red] hover:text-white transition-all mt-0 md:mt-2 hover:border-[--color-gta-red]"
+                        className="p-3 border border-gray-200 bg-white text-[--color-gta-red] hover:bg-[#EE2737] hover:text-white transition-all mt-0 md:mt-2 hover:border-[--color-gta-red]"
                       >
                         <Trash2 className="w-5 h-5" />
                       </button>

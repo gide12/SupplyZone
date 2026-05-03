@@ -1,58 +1,52 @@
-@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Roboto+Condensed:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
 @theme {
-  --font-game: "Oswald", sans-serif;
-  --font-sans: "Roboto Condensed", ui-sans-serif, system-ui, sans-serif;
-  --color-game-sky: #1A92D4;
+  --font-game: "Inter", sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-game-sky: #EE2737; /* GoFood Red */
   --color-game-cloud: #ffffff;
-  --color-game-ground: rgba(20, 20, 20, 0.95);
-  --color-game-brick: #37B34A; /* GTA Green */
-  --color-game-pipe: #F1B51A; /* GTA Yellow */
-  --color-game-coin: #D72828; /* GTA Red */
+  --color-game-ground: #F9F9F9;
+  --color-game-brick: #00AA13; /* Gojek Green */
+  --color-game-pipe: #FFC000;
+  --color-game-coin: #EE2737;
   
-  --color-gta-bg: #0a0a0a;
-  --color-gta-panel: rgba(15, 15, 15, 0.85);
+  --color-gta-bg: #F5F6F8;
+  --color-gta-panel: #FFFFFF;
 }
 
 body {
   margin: 0;
   font-family: var(--font-sans);
   background-color: var(--color-gta-bg);
-  background-image: 
-    linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
-  background-size: 50px 50px;
-  color: #fff; 
+  color: #1C1C1C; 
 }
 
-/* Custom UI blocks - GTA V Menu Style */
+/* Custom UI blocks - GoFood Style */
 .game-panel {
   background-color: var(--color-gta-panel);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-  backdrop-filter: blur(10px);
-  border-radius: 0;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  border-radius: 16px;
 }
 
 .game-panel-inner {
-  background-color: rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 0;
+  background-color: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
 }
 
 .game-btn {
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 0;
-  text-transform: uppercase;
+  border: none;
+  border-radius: 24px;
+  font-weight: 600;
   transition: all 0.2s;
-  letter-spacing: 1px;
+  letter-spacing: 0;
 }
 .game-btn:hover {
-  background-color: var(--color-game-brick);
-  color: #fff;
-  border-color: var(--color-game-brick);
+  opacity: 0.9;
 }
 .game-btn:active {
   transform: scale(0.98);
@@ -61,55 +55,41 @@ body {
 .game-btn-red {
   background-color: var(--color-game-coin);
   color: white;
-  border-color: var(--color-game-coin);
-}
-.game-btn-red:hover {
-  background-color: #a81a1a;
-  border-color: #a81a1a;
 }
 .game-btn-blue {
   background-color: var(--color-game-sky);
   color: white;
-  border-color: var(--color-game-sky);
 }
-.game-btn-blue:hover {
-  background-color: #126d9e;
-  border-color: #126d9e;
-}
-
 .game-btn-green {
   background-color: var(--color-game-brick);
   color: white;
-  border-color: var(--color-game-brick);
-}
-.game-btn-green:hover {
-  background-color: #248231;
-  border-color: #248231;
 }
 
 .game-title {
-  font-family: var(--font-game);
-  text-transform: uppercase;
+  font-family: var(--font-sans);
   font-weight: 700;
-  letter-spacing: 2px;
-  color: white;
-  text-shadow: 2px 2px 0 rgba(0,0,0,0.5);
+  letter-spacing: 0;
+  color: #1C1C1C;
+  text-shadow: none;
 }
 
 .game-text {
   font-family: var(--font-sans);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
-/* Override inputs to match GTA style */
-input[type="text"], input[type="number"], textarea, select {
-  background-color: rgba(0, 0, 0, 0.4) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  color: white !important;
-  border-radius: 0 !important;
+/* Override inputs to match GoFood style */
+input[type="text"], input[type="number"], input[type="date"], textarea, select {
+  background-color: #F5F6F8 !important;
+  border: 1px solid #E5E7E9 !important;
+  color: #1C1C1C !important;
+  border-radius: 12px !important;
+  font-family: var(--font-sans);
 }
 input:focus, textarea:focus, select:focus {
   border-color: var(--color-game-brick) !important;
-  box-shadow: 0 0 5px var(--color-game-brick) !important;
+  box-shadow: 0 0 0 2px rgba(0, 170, 19, 0.2) !important;
+  outline: none;
 }
+

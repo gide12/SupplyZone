@@ -43,7 +43,7 @@ Assuming I am driving a standard delivery van (around 15-20 MPG) and average fue
             properties: {
               distance: { type: Type.STRING, description: "Estimated driving distance (e.g. '2.5 miles')" },
               fuelUsed: { type: Type.STRING, description: "Estimated fuel consumed (e.g. '0.15 gallons')" },
-              estimatedCost: { type: Type.STRING, description: "Estimated cost of fuel (e.g. '$0.60')" },
+              estimatedCost: { type: Type.STRING, description: "Estimated cost of fuel (e.g. '0.60')" },
               routeNotes: { type: Type.STRING, description: "Brief note about the route (max 2 sentences)" },
             },
             required: ["distance", "fuelUsed", "estimatedCost", "routeNotes"],
@@ -72,13 +72,13 @@ Assuming I am driving a standard delivery van (around 15-20 MPG) and average fue
         {!estimate && !loading && (
           <button 
             onClick={fetchEstimate}
-            className="text-sm px-3 py-2 bg-yellow-400 text-black hover:bg-yellow-300 border-2 border-black font-bold transition-all shadow-[2px_2px_0_#000] active:translate-y-1 active:shadow-none game-text uppercase"
+            className="text-sm px-3 py-2 bg-yellow-400 text-black hover:bg-yellow-300 border-2 border-black font-bold transition-all shadow-[2px_2px_0_#000] active:translate-y-1 active:shadow-sm game-text "
           >
             Estimate with AI
           </button>
         )}
         {loading && (
-          <span className="text-sm border-2 border-black px-2 py-1 bg-gray-200 text-black font-bold flex items-center gap-2 game-text uppercase">
+          <span className="text-sm border-2 border-black px-2 py-1 bg-gray-200 text-black font-bold flex items-center gap-2 game-text ">
             <Loader2 className="w-4 h-4 animate-spin text-red-600" /> Estimating...
           </span>
         )}
@@ -88,15 +88,15 @@ Assuming I am driving a standard delivery van (around 15-20 MPG) and average fue
         <div className="space-y-4 mt-4 border-t-4 border-black pt-4">
           <div className="grid grid-cols-3 gap-3">
             <div className="bg-white border-2 border-black p-3 text-center shadow-[2px_2px_0_#000]">
-              <span className="block text-xs uppercase font-bold text-gray-500 game-text shadow-none">Distance</span>
+              <span className="block text-xs  font-bold text-gray-400 game-text shadow-sm">Distance</span>
               <span className="block text-xl font-bold text-black mt-1 game-text">{estimate.distance}</span>
             </div>
             <div className="bg-white border-2 border-black p-3 text-center shadow-[2px_2px_0_#000]">
-              <span className="block text-xs uppercase font-bold text-gray-500 game-text shadow-none">Fuel</span>
+              <span className="block text-xs  font-bold text-gray-400 game-text shadow-sm">Fuel</span>
               <span className="block text-xl font-bold text-[--color-game-pipe] mt-1 game-text">{estimate.fuelUsed}</span>
             </div>
             <div className="bg-white border-2 border-black p-3 text-center shadow-[2px_2px_0_#000]">
-              <span className="block text-xs uppercase font-bold text-gray-500 game-text shadow-none">Cost</span>
+              <span className="block text-xs  font-bold text-gray-400 game-text shadow-sm">Cost</span>
               <span className="block text-xl font-bold text-[--color-game-brick] mt-1 game-text">{estimate.estimatedCost}</span>
             </div>
           </div>

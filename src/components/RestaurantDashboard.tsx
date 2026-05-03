@@ -3,9 +3,10 @@ import { Store, Map, Settings, Search, User, Package, Bell, Info } from "lucide-
 import { MenuManager } from "./MenuManager";
 import { RestaurantInventory } from "./RestaurantInventory";
 import { useAppContext } from "../store/AppContext";
+import { translate } from "../lib/i18n";
 
 export function RestaurantDashboard() {
-  const { restaurants, activeRestaurantId, updateRestaurantProfile, suppliers } = useAppContext();
+  const { restaurants, activeRestaurantId, updateRestaurantProfile, suppliers, language } = useAppContext();
   const [activeTab, setActiveTab] = useState<"menu" | "inventory" | "profile">("menu");
   const [showNotifications, setShowNotifications] = useState(false);
   
@@ -32,7 +33,7 @@ export function RestaurantDashboard() {
 
     const alerts: { id: string; message: string; subtext: string; isAlert: boolean }[] = [];
 
-    Object.entries(itemGroups).forEach(([key, items]) => {
+    Object.entries(itemGroups).forEach(([key, items]: [string, {supplier: string, item: string, price: number}[]]) => {
       if (trackedItems.has(key) && items.length > 1) {
         const avgPrice = items.reduce((sum, i) => sum + i.price, 0) / items.length;
         const lowestSupplier = [...items].sort((a,b) => a.price - b.price)[0];
@@ -41,8 +42,8 @@ export function RestaurantDashboard() {
         if (percDrop > 5) { // Notify if more than 5% lower than average
           alerts.push({
             id: `deal-${key}`,
-            message: `PRICE DROP: ${lowestSupplier.item} is ${Math.round(percDrop)}% below market avg!`,
-            subtext: `From ${lowestSupplier.supplier} at $${lowestSupplier.price.toFixed(2)}.`,
+            message: language === "en" ? `PRICE DROP: ${lowestSupplier.item} is ${Math.round(percDrop)}% below market avg!` : `PENURUNAN HARGA: ${lowestSupplier.item} ${Math.round(percDrop)}% di bawah rata-rata pasar!`,
+            subtext: language === "en" ? `From ${lowestSupplier.supplier} at ${lowestSupplier.price.toFixed(2)}.` : `Dari ${lowestSupplier.supplier} seharga ${lowestSupplier.price.toFixed(2)}.`,
             isAlert: true
           });
         }
@@ -69,25 +70,25 @@ export function RestaurantDashboard() {
   if (!restaurant) return null;
 
   return (
-    <div className="min-h-screen bg-transparent">
+    <div className="min-h-screen bg-white">
       {/* Top Navbar */}
       <nav className="game-panel m-4 sticky top-4 z-10 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-black rounded flex items-center justify-center border border-white/20">
-            <Store className="w-6 h-6 text-[#37B34A]" />
+          <div className="w-10 h-10 bg-white rounded flex items-center justify-center border border-gray-200">
+            <Store className="w-6 h-6 text-[#00AA13]" />
           </div>
-          <span className="text-2xl game-title tracking-tight">SupplyMap</span>
-          <span className="ml-2 px-2 py-0.5 bg-[#37B34A] text-white border border-[#37B34A] text-xs rounded uppercase tracking-wider game-text shadow-none">Restaurant Portal</span>
+          <span className="text-2xl game-title ">Dapurku</span>
+          <span className="ml-2 px-2 py-0.5 bg-[#00AA13] text-white border border-[#00AA13] text-xs rounded  tracking-wider game-text shadow-sm">{translate("Restaurant Portal", language)}</span>
         </div>
         <div className="flex items-center gap-4">
           <div className="relative">
             <button 
               onClick={() => setShowNotifications(!showNotifications)}
-              className="w-10 h-10 bg-black/40 hover:bg-black/60 rounded flex items-center justify-center border border-white/20 transition-colors relative"
+              className="w-10 h-10 bg-white hover:bg-white rounded flex items-center justify-center border border-gray-200 transition-colors relative"
             >
-              <Bell className="w-5 h-5 text-gray-300" />
+              <Bell className="w-5 h-5 text-gray-700" />
               {notifications.length > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#EE2737] text-[10px] font-bold text-white">
                   {notifications.length}
                 </span>
               )}
@@ -95,15 +96,15 @@ export function RestaurantDashboard() {
             
             {/* Notifications Dropdown */}
             {showNotifications && (
-              <div className="absolute right-0 mt-2 w-80 bg-black border border-white/20 shadow-2xl p-4 z-50">
-                <h3 className="text-white font-bold text-lg game-text uppercase border-b border-white/20 pb-2 mb-3">Market Alerts</h3>
+              <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 shadow-2xl p-4 z-50">
+                <h3 className="text-gray-900 font-bold text-lg game-text  border-b border-gray-200 pb-2 mb-3">{language === "en" ? "Market Alerts" : "Peringatan Pasar"}</h3>
                 {notifications.length === 0 ? (
-                  <p className="text-gray-400 text-sm game-text italic text-center py-4">No new alerts at this time.</p>
+                  <p className="text-gray-400 text-sm game-text italic text-center py-4">{language === "en" ? "No new alerts at this time." : "Tidak ada peringatan baru saat ini."}</p>
                 ) : (
                   <div className="space-y-3 max-h-64 overflow-y-auto">
                     {notifications.map(note => (
-                      <div key={note.id} className="bg-[#1A92D4]/10 border border-[#1A92D4] p-3 text-left">
-                        <div className="text-white font-bold game-text text-sm leading-snug">{note.message}</div>
+                      <div key={note.id} className="bg-[#EE2737]/10 border border-[#EE2737] p-3 text-left">
+                        <div className="text-gray-900 font-bold game-text text-sm leading-snug">{note.message}</div>
                         <div className="text-gray-400 text-xs game-text mt-1">{note.subtext}</div>
                       </div>
                     ))}
@@ -113,9 +114,9 @@ export function RestaurantDashboard() {
             )}
           </div>
 
-          <div className="text-right hidden sm:block border-l border-white/20 pl-4">
-            <p className="text-xs text-gray-400 uppercase game-text">Logged in as</p>
-            <p className="text-lg text-white game-text">{restaurant.name}</p>
+          <div className="text-right hidden sm:block border-l border-gray-200 pl-4">
+            <p className="text-xs text-gray-400  game-text">{translate("Logged in as", language)}</p>
+            <p className="text-lg text-gray-900 game-text">{restaurant.name}</p>
           </div>
           <div className="w-10 h-10 bg-white rounded-full border flex items-center justify-center font-bold text-black game-text text-xl">
             {restaurant.name.charAt(0)}
@@ -130,28 +131,28 @@ export function RestaurantDashboard() {
           <div className="space-y-4">
             <button 
               onClick={() => setActiveTab("menu")}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded font-bold transition-colors game-btn ${activeTab === 'menu' ? 'game-btn-blue text-lg' : 'bg-transparent text-white text-lg border-white/20 hover:bg-white/10'}`}>
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded font-bold transition-colors game-btn ${activeTab === 'menu' ? 'game-btn-blue text-lg' : 'bg-white text-gray-900 text-lg border-gray-200 hover:bg-white/10'}`}>
               <Settings className="w-5 h-5" />
-              <span className="game-text">Menu Manager</span>
+              <span className="game-text">{translate("Menu Manager", language)}</span>
             </button>
             <button 
               onClick={() => setActiveTab("inventory")}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded font-bold transition-colors game-btn ${activeTab === 'inventory' ? 'game-btn-blue text-lg' : 'bg-transparent text-white text-lg border-white/20 hover:bg-white/10'}`}>
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded font-bold transition-colors game-btn ${activeTab === 'inventory' ? 'game-btn-blue text-lg' : 'bg-white text-gray-900 text-lg border-gray-200 hover:bg-white/10'}`}>
               <Package className="w-5 h-5" />
-              <span className="game-text">Inventory & AI</span>
+              <span className="game-text">{translate("Inventory", language)} & AI</span>
             </button>
             <button 
               onClick={() => setActiveTab("profile")}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded font-bold transition-colors game-btn ${activeTab === 'profile' ? 'game-btn-blue text-lg' : 'bg-transparent text-white text-lg border-white/20 hover:bg-white/10'}`}>
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded font-bold transition-colors game-btn ${activeTab === 'profile' ? 'game-btn-blue text-lg' : 'bg-white text-gray-900 text-lg border-gray-200 hover:bg-white/10'}`}>
               <User className="w-5 h-5" />
-              <span className="game-text">Restaurant Profile</span>
+              <span className="game-text">{translate("Profile", language)}</span>
             </button>
           </div>
 
           <div className="mt-8 md:mt-auto pt-8 flex justify-center hidden sm:flex pb-4">
-            <div className="relative group p-4 border border-white/20 bg-black/40 w-full text-center">
-              <div className="text-sm font-bold text-[#37B34A] game-text">
-                LOS SANTOS CUSTOMS
+            <div className="relative group p-4 border border-gray-200 bg-white w-full text-center rounded-xl shadow-sm">
+              <div className="text-sm font-bold text-[#00AA13] game-text">
+                DAPURKU
               </div>
             </div>
           </div>
@@ -159,9 +160,9 @@ export function RestaurantDashboard() {
 
         {/* Main Content Area */}
         <div className="flex-1 space-y-6">
-          <header className="game-panel p-4 pb-2 mb-4 gta-header">
-            <h1 className="text-3xl game-title">Welcome back, {restaurant.name}</h1>
-            <p className="mt-2 text-gray-300 text-lg game-text">Manage your {activeTab === "menu" ? "menu" : activeTab === "inventory" ? "inventory" : "profile"} and connect with suppliers below.</p>
+          <header className="game-panel p-4 pb-2 mb-4 ">
+            <h1 className="text-3xl game-title">{language === "en" ? "Welcome back" : "Selamat datang kembali"}, {restaurant.name}</h1>
+            <p className="mt-2 text-gray-700 text-lg game-text">{language === "en" ? "Manage your" : "Kelola"} {activeTab === "menu" ? translate("Menu", language).toLowerCase() : activeTab === "inventory" ? translate("Inventory", language).toLowerCase() : translate("Profile", language).toLowerCase()} {language === "en" ? "and connect with suppliers below." : "dan terhubung dengan pemasok di bawah ini."}</p>
           </header>
 
           {activeTab === "menu" ? (
@@ -171,14 +172,14 @@ export function RestaurantDashboard() {
           ) : activeTab === "inventory" ? (
             <RestaurantInventory />
           ) : (
-            <div className="game-panel text-left p-6 max-w-2xl border-t-4 border-[#37B34A]">
-              <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2 game-text border-b border-white/20 pb-2">
-                <Store className="w-6 h-6 text-[#37B34A]" />
+            <div className="game-panel text-left p-6 max-w-2xl border-t-4 border-[#00AA13]">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2 game-text border-b border-gray-200 pb-2">
+                <Store className="w-6 h-6 text-[#00AA13]" />
                 Restaurant Details
               </h2>
               <form onSubmit={handleProfileSave} className="space-y-4">
                 <div>
-                  <label className="block text-xl text-gray-300 mb-2 game-text">Restaurant Name</label>
+                  <label className="block text-xl text-gray-700 mb-2 game-text">Restaurant Name</label>
                   <input
                     type="text"
                     value={profileName}
@@ -189,7 +190,7 @@ export function RestaurantDashboard() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xl text-gray-300 mb-2 game-text">Latitude</label>
+                    <label className="block text-xl text-gray-700 mb-2 game-text">Latitude</label>
                     <input
                       type="number"
                       step="any"
@@ -200,7 +201,7 @@ export function RestaurantDashboard() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xl text-gray-300 mb-2 game-text">Longitude</label>
+                    <label className="block text-xl text-gray-700 mb-2 game-text">Longitude</label>
                     <input
                       type="number"
                       step="any"

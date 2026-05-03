@@ -7,6 +7,7 @@ import { Restaurant, MenuItem } from "../types";
 import { FuelEstimateCard } from "./FuelEstimateCard";
 import { ChatModal } from "./ChatModal";
 import { SupplierInventory } from "./SupplierInventory";
+import { translate } from "../lib/i18n";
 
 // Setup custom leaflet icons because default paths get broken in bundlers
 const customIcon = new L.Icon({
@@ -37,7 +38,7 @@ function MapUpdater({ center, zoom }: { center: [number, number]; zoom: number }
 }
 
 export function SupplierDashboard() {
-  const { restaurants, proposeDeal, deals, updateDealStatus, activeSupplier, updateSupplierProfile, messages, updateSupplierInventory, calculateDynamicPrice } = useAppContext();
+  const { restaurants, proposeDeal, deals, updateDealStatus, activeSupplier, updateSupplierProfile, messages, updateSupplierInventory, calculateDynamicPrice, language } = useAppContext();
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
   const [activeTab, setActiveTab] = useState<"market" | "orders" | "inventory" | "profile">("market");
   
@@ -109,7 +110,7 @@ export function SupplierDashboard() {
 
   const renderMarketList = () => (
     <div className="p-4">
-      <h2 className="text-sm font-bold text-[#37B34A] uppercase tracking-wide mb-4 game-text border-b border-white/20 pb-1">Restaurants nearby</h2>
+      <h2 className="text-sm font-bold text-[#00AA13]  tracking-wide mb-4 game-text border-b border-gray-200 pb-1">Restaurants nearby</h2>
       <div className="space-y-4">
         {restaurants.map(restaurant => (
           <button
@@ -117,8 +118,8 @@ export function SupplierDashboard() {
             onClick={() => handleMarkerClick(restaurant)}
             className="w-full text-left p-4 game-panel-inner hover:bg-white/10 transition-all focus:outline-none cursor-pointer border-l-4 border-l-transparent hover:border-l-[#37B34A] group"
           >
-            <h3 className="font-bold text-white text-2xl game-text group-hover:text-[#37B34A]">{restaurant.name}</h3>
-            <p className="text-sm text-gray-300 mt-2 flex items-center gap-2 game-text">
+            <h3 className="font-bold text-gray-900 text-2xl game-text group-hover:text-[#00AA13]">{restaurant.name}</h3>
+            <p className="text-sm text-gray-700 mt-2 flex items-center gap-2 game-text">
               <Store className="w-5 h-5 text-gray-400" /> {restaurant.menu.length} menu items
             </p>
           </button>
@@ -129,21 +130,21 @@ export function SupplierDashboard() {
 
   const renderMarketDetail = () => (
     <div className="p-0">
-      <div className="p-4 bg-black/60 border-b border-white/10 flex justify-between items-center sticky top-0 z-10 gta-header">
-        <h2 className="text-2xl font-bold text-[#37B34A] truncate game-text">{selectedRestaurant?.name}</h2>
+      <div className="p-4 bg-white border-b border-gray-100 flex justify-between items-center sticky top-0 z-10 ">
+        <h2 className="text-2xl font-bold text-[#00AA13] truncate game-text">{selectedRestaurant?.name}</h2>
         <button 
           onClick={() => {
             setSelectedRestaurant(null);
             setDealItem(null);
             setMapCenter(defaultCenter);
           }}
-          className="p-2 text-white bg-[--color-gta-red] hover:bg-red-500 rounded-none transition-colors active:scale-95 border border-[--color-gta-red]"
+          className="p-2 text-white bg-[--color-gta-red] hover:bg-[#EE2737] rounded-none transition-colors active:scale-95 border border-[--color-gta-red]"
         >
           <X className="w-6 h-6" />
         </button>
       </div>
 
-      <div className="p-4 game-panel-inner rounded-none min-h-screen bg-transparent">
+      <div className="p-4 game-panel-inner rounded-none min-h-screen bg-white">
         {selectedRestaurant && (
           <FuelEstimateCard 
             restaurant={selectedRestaurant} 
@@ -151,40 +152,40 @@ export function SupplierDashboard() {
           />
         )}
 
-        <h3 className="text-lg font-bold text-[#37B34A] uppercase tracking-wide mb-3 mt-6 game-text border-b border-white/20 pb-1">Menu & Market Deals</h3>
+        <h3 className="text-lg font-bold text-[#00AA13]  tracking-wide mb-3 mt-6 game-text border-b border-gray-200 pb-1">Menu & Market Deals</h3>
         
         {!selectedRestaurant || selectedRestaurant.menu.length === 0 ? (
           <p className="text-gray-400 text-lg game-text font-bold">This restaurant hasn't added any menu items yet.</p>
         ) : (
           <div className="space-y-5">
             {selectedRestaurant.menu.map(item => (
-              <div key={item.id} className="game-panel-inner p-4 hover:border-[#37B34A] transition-colors group">
+              <div key={item.id} className="game-panel-inner p-4 hover:border-[#00AA13] transition-colors group">
                 <div className="flex justify-between items-center mb-3">
-                  <span className="font-bold text-xl text-white game-text group-hover:text-[#37B34A]">{item.name}</span>
-                  <span className="text-sm font-bold text-gray-500 game-text">#SKU-{item.id.substring(0,4).toUpperCase()}</span>
+                  <span className="font-bold text-xl text-gray-900 game-text group-hover:text-[#00AA13]">{item.name}</span>
+                  <span className="text-sm font-bold text-gray-400 game-text">#SKU-{item.id.substring(0,4).toUpperCase()}</span>
                 </div>
-                <div className="flex items-center justify-between mb-3 border-b border-white/10 pb-3">
+                <div className="flex items-center justify-between mb-3 border-b border-gray-100 pb-3">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-sm text-white bg-black/50 game-text uppercase px-2 py-1 border border-white/20">{item.category}</span>
+                    <span className="font-bold text-sm text-gray-900 bg-white game-text  px-2 py-1 border border-gray-200">{item.category}</span>
                     {item.quantity && (
-                      <span className="px-2 py-1 bg-black/50 text-[#1A92D4] text-sm font-bold uppercase border border-[#1A92D4]/50 game-text">
+                      <span className="px-2 py-1 bg-white text-[#EE2737] text-sm font-bold  border border-[#EE2737]/50 game-text">
                         Qty: {item.quantity}
                       </span>
                     )}
                   </div>
-                  <div className="text-2xl font-bold text-[#37B34A] game-text">${item.price.toFixed(2)}</div>
+                  <div className="text-2xl font-bold text-[#00AA13] game-text">Rp {item.price.toFixed(2)}</div>
                 </div>
                 
                 {dealItem?.id === item.id ? (
-                  <div className="mt-4 p-4 border border-white/20 bg-black/80 text-white space-y-4">
+                  <div className="mt-4 p-4 border border-gray-200 bg-white text-gray-900 space-y-4">
                     <div>
-                      <label className="block text-sm uppercase font-bold text-gray-400 mb-2 game-text tracking-wider">Your Target Supply Bid</label>
-                      <div className="flex items-center border-b border-[#37B34A] pb-1">
-                        <span className="text-3xl font-bold text-[#37B34A] mr-2 game-text">$</span>
+                      <label className="block text-sm  font-bold text-gray-400 mb-2 game-text tracking-wider">Your Target Supply Bid</label>
+                      <div className="flex items-center border-b border-[#00AA13] pb-1">
+                        <span className="text-3xl font-bold text-[#00AA13] mr-2 game-text"></span>
                         <input 
                           type="number" 
                           placeholder="0.00"
-                          className="flex-1 w-full bg-transparent border-none focus:ring-0 text-3xl font-bold text-[#37B34A] p-0 outline-none game-text placeholder-gray-600"
+                          className="flex-1 w-full bg-white border-none focus:ring-0 text-3xl font-bold text-[#00AA13] p-0 outline-none game-text placeholder-gray-600"
                           value={proposedPrice}
                           onChange={e => setProposedPrice(e.target.value)}
                         />
@@ -192,11 +193,11 @@ export function SupplierDashboard() {
                     </div>
                     
                     <div>
-                      <label className="block text-sm uppercase font-bold text-gray-400 mb-2 flex items-center justify-between game-text tracking-wider">
+                      <label className="block text-sm  font-bold text-gray-400 mb-2 flex items-center justify-between game-text tracking-wider">
                         <span>Product Photo (Optional)</span>
                         <button 
                           onClick={() => fileInputRef.current?.click()}
-                          className="flex items-center gap-1 text-[#1A92D4] hover:text-white transition-colors bg-transparent px-2 py-1 border border-[#1A92D4]"
+                          className="flex items-center gap-1 text-[#EE2737] hover:text-gray-900 transition-colors bg-white px-2 py-1 border border-[#EE2737]"
                         >
                           <ImagePlus className="w-4 h-4" /> Upload
                         </button>
@@ -208,36 +209,36 @@ export function SupplierDashboard() {
                         ref={fileInputRef}
                         onChange={handleFileChange}
                       />
-                      <div className="flex items-center border-b border-white/20 pb-2 mt-2">
+                      <div className="flex items-center border-b border-gray-200 pb-2 mt-2">
                         <span className="text-gray-400 mr-2"><LinkIcon className="w-5 h-5" /></span>
                         <input 
                           type="text" 
                           placeholder="Or paste image URL"
-                          className="flex-1 w-full bg-transparent border-none focus:ring-0 text-lg p-0 outline-none placeholder-gray-500 text-white game-text"
+                          className="flex-1 w-full bg-white border-none focus:ring-0 text-lg p-0 outline-none placeholder-gray-500 text-gray-900 game-text"
                           value={mediaUrl}
                           onChange={e => setMediaUrl(e.target.value)}
                         />
                       </div>
                       {mediaUrl && (
-                        <div className="mt-3 relative border border-white/20 bg-black/50 h-32 p-1">
+                        <div className="mt-3 relative border border-gray-200 bg-white h-32 p-1">
                           <img src={mediaUrl} alt="Preview" className="w-full h-full object-contain filter grayscale hover:grayscale-0 transition-opacity" />
                         </div>
                       )}
                     </div>
 
-                    <div className="flex gap-3 pt-4 border-t border-white/20">
+                    <div className="flex gap-3 pt-4 border-t border-gray-200">
                       <button 
                         onClick={() => {
                           setDealItem(null);
                           setMediaUrl("");
                         }}
-                        className="px-4 py-2 border border-white/20 bg-transparent text-white hover:bg-white/10 game-text transition-colors text-lg"
+                        className="px-4 py-2 border border-gray-200 bg-white text-gray-900 hover:bg-white/10 game-text transition-colors text-lg"
                       >
                         Cancel
                       </button>
                       <button 
                         onClick={handleProposeDeal}
-                        className="flex-1 game-btn game-btn-green py-2 text-lg font-bold transition-all text-white game-text px-4"
+                        className="flex-1 game-btn game-btn-green py-2 text-lg font-bold transition-all text-gray-900 game-text px-4"
                       >
                         Send Proposal
                       </button>
@@ -246,7 +247,7 @@ export function SupplierDashboard() {
                 ) : (
                   <button 
                     onClick={() => setDealItem(item)}
-                    className="mt-3 w-full py-3 border border-white/20 bg-transparent text-white hover:bg-[#37B34A] hover:border-[#37B34A] hover:text-white text-lg font-bold game-text transition-colors uppercase"
+                    className="mt-3 w-full py-3 border border-gray-200 bg-white text-white hover:bg-[#00AA13] hover:border-[#00AA13] hover:text-white text-lg font-bold game-text transition-colors "
                   >
                     Propose Deal
                   </button>
@@ -261,10 +262,10 @@ export function SupplierDashboard() {
 
   const renderOrders = () => (
     <div className="p-4">
-      <h2 className="text-sm font-bold text-[#37B34A] uppercase tracking-wide mb-4 game-text border-b border-white/20 pb-1">My Deal Bids & Orders</h2>
+      <h2 className="text-sm font-bold text-[#00AA13]  tracking-wide mb-4 game-text border-b border-gray-200 pb-1">My Deal Bids & Orders</h2>
       <div className="space-y-5">
         {deals.filter(d => d.supplierId === activeSupplier.id).length === 0 ? (
-          <div className="text-center py-12 text-lg font-bold text-gray-500 border border-white/10 bg-transparent game-text">You haven't proposed any deals yet.</div>
+          <div className="text-center py-12 text-lg font-bold text-gray-400 border border-gray-100 bg-white game-text">You haven't proposed any deals yet.</div>
         ) : (
           deals.filter(d => d.supplierId === activeSupplier.id).map((deal) => {
             const restaurant = restaurants.find(r => r.id === deal.restaurantId);
@@ -272,24 +273,24 @@ export function SupplierDashboard() {
             const unreadCount = messages.filter(m => m.dealId === deal.id && m.senderRole === "restaurant" && !m.isRead).length;
             
             return (
-              <div key={deal.id} className="game-panel-inner p-4 hover:border-white/20 transition-colors">
+              <div key={deal.id} className="game-panel-inner p-4 hover:border-gray-200 transition-colors">
                 <div className="flex justify-between items-start mb-3">
                   <div>
-                    <span className="font-bold text-xl text-white game-text">{item?.name || "Unknown Item"}</span>
-                    <div className="text-sm font-bold text-[#1A92D4] game-text uppercase mt-1">{restaurant?.name}</div>
+                    <span className="font-bold text-xl text-gray-900 game-text">{item?.name || "Unknown Item"}</span>
+                    <div className="text-sm font-bold text-[#EE2737] game-text  mt-1">{restaurant?.name}</div>
                   </div>
-                  <span className={`text-sm font-bold px-3 py-1 border uppercase game-text ${
-                    deal.status === 'Accepted' ? 'bg-[#37B34A] text-white border-[#37B34A]' :
-                    deal.status === 'Rejected' ? 'bg-[--color-gta-red] text-white border-[--color-gta-red]' :
+                  <span className={`text-sm font-bold px-3 py-1 border  game-text ${
+                    deal.status === 'Accepted' ? 'bg-[#00AA13] text-white border-[#00AA13]' :
+                    deal.status === 'Rejected' ? 'bg-[#EE2737] text-white border-[--color-gta-red]' :
                     deal.status === 'On Delivery' ? 'bg-[#F1B51A] text-black border-[#F1B51A]' :
-                    deal.status === 'Delivered' ? 'bg-purple-600 text-white border-purple-600' :
-                    'bg-transparent text-gray-400 border-gray-600'
+                    deal.status === 'Delivered' ? 'bg-purple-600 text-gray-900 border-purple-600' :
+                    'bg-white text-gray-400 border-gray-600'
                   }`}>
                     {deal.status}
                   </span>
                 </div>
-                <div className="text-2xl font-bold text-[#37B34A] mb-4 border-b border-white/10 pb-3 game-text">
-                  ${deal.proposedPrice.toFixed(2)}
+                <div className="text-2xl font-bold text-[#00AA13] mb-4 border-b border-gray-100 pb-3 game-text">
+                  Rp {deal.proposedPrice.toFixed(2)}
                 </div>
                 
                 {/* Status update actions for accepted deals */}
@@ -297,11 +298,11 @@ export function SupplierDashboard() {
                   <div className="flex gap-3">
                     <button 
                       onClick={() => setActiveChatDeal(deal)}
-                      className="flex-1 py-2 bg-transparent border border-[#1A92D4] text-[#1A92D4] hover:bg-[#1A92D4] hover:text-white text-sm font-bold transition-colors game-text uppercase flex items-center justify-center gap-2 relative"
+                      className="flex-1 py-2 bg-white border border-[#EE2737] text-[#EE2737] hover:bg-[#EE2737] hover:text-white text-sm font-bold transition-colors game-text  flex items-center justify-center gap-2 relative"
                     >
                       <MessageCircle className="w-4 h-4" /> Chat
                       {unreadCount > 0 && (
-                        <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full shadow-[0_0_10px_rgba(220,38,38,0.8)]">
+                        <span className="absolute -top-2 -right-2 bg-red-600 text-gray-900 text-[10px] w-5 h-5 flex items-center justify-center rounded-full shadow-[0_0_10px_rgba(220,38,38,0.8)]">
                           {unreadCount}
                         </span>
                       )}
@@ -309,7 +310,7 @@ export function SupplierDashboard() {
                     {deal.status === 'Accepted' && (
                       <button 
                         onClick={() => updateDealStatus(deal.id, 'On Delivery')}
-                        className="flex-1 py-2 bg-transparent border border-[#F1B51A] text-[#F1B51A] hover:bg-[#F1B51A] hover:text-black text-sm font-bold transition-colors game-text uppercase"
+                        className="flex-1 py-2 bg-white border border-[#F1B51A] text-[#F1B51A] hover:bg-[#F1B51A] hover:text-black text-sm font-bold transition-colors game-text "
                       >
                         Mark On Delivery
                       </button>
@@ -317,7 +318,7 @@ export function SupplierDashboard() {
                     {(deal.status === 'Accepted' || deal.status === 'On Delivery') && (
                       <button 
                         onClick={() => updateDealStatus(deal.id, 'Delivered')}
-                        className="flex-1 py-2 bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white text-sm font-bold transition-colors game-text uppercase"
+                        className="flex-1 py-2 bg-white border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-gray-900 text-sm font-bold transition-colors game-text "
                       >
                         Mark Delivered
                       </button>
@@ -334,11 +335,11 @@ export function SupplierDashboard() {
 
   const renderProfile = () => (
     <div className="p-4">
-      <h2 className="text-sm font-bold text-[#37B34A] uppercase tracking-wide mb-4 game-text border-b border-white/20 pb-1">Supplier Profile</h2>
-      <div className="game-panel-inner p-6 gta-header border-t-4 border-[#37B34A]">
+      <h2 className="text-sm font-bold text-[#00AA13]  tracking-wide mb-4 game-text border-b border-gray-200 pb-1">Supplier Profile</h2>
+      <div className="game-panel-inner p-6 gta-header border-t-4 border-[#00AA13]">
         <form onSubmit={handleProfileSave} className="space-y-5">
           <div>
-            <label className="block text-xl text-gray-300 mb-2 game-text">Supplier Name</label>
+            <label className="block text-xl text-gray-700 mb-2 game-text">Supplier Name</label>
             <input
               type="text"
               value={profileName}
@@ -349,7 +350,7 @@ export function SupplierDashboard() {
           </div>
           <div className="grid grid-cols-2 gap-5">
             <div>
-              <label className="block text-xl text-gray-300 mb-2 game-text">Latitude</label>
+              <label className="block text-xl text-gray-700 mb-2 game-text">Latitude</label>
               <input
                 type="number"
                 step="any"
@@ -360,7 +361,7 @@ export function SupplierDashboard() {
               />
             </div>
             <div>
-              <label className="block text-xl text-gray-300 mb-2 game-text">Longitude</label>
+              <label className="block text-xl text-gray-700 mb-2 game-text">Longitude</label>
               <input
                 type="number"
                 step="any"
@@ -372,7 +373,7 @@ export function SupplierDashboard() {
             </div>
           </div>
           <div className="pt-4">
-            <button type="submit" className="w-full py-3 game-btn game-btn-green font-bold transition-all text-xl game-text tracking-widest text-white uppercase rounded-none">
+            <button type="submit" className="w-full py-3 game-btn game-btn-green font-bold transition-all text-xl game-text  text-gray-900  rounded-none">
               Save Profile
             </button>
           </div>
@@ -382,53 +383,53 @@ export function SupplierDashboard() {
   );
 
   return (
-    <div className="flex h-screen bg-transparent flex-col md:flex-row overflow-hidden relative">
+    <div className="flex h-screen bg-white flex-col md:flex-row overflow-hidden relative">
       
       {/* Sidebar: List of Restaurants or Selected Restaurant Detail */}
-      <div className="w-full md:w-96 game-panel rounded-none flex flex-col h-full z-10 border-0 border-r border-white/10 shrink-0 relative">
+      <div className="w-full md:w-96 game-panel rounded-none flex flex-col h-full z-10 border-0 border-r border-gray-100 shrink-0 relative">
         <div className="flex items-center justify-between px-6 py-5 bg-[--color-gta-panel] gta-header">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-[#37B34A] border border-white/20 flex items-center justify-center shadow-none">
-              <Truck className="w-7 h-7 text-white" />
+            <div className="w-12 h-12 bg-[#00AA13] border border-gray-200 flex items-center justify-center shadow-sm">
+              <Truck className="w-7 h-7 text-gray-900" />
             </div>
-            <span className="text-3xl font-bold tracking-tight text-white game-title drop-shadow-none">SupplyMap</span>
+            <span className="text-3xl font-bold  text-gray-900 game-title drop-shadow-sm">Dapurku</span>
           </div>
-          <span className="px-3 py-1 bg-[#1A92D4] border border-[#1A92D4] text-white text-xs font-bold uppercase game-text shadow-none">Supplier</span>
+          <span className="px-3 py-1 bg-[#EE2737] border border-[#EE2737] text-white text-xs font-bold  game-text shadow-sm">{translate("Supplier Portal", language)}</span>
         </div>
 
-        <div className="flex border-b border-white/10 bg-[--color-gta-panel]">
+        <div className="flex border-b border-gray-100 bg-[--color-gta-panel]">
           <button 
-            className={`flex-1 py-3 text-sm font-bold game-text uppercase border-r border-white/10 transition-colors ${activeTab === 'market' ? 'bg-[#37B34A] text-white' : 'text-gray-400 hover:bg-white/10'}`}
+            className={`flex-1 py-3 text-sm font-bold game-text  border-r border-gray-100 transition-colors ${activeTab === 'market' ? 'bg-[#00AA13] text-white' : 'text-gray-400 hover:bg-white/10'}`}
             onClick={() => setActiveTab('market')}
           >
-            Market
+            {translate("Marketplace Map", language).split(" ")[0]}
           </button>
           <button 
-            className={`flex-1 py-3 text-sm font-bold game-text uppercase border-r border-white/10 transition-colors relative ${activeTab === 'orders' ? 'bg-[#37B34A] text-white' : 'text-gray-400 hover:bg-white/10'}`}
+            className={`flex-1 py-3 text-sm font-bold game-text  border-r border-gray-100 transition-colors relative ${activeTab === 'orders' ? 'bg-[#00AA13] text-white' : 'text-gray-400 hover:bg-white/10'}`}
             onClick={() => setActiveTab('orders')}
           >
-            Orders
+            {translate("Deals", language)}
             {totalUnreadOrders > 0 && (
-              <span className="absolute top-1 right-1 bg-red-600 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full shadow-[0_0_10px_rgba(220,38,38,0.8)]">
+              <span className="absolute top-1 right-1 bg-red-600 text-gray-900 text-[10px] w-4 h-4 flex items-center justify-center rounded-full shadow-[0_0_10px_rgba(220,38,38,0.8)]">
                 {totalUnreadOrders}
               </span>
             )}
           </button>
           <button 
-            className={`flex-1 py-3 text-sm font-bold game-text uppercase border-r border-white/10 transition-colors ${activeTab === 'inventory' ? 'bg-[#37B34A] text-white' : 'text-gray-400 hover:bg-white/10'}`}
+            className={`flex-1 py-3 text-sm font-bold game-text  border-r border-gray-100 transition-colors ${activeTab === 'inventory' ? 'bg-[#00AA13] text-white' : 'text-gray-400 hover:bg-white/10'}`}
             onClick={() => setActiveTab('inventory')}
           >
-            Inventory
+            {translate("Inventory", language)}
           </button>
           <button 
-            className={`flex-1 py-3 text-sm font-bold game-text uppercase transition-colors ${activeTab === 'profile' ? 'bg-[#37B34A] text-white' : 'text-gray-400 hover:bg-white/10'}`}
+            className={`flex-1 py-3 text-sm font-bold game-text  transition-colors ${activeTab === 'profile' ? 'bg-[#00AA13] text-white' : 'text-gray-400 hover:bg-white/10'}`}
             onClick={() => setActiveTab('profile')}
           >
-            Profile
+            {translate("Profile", language)}
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto w-full bg-transparent">
+        <div className="flex-1 overflow-y-auto w-full bg-white">
           {activeTab === "market" && !selectedRestaurant && renderMarketList()}
           {activeTab === "market" && selectedRestaurant && renderMarketDetail()}
           {activeTab === "orders" && renderOrders()}
@@ -477,7 +478,7 @@ export function SupplierDashboard() {
               >
                 <Popup>
                   <div className="font-semibold">{restaurant.name}</div>
-                  <div className="text-xs text-gray-500 mt-1">{restaurant.menu?.length || 0} menu items</div>
+                  <div className="text-xs text-gray-400 mt-1">{restaurant.menu?.length || 0} menu items</div>
                 </Popup>
               </Marker>
             );

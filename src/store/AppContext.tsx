@@ -28,6 +28,9 @@ interface AppContextType {
   messages: ChatMessage[];
   sendMessage: (dealId: string, text: string, senderId: string, senderRole: "restaurant" | "supplier") => void;
   markMessagesAsRead: (dealId: string, readByRole: "restaurant" | "supplier") => void;
+  // Language actions
+  language: "en" | "id";
+  setLanguage: (lang: "en" | "id") => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -113,6 +116,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return saved ? JSON.parse(saved) : [];
   });
 
+  const [language, setLanguage] = useState<"en" | "id">(() => {
+    const saved = localStorage.getItem("supplymap_language");
+    return saved === "id" ? "id" : "en";
+  });
+
   const [currentUserMode, setCurrentUserMode] = useState<"restaurant" | "supplier">("restaurant");
   // Simulating being logged in as the first restaurant
   const [activeRestaurantId] = useState<string>("r-1");
@@ -136,6 +144,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     localStorage.setItem("supplymap_messages", JSON.stringify(messages));
   }, [messages]);
+
+  useEffect(() => {
+    localStorage.setItem("supplymap_language", language);
+  }, [language]);
 
   const addMenuItem = (restaurantId: string, item: Omit<MenuItem, "id">) => {
     setRestaurants(prev => prev.map(r => 
@@ -286,7 +298,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       updateDealStatus,
       messages,
       sendMessage,
-      markMessagesAsRead
+      markMessagesAsRead,
+      language,
+      setLanguage
     }}>
       {children}
     </AppContext.Provider>

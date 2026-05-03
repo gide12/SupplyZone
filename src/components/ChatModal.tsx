@@ -45,32 +45,32 @@ export function ChatModal({ deal, onClose, currentUserRole }: ChatModalProps) {
   const getPartnerName = () => currentUserRole === "restaurant" ? supplierName : restaurantName;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="game-panel w-full max-w-md h-[80vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200 border-t-4 border-[#37B34A]">
+    <div className="fixed inset-0 bg-white backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="game-panel w-full max-w-md h-[80vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200 border-t-4 border-[#00AA13]">
         
         {/* Header */}
-        <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-[--color-gta-panel] gta-header sticky top-0 z-10 shrink-0">
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-[--color-gta-panel]  sticky top-0 z-10 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-black border border-[#37B34A] flex items-center justify-center">
-              {currentUserRole === 'restaurant' ? <Truck className="w-5 h-5 text-[#37B34A]" /> : <Store className="w-5 h-5 text-[#37B34A]" />}
+            <div className="w-10 h-10 bg-white border border-[#00AA13] flex items-center justify-center">
+              {currentUserRole === 'restaurant' ? <Truck className="w-5 h-5 text-[#00AA13]" /> : <Store className="w-5 h-5 text-[#00AA13]" />}
             </div>
             <div className="truncate">
-              <h2 className="text-xl font-bold text-white game-title truncate">{getPartnerName()}</h2>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest game-text">Direct Contact</p>
+              <h2 className="text-xl font-bold text-gray-900 game-title truncate">{getPartnerName()}</h2>
+              <p className="text-xs font-bold text-gray-400   game-text">Direct Contact</p>
             </div>
           </div>
           <button 
             onClick={onClose}
-            className="p-2 bg-transparent hover:bg-white/10 border border-white/20 text-gray-400 hover:text-white transition-all shrink-0 ml-2"
+            className="p-2 bg-white hover:bg-white/10 border border-gray-200 text-gray-400 hover:text-gray-900 transition-all shrink-0 ml-2"
           >
             <X className="w-6 h-6" />
           </button>
         </div>
 
         {/* Messages */}
-        <div className="p-4 overflow-y-auto flex-1 bg-black/80 flex flex-col space-y-4">
+        <div className="p-4 overflow-y-auto flex-1 bg-white flex flex-col space-y-4">
           {dealMessages.length === 0 ? (
-            <div className="text-center py-12 text-gray-500 font-bold game-text">
+            <div className="text-center py-12 text-gray-400 font-bold game-text">
               No messages yet.<br/>Start the conversation!
             </div>
           ) : (
@@ -78,10 +78,10 @@ export function ChatModal({ deal, onClose, currentUserRole }: ChatModalProps) {
               const isMine = msg.senderRole === currentUserRole;
               return (
                 <div key={msg.id} className={`flex flex-col max-w-[80%] ${isMine ? 'self-end items-end' : 'self-start items-start'}`}>
-                  <div className={`p-3 game-text ${isMine ? 'bg-[#37B34A] text-white border border-[#37B34A]' : 'bg-black/40 text-gray-200 border border-white/20'}`}>
+                  <div className={`p-3 game-text ${isMine ? 'bg-[#00AA13] text-white border border-[#00AA13]' : 'bg-white text-gray-200 border border-gray-200'}`}>
                     <p className="font-bold text-lg">{msg.text}</p>
                   </div>
-                  <span className="text-[10px] text-gray-500 mt-1 uppercase font-bold game-text">
+                  <span className="text-[10px] text-gray-400 mt-1  font-bold game-text">
                     {new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                   </span>
                 </div>
@@ -92,11 +92,11 @@ export function ChatModal({ deal, onClose, currentUserRole }: ChatModalProps) {
         </div>
 
         {/* Input */}
-        <div className="p-4 border-t border-white/10 bg-[--color-gta-panel] shrink-0">
+        <div className="p-4 border-t border-gray-100 bg-[--color-gta-panel] shrink-0">
           <div className="flex gap-2">
             <input 
               type="text" 
-              className="flex-1 px-4 py-3 bg-black/60 border border-white/20 text-white focus:outline-none focus:border-[#37B34A] game-text font-bold"
+              className="flex-1 px-4 py-3 bg-white border border-gray-200 text-gray-900 focus:outline-none focus:border-[#00AA13] game-text font-bold"
               placeholder="Type your message..."
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
@@ -106,7 +106,7 @@ export function ChatModal({ deal, onClose, currentUserRole }: ChatModalProps) {
             />
             <button 
               onClick={handleSend}
-              className="px-4 py-3 game-btn game-btn-blue text-white flex items-center justify-center shrink-0"
+              className="px-4 py-3 game-btn game-btn-blue text-gray-900 flex items-center justify-center shrink-0"
               disabled={!inputText.trim()}
             >
               <Send className="w-5 h-5" />

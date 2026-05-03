@@ -1,5 +1,5 @@
 {
-  "name": "SupplyMap",
+  "name": "Dapurku",
   "description": "A marketplace connecting restaurants and suppliers via an interactive map.",
   "requestFramePermissions": [
     "geolocation"
