@@ -13,6 +13,7 @@ export interface RestaurantInventoryItem {
   id: string;
   name: string;
   quantity: number;
+  unit?: string;
   spaceUsed: number;
   expirationDate: string;
 }
@@ -22,6 +23,8 @@ export interface Restaurant {
   name: string;
   lat: number;
   lng: number;
+  address?: string;
+  address?: string;
   menu: MenuItem[];
   inventory?: RestaurantInventoryItem[];
 }
@@ -30,6 +33,7 @@ export interface SupplierInventoryItem {
   id: string;
   name: string;
   quantity: number;
+  unit?: string;
   basePrice: number;
   spaceUsed?: number;
   expirationDate?: string;

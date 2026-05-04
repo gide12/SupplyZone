@@ -1,6 +1,8 @@
 import React, { useState, useRef } from "react";
 import { Package, Trash2, Plus, BrainCircuit, Loader2, UploadCloud, Camera } from "lucide-react";
 import { useAppContext } from "../store/AppContext";
+import { WeatherForecastModal } from "./WeatherForecastModal";
+import { CloudRain } from "lucide-react";
 import { GoogleGenAI, Type } from "@google/genai";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -17,11 +19,13 @@ export function SupplierInventory() {
 
   const [newName, setNewName] = useState("");
   const [newQuantity, setNewQuantity] = useState("");
+  const [newUnit, setNewUnit] = useState("");
   const [newBasePrice, setNewBasePrice] = useState("");
   const [newSpace, setNewSpace] = useState("");
   const [newExp, setNewExp] = useState("");
 
   const [loading, setLoading] = useState(false);
+  const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
   const [aiReport, setAiReport] = useState<{
     efficiencyScore: number;
     effectivenessScore: number;
@@ -46,6 +50,7 @@ export function SupplierInventory() {
       id: `sinv-${Date.now()}`,
       name: newName,
       quantity: Number(newQuantity),
+      unit: newUnit,
       basePrice: Number(newBasePrice),
       spaceUsed: Number(newSpace),
       expirationDate: newExp,
@@ -54,6 +59,7 @@ export function SupplierInventory() {
     updateSupplierInventory(activeSupplier.id, [...inventory, newItem]);
     setNewName("");
     setNewQuantity("");
+    setNewUnit("");
     setNewBasePrice("");
     setNewSpace("");
     setNewExp("");
@@ -70,7 +76,7 @@ export function SupplierInventory() {
     setLoading(true);
     try {
       let contents: any[] = [];
-      const prompt = `Extract inventory items from this document (image of receipt/invoice or CSV text). Provide a JSON array. For each item: name, quantity (number), basePrice (number, if not provided guess e.g. 5.0), spaceUsed (number in sqft, if not provided guess e.g. 1.0 or 0.5), and expirationDate (YYYY-MM-DD, if not provided guess e.g. 1-2 weeks from now).`;
+      const prompt = `Extract inventory items from this document (image of receipt/invoice or CSV text). Provide a JSON array. For each item: name, quantity (number), unit (string: one of kg, Liter, Drum, Karton, Karung, Pallet, Biji), basePrice (number, if not provided guess e.g. 5.0), spaceUsed (number in sqft, if not provided guess e.g. 1.0 or 0.5), and expirationDate (YYYY-MM-DD, if not provided guess e.g. 1-2 weeks from now).`;
 
       if (file.type.startsWith('image/')) {
         const reader = new FileReader();
@@ -100,11 +106,12 @@ export function SupplierInventory() {
               properties: {
                 name: { type: Type.STRING },
                 quantity: { type: Type.NUMBER },
+                unit: { type: Type.STRING },
                 basePrice: { type: Type.NUMBER },
                 spaceUsed: { type: Type.NUMBER },
                 expirationDate: { type: Type.STRING, description: "YYYY-MM-DD" },
               },
-              required: ["name", "quantity", "basePrice", "spaceUsed", "expirationDate"]
+              required: ["name", "quantity", "unit", "basePrice", "spaceUsed", "expirationDate"]
             }
           }
         }
@@ -116,6 +123,7 @@ export function SupplierInventory() {
           id: `sinv-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           name: item.name,
           quantity: item.quantity,
+          unit: item.unit,
           basePrice: item.basePrice,
           spaceUsed: item.spaceUsed,
           expirationDate: item.expirationDate
@@ -215,10 +223,17 @@ export function SupplierInventory() {
                  <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Item Name</label>
                  <input type="text" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none focus:border-[#00AA13]" placeholder="e.g., Avocado Toast" value={newName} onChange={e => setNewName(e.target.value)} required />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
                    <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Quantity</label>
                    <input type="number" min="1" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none focus:border-[#00AA13]" value={newQuantity} onChange={e => setNewQuantity(e.target.value)} required />
+                </div>
+                <div>
+                   <label className="block text-xs font-bold text-gray-400 mb-1 game-text">Unit</label>
+                   <select className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none focus:border-[#00AA13]" value={newUnit} onChange={e => setNewUnit(e.target.value)} required>
+                     <option value="">Select</option>
+                     <option value="kg">kg</option><option value="Liter">Liter</option><option value="Drum">Drum</option><option value="Karton">Karton</option><option value="Karung">Karung</option><option value="Pallet">Pallet</option><option value="Biji">Biji</option>
+                   </select>
                 </div>
                 <div>
                    <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Base Price (Rp)</label>
@@ -277,9 +292,9 @@ export function SupplierInventory() {
           </div>
 
           <div className="mb-6">
-            <div className="bg-[#EE2737]/10 border border-[#EE2737] p-5 relative">
-              <h3 className="font-bold text-[#EE2737] text-xl game-title   flex items-center gap-2 mb-4">
-                 <BrainCircuit className="w-6 h-6" /> AI Logistics Engine
+            <div className="bg-white border border-gray-200 p-6 relative shadow-sm">
+              <h3 className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 text-xl game-title flex items-center gap-2 mb-4">
+                 <BrainCircuit className="w-6 h-6 text-purple-600" /> <span className="text-gray-900">AI</span> Logistics Engine
               </h3>
               <p className="game-text text-gray-700 text-sm mb-6 leading-relaxed">
                  Evaluate warehouse efficiency, market effectiveness against dominant products (Avocado Toast, etc.), and expiration warnings.
@@ -288,11 +303,21 @@ export function SupplierInventory() {
               <button 
                 onClick={handleAICalculation}
                 disabled={loading || inventory.length === 0}
-                className="w-full py-3 bg-[#EE2737] hover:bg-[#EE2737]/80 disabled:bg-gray-800 disabled:text-white text-gray-900 font-bold  game-text text-lg flex items-center justify-center gap-2 transition-colors border border-[#EE2737] mb-6"
+                className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:opacity-90 disabled:bg-gray-200 disabled:text-gray-400 disabled:from-gray-200 disabled:to-gray-200 disabled:border-gray-200 disabled:shadow-none text-white font-bold game-text text-lg flex items-center justify-center gap-2 transition-all shadow-sm mb-3"
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <BrainCircuit className="w-5 h-5" />}
-                {loading ? "Analyzing Matrix..." : "Calculate Efficiency & Capacity"}
+                {loading ? "Analyzing Matrix..." : "Hitung Kapasitas"}
               </button>
+
+            <button 
+              onClick={() => setIsWeatherModalOpen(true)}
+              disabled={inventory.length === 0}
+              className="w-full py-3 bg-white hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400 text-blue-600 font-bold game-text text-lg flex items-center justify-center gap-2 transition-all border border-blue-600 shadow-sm mb-6"
+            >
+              <CloudRain className="w-5 h-5" />
+              Cek Harga
+            </button>
+    
 
               {aiReport && (
                 <div className="space-y-4 animate-in fade-in duration-300">
@@ -387,7 +412,7 @@ export function SupplierInventory() {
                       <div className="text-sm font-bold text-gray-400 game-text space-x-2 mt-1 flex flex-wrap gap-2">
                         <span>Base: Rp {item.basePrice.toFixed(2)}</span>
                         <span>|</span>
-                        <span>Qty: {item.quantity}</span>
+                        <span>Qty: {item.quantity} {item.unit || ""}</span>
                         <span>|</span>
                         <span>Space: {item.spaceUsed || 'N/A'} sqft</span>
                       </div>
@@ -410,6 +435,7 @@ export function SupplierInventory() {
           </div>
         </div>
       </div>
+      <WeatherForecastModal isOpen={isWeatherModalOpen} onClose={() => setIsWeatherModalOpen(false)} inventory={inventory as any} />
     </div>
   );
 }

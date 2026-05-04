@@ -201,7 +201,7 @@ export function MenuManager() {
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={() => { setIsAdding(false); resetForm(); }}
-                className="px-6 py-2 text-lg font-bold text-gray-900 border border-gray-200 hover:bg-white/10 transition-colors game-text bg-white"
+                className="px-6 py-2 text-lg font-bold text-gray-900 border border-gray-200 hover:bg-gray-50 transition-colors game-text bg-white rounded-xl"
               >
                 Cancel
               </button>
@@ -273,7 +273,7 @@ export function MenuManager() {
                     <div className="flex justify-end gap-2">
                       <button
                         onClick={() => setIsEditing(null)}
-                        className="p-3 text-gray-900 border border-gray-200 bg-white hover:bg-white/10 transition-all"
+                        className="p-3 rounded-lg text-gray-900 border border-gray-200 bg-white hover:bg-gray-50 transition-all"
                         title="Cancel"
                       >
                         <X className="w-6 h-6" />
@@ -345,12 +345,14 @@ export function MenuManager() {
                             </h5>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               {itemDeals.map(deal => {
-                                const supplierName = suppliers.find(s => s.id === deal.supplierId)?.name || "Unknown Supplier";
+                                const supplier = suppliers.find(s => s.id === deal.supplierId);
+                                const supplierName = supplier?.name || "Unknown Supplier";
                                 const unreadCount = messages.filter(m => m.dealId === deal.id && m.senderRole === "supplier" && !m.isRead).length;
                                 return (
                                   <div key={deal.id} className="p-3 bg-white border border-gray-100 space-y-2 relative shadow-sm">
-                                    <div className="flex items-center justify-between">
+                                    <div className="flex items-start justify-between pb-2">
                                       <span className="font-bold text-lg text-gray-900 truncate mr-2 game-text" title={supplierName}>{supplierName}</span>
+                                      {supplier?.address && <div className="text-xs text-gray-500 font-bold absolute top-10 left-3 truncate w-40">{supplier.address}</div>}
                                       <span className="font-bold text-2xl text-[#00AA13] game-text">Rp {deal.proposedPrice.toFixed(2)}</span>
                                     </div>
                                     <div className="flex items-center justify-between mt-3">

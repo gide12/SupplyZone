@@ -12,12 +12,12 @@ interface AppContextType {
   addMenuItem: (restaurantId: string, item: Omit<MenuItem, "id">) => void;
   updateMenuItem: (restaurantId: string, itemId: string, item: Omit<MenuItem, "id">) => void;
   deleteMenuItem: (restaurantId: string, itemId: string) => void;
-  updateRestaurantProfile: (id: string, name: string, lat: number, lng: number) => void;
+  updateRestaurantProfile: (id: string, name: string, lat: number, lng: number, address?: string) => void;
   updateRestaurantInventory: (id: string, inventory: RestaurantInventoryItem[]) => void;
   // Supplier actions
   suppliers: SupplierProfile[];
   activeSupplier: SupplierProfile;
-  updateSupplierProfile: (id: string, name: string, lat: number, lng: number) => void;
+  updateSupplierProfile: (id: string, name: string, lat: number, lng: number, address?: string) => void;
   updateSupplierInventory: (id: string, inventory: SupplierInventoryItem[]) => void;
   // Dynamic Pricing
   calculateDynamicPrice: (itemName: string) => { estimatedPrice: number; marketSupply: number; marketDemand: number };
@@ -174,9 +174,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ));
   };
 
-  const updateRestaurantProfile = (id: string, name: string, lat: number, lng: number) => {
+  const updateRestaurantProfile = (id: string, name: string, lat: number, lng: number, address?: string) => {
     setRestaurants(prev => prev.map(r => 
-      r.id === id ? { ...r, name, lat, lng } : r
+      r.id === id ? { ...r, name, lat, lng, address } : r
     ));
   };
 
@@ -186,10 +186,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ));
   };
 
-  const updateSupplierProfile = (id: string, name: string, lat: number, lng: number) => {
-    setSuppliers(prev => prev.map(s => s.id === id ? { ...s, name, lat, lng } : s));
+  const updateSupplierProfile = (id: string, name: string, lat: number, lng: number, address?: string) => {
+    setSuppliers(prev => prev.map(s => s.id === id ? { ...s, name, lat, lng, address } : s));
     if (activeSupplier.id === id) {
-      setActiveSupplier(prev => ({ ...prev, name, lat, lng }));
+      setActiveSupplier(prev => ({ ...prev, name, lat, lng, address }));
     }
   };
 
