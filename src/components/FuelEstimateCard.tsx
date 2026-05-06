@@ -34,7 +34,7 @@ Assuming I am driving a standard delivery van (around 15-20 MPG) and average fue
 4. Brief AI note on the route (e.g. traffic expectations or route summary in a city like London).`;
 
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-2.5-flash",
         contents: prompt,
         config: {
           responseMimeType: "application/json",

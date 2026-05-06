@@ -1,7 +1,8 @@
 import React, { useState, useRef } from "react";
-import { Package, Trash2, Plus, BrainCircuit, Loader2, UploadCloud, Camera } from "lucide-react";
+import { Package, Trash2, Plus, BrainCircuit, Loader2, UploadCloud, Camera, CalendarClock } from "lucide-react";
 import { useAppContext } from "../store/AppContext";
 import { WeatherForecastModal } from "./WeatherForecastModal";
+import { EstimateExpirationModal } from "./EstimateExpirationModal";
 import { CloudRain } from "lucide-react";
 import { GoogleGenAI, Type } from "@google/genai";
 
@@ -26,6 +27,7 @@ export function SupplierInventory() {
 
   const [loading, setLoading] = useState(false);
   const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
+  const [isExpModalOpen, setIsExpModalOpen] = useState(false);
   const [aiReport, setAiReport] = useState<{
     efficiencyScore: number;
     effectivenessScore: number;
@@ -95,7 +97,7 @@ export function SupplierInventory() {
       }
 
       const response = await ai.models.generateContent({
-        model: "gemini-3.1-pro-preview",
+        model: "gemini-2.5-flash",
         contents,
         config: {
           responseMimeType: "application/json",
@@ -165,7 +167,7 @@ export function SupplierInventory() {
       `;
 
       const response = await ai.models.generateContent({
-        model: "gemini-3.1-pro-preview",
+        model: "gemini-2.5-flash",
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -246,7 +248,16 @@ export function SupplierInventory() {
                   <input type="number" step="0.1" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none" value={newSpace} onChange={e => setNewSpace(e.target.value)} placeholder="e.g. 5.5" required />
                 </div>
                 <div>
-                  <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Expiration Date</label>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="block text-xs font-bold text-gray-400 game-text">Expiration Date</label>
+                    <button 
+                      type="button" 
+                      onClick={() => setIsExpModalOpen(true)}
+                      className="text-[10px] text-purple-600 font-bold hover:underline flex items-center gap-1"
+                    >
+                      <CalendarClock className="w-3 h-3" /> AI Predict
+                    </button>
+                  </div>
                   <input type="date" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none" value={newExp} onChange={e => setNewExp(e.target.value)} required />
                 </div>
               </div>
@@ -436,6 +447,12 @@ export function SupplierInventory() {
         </div>
       </div>
       <WeatherForecastModal isOpen={isWeatherModalOpen} onClose={() => setIsWeatherModalOpen(false)} inventory={inventory as any} />
+      <EstimateExpirationModal 
+        isOpen={isExpModalOpen} 
+        onClose={() => setIsExpModalOpen(false)} 
+        itemName={newName} 
+        onSelectDate={(date) => setNewExp(date)} 
+      />
     </div>
   );
 }

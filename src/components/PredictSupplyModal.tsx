@@ -47,7 +47,7 @@ export function PredictSupplyModal({ isOpen, onClose, menuItems, inventory }: Pr
 
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3.1-pro-preview",
+        model: "gemini-2.5-flash",
         contents: `I run a restaurant and expect ${customers} customers this month. Given my menu items and current inventory, predict the supply quantity I need to order for each item to serve them. Also include capacity usage percentage for each item ordered (relative to space used) and alert regarding expiring/expired items so I never run out of stock or have out of expired ingredients.
 
 Menu Items:

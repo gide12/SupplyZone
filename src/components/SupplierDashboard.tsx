@@ -7,6 +7,7 @@ import { Restaurant, MenuItem } from "../types";
 import { FuelEstimateCard } from "./FuelEstimateCard";
 import { ChatModal } from "./ChatModal";
 import { SupplierInventory } from "./SupplierInventory";
+import { SupplierCalculator } from "./SupplierCalculator";
 import { translate } from "../lib/i18n";
 
 // Setup custom leaflet icons because default paths get broken in bundlers
@@ -40,7 +41,7 @@ function MapUpdater({ center, zoom }: { center: [number, number]; zoom: number }
 export function SupplierDashboard() {
   const { restaurants, proposeDeal, deals, updateDealStatus, activeSupplier, updateSupplierProfile, messages, updateSupplierInventory, calculateDynamicPrice, language } = useAppContext();
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
-  const [activeTab, setActiveTab] = useState<"market" | "orders" | "inventory" | "profile">("market");
+  const [activeTab, setActiveTab] = useState<"market" | "orders" | "inventory" | "profile" | "hitung">("market");
   
   // Calculate notifications
   const totalUnreadOrders = deals.filter(d => d.supplierId === activeSupplier.id).reduce((count, deal) => {
@@ -451,6 +452,12 @@ deal.status === 'Sample Arrived' ? 'bg-purple-100 text-purple-800 border-purple-
             {translate("Inventory", language)}
           </button>
           <button 
+            className={`flex-1 py-4 text-sm font-bold game-text border-b-2 transition-colors ${activeTab === "hitung" ? "border-[#00AA13] text-[#00AA13]" : "border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-50"}`}
+            onClick={() => setActiveTab('hitung')}
+          >
+            Hitung
+          </button>
+          <button 
             className={`flex-1 py-4 text-sm font-bold game-text border-b-2 transition-colors ${activeTab === "profile" ? "border-[#00AA13] text-[#00AA13]" : "border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-50"}`}
             onClick={() => setActiveTab('profile')}
           >
@@ -463,6 +470,7 @@ deal.status === 'Sample Arrived' ? 'bg-purple-100 text-purple-800 border-purple-
           {activeTab === "market" && selectedRestaurant && renderMarketDetail()}
           {activeTab === "orders" && renderOrders()}
           {activeTab === "inventory" && <SupplierInventory />}
+          {activeTab === "hitung" && <SupplierCalculator />}
           {activeTab === "profile" && renderProfile()}
         </div>
       </div>

@@ -42,7 +42,7 @@ export function WeatherForecastModal({ isOpen, onClose, inventory }: WeatherFore
 
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3.1-pro-preview",
+        model: "gemini-2.5-flash",
         contents: `I have the following restaurant inventory ingredients:
 ${itemsContext}
 
