@@ -216,7 +216,7 @@ export function RestaurantDashboard() {
                 </div>
                 <div className="pt-4">
                   <button type="submit" className="px-6 py-3 game-btn game-btn-green  text-xl game-text transition w-full">
-                    Save Profile
+                    Simpan Profil
                   </button>
                 </div>
               </form>

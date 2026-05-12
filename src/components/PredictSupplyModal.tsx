@@ -30,7 +30,7 @@ export function PredictSupplyModal({ isOpen, onClose, menuItems, inventory }: Pr
 
   const handlePredict = async () => {
     if (menuItems.length === 0) {
-      alert("Please add some items to your menu first to get predictions.");
+      alert("Silakan tambahkan menu terlebih dahulu.");
       return;
     }
 
@@ -48,7 +48,7 @@ export function PredictSupplyModal({ isOpen, onClose, menuItems, inventory }: Pr
     try {
       const response = await ai.models.generateContent({
         model: "gemini-2.5-flash",
-        contents: `I run a restaurant and expect ${customers} customers this month. Given my menu items and current inventory, predict the supply quantity I need to order for each item to serve them. Also include capacity usage percentage for each item ordered (relative to space used) and alert regarding expiring/expired items so I never run out of stock or have out of expired ingredients.
+        contents: `Saya menjalankan restoran dan menargetkan ${customers} pelanggan bulan ini. Berdasarkan menu dan inventaris saya, prediksi kuantitas pasokan yang harus saya pesan. Sertakan juga persentase penggunaan kapasitas dan peringatan kedaluwarsa dalam bahasa gaul / Indonesia santai.
 
 Menu Items:
 ${itemsContext}
@@ -64,23 +64,23 @@ ${inventoryContext || "None"}`,
               properties: {
                 itemName: {
                   type: Type.STRING,
-                  description: "The name of the menu item or ingredient",
+                  description: "Nama menu atau bahan",
                 },
                 predictedQuantity: {
                   type: Type.STRING,
-                  description: "The predicted quantity to order (e.g., '150 lbs', '20 packs')",
+                  description: "Kuantitas prediksi yang dibutuhkan",
                 },
                 capacityPercentage: {
                   type: Type.NUMBER,
-                  description: "Percentage of inventory capacity this order will take up (0-100)"
+                  description: "Persentase kapasitas inventaris"
                 },
                 expiredAlert: {
                   type: Type.STRING,
-                  description: "Alert text regarding expiration, e.g. 'Expires in 3 days' or 'OK'"
+                  description: "Teks peringatan kedaluwarsa"
                 },
                 reason: {
                   type: Type.STRING,
-                  description: "A short reason for the estimate",
+                  description: "Alasan singkat estismasi (bhs Indonesia)",
                 },
               },
               required: ["itemName", "predictedQuantity", "capacityPercentage", "expiredAlert", "reason"],
@@ -94,7 +94,7 @@ ${inventoryContext || "None"}`,
       setPredictions(data);
     } catch (error) {
       console.error(error);
-      alert("Failed to generate predictions. Check the console for more details.");
+      alert("Gagal memprediksi pasokan. Cek konsol.");
     } finally {
       setLoading(false);
     }
@@ -111,8 +111,8 @@ ${inventoryContext || "None"}`,
               <Sparkles className="w-6 h-6 text-gray-900" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 shadow-sm game-title">AI Supply Predictor</h2>
-              <p className="text-sm font-bold text-gray-400   game-text shadow-sm drop-shadow-sm">Estimate your monthly needs</p>
+              <h2 className="text-2xl font-bold text-gray-900 shadow-sm game-title">Prediktor Pasokan AI</h2>
+              <p className="text-sm font-bold text-gray-400   game-text shadow-sm drop-shadow-sm">Estimasi kebutuhan bulanan anda</p>
             </div>
           </div>
           <button 
@@ -128,7 +128,7 @@ ${inventoryContext || "None"}`,
           
           <div className="bg-white p-5 border border-gray-200 shadow-sm mb-6">
             <label className="block text-xl text-gray-700 mb-3 game-text">
-              Expected Customers (Per Month)
+              Ekspektasi Pelanggan (Per Bulan)
             </label>
             <div className="flex gap-4">
               <input 
@@ -144,11 +144,11 @@ ${inventoryContext || "None"}`,
                 className="px-6 py-3 bg-purple-600 hover:bg-purple-500 disabled:bg-white disabled:text-gray-400 text-gray-900 font-bold border border-purple-800 shadow-sm transition-all flex items-center gap-2 game-text text-xl "
               >
                 {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Sparkles className="w-6 h-6" />}
-                {loading ? "Predicting..." : "Predict"}
+                {loading ? "Memprediksi..." : "Prediksi"}
               </button>
             </div>
             <p className="mt-4 text-sm text-gray-400 font-bold game-text">
-              Our AI will analyze your current menu ({menuItems.length} items) and estimate the required stock.
+              AI kami akan menganalisis menu saat ini ({menuItems.length} menu) dan mengestimasi stok yang dibutuhkan.
             </p>
           </div>
 
@@ -156,7 +156,7 @@ ${inventoryContext || "None"}`,
             <div className="space-y-4">
               <h3 className="font-bold text-gray-900 text-2xl flex items-center gap-3 drop-shadow-sm game-title mb-4">
                 <Sparkles className="w-8 h-8 text-[#F1B51A] drop-shadow-sm" />
-                Predicted Needs
+                Prediksi Kebutuhan
               </h3>
               
               <div className="grid grid-cols-1 gap-4">
@@ -176,7 +176,7 @@ ${inventoryContext || "None"}`,
                       </span>
                     </div>
                     <div className="flex items-center justify-between mt-2 mb-3 bg-white p-2 border border-gray-100">
-                       <span className="text-gray-400 font-bold  text-xs game-text">Capacity Utilization</span>
+                       <span className="text-gray-400 font-bold  text-xs game-text">Pemanfaatan Kapasitas</span>
                        <span className={`font-bold game-text ${pred.capacityPercentage > 80 ? 'text-[#EE2737]' : 'text-[#00AA13]'}`}>
                           {pred.capacityPercentage}%
                        </span>

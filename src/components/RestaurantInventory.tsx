@@ -151,8 +151,8 @@ export function RestaurantInventory() {
         ${JSON.stringify(restaurant.menu.map(m => m.name), null, 2)}
         
         Calculate:
-        1. A score for Space Efficiency (0-100).
-        2. A score for Effectiveness (0-100) based on how well inventory matches menu.
+        1. A score for Space Efisiensi (0-100).
+        2. A score for Efektivitas (0-100) based on how well inventory matches menu.
         3. Capacity warnings (total space used vs typical max).
         4. Expiration reminders (what expires soon).
         5. Dominant products analysis (how inventory supports top items like Avocado Toast/Truffle Pasta).
@@ -209,16 +209,16 @@ export function RestaurantInventory() {
     <div className="game-panel p-6 border-t-4 border-[#00AA13]">
       <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2 game-text border-b border-gray-200 pb-2 ">
         <Package className="w-6 h-6 text-[#00AA13]" />
-        Inventory Management
+        Manajemen Inventaris
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <div className="bg-white border border-gray-200 p-4 mb-6">
-            <h3 className="font-bold text-gray-900 text-lg game-text mb-3  text-[#EE2737]">Add Ingredient</h3>
+            <h3 className="font-bold text-gray-900 text-lg game-text mb-3  text-[#EE2737]">Tambah Bahan</h3>
             <form onSubmit={handleAdd} className="space-y-3">
               <div>
-                <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Ingredient Name</label>
+                <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Nama Bahan</label>
                 <input type="text" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none focus:border-[#00AA13]" value={newName} onChange={e => setNewName(e.target.value)} placeholder="e.g. Avocado" required />
               </div>
               <div className="grid grid-cols-3 gap-3">
@@ -234,16 +234,16 @@ export function RestaurantInventory() {
                    </select>
                 </div>
                 <div>
-                  <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Space Used (sq ft)</label>
+                  <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Kapasitas (sq ft)</label>
                   <input type="number" step="0.1" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none" value={newSpace} onChange={e => setNewSpace(e.target.value)} placeholder="e.g. 2.5" required />
                 </div>
               </div>
               <div>
-                <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Expiration Date</label>
+                <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Tanggal Kedaluwarsa</label>
                 <input type="date" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none" value={newExp} onChange={e => setNewExp(e.target.value)} required />
               </div>
               <button type="submit" className="w-full py-2 game-btn game-btn-green text-gray-900 font-bold  game-text mt-2 flex items-center justify-center gap-2">
-                <Plus className="w-5 h-5" /> Add to Inventory
+                <Plus className="w-5 h-5" /> Masuk ke Inventaris
               </button>
             </form>
             
@@ -252,7 +252,7 @@ export function RestaurantInventory() {
                 <div className="w-full border-t border-gray-200"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-400 font-bold game-text   text-xs">OR AI AUTO-IMPORT</span>
+                <span className="px-2 bg-white text-gray-400 font-bold game-text   text-xs">ATAU AI AUTO-IMPORT</span>
               </div>
             </div>
 
@@ -271,7 +271,7 @@ export function RestaurantInventory() {
                 className="flex-1 py-2 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-gray-900 font-bold  game-text flex flex-col items-center justify-center gap-1 transition-colors border border-purple-400"
               >
                 <Camera className="w-5 h-5" />
-                <span className="text-[10px]">Photo/Receipt</span>
+                <span className="text-[10px]">Foto/Struk</span>
               </button>
               <button 
                 type="button" 
@@ -280,18 +280,18 @@ export function RestaurantInventory() {
                 className="flex-1 py-2 bg-[#EE2737] hover:bg-[#EE2737]/80 disabled:opacity-50 text-white font-bold  game-text flex flex-col items-center justify-center gap-1 transition-colors border border-[#EE2737]"
               >
                 <UploadCloud className="w-5 h-5" />
-                <span className="text-[10px]">Upload CSV/Excel</span>
+                <span className="text-[10px]">Unggah CSV/Excel</span>
               </button>
             </div>
           </div>
 
           <div className="space-y-3">
             <div className="flex justify-between items-end mb-2">
-              <h3 className="font-bold text-gray-900 text-lg game-text ">Current Stock</h3>
-              <span className="text-gray-400 font-bold game-text text-sm">Total Space: {totalSpace.toFixed(1)} sqft</span>
+              <h3 className="font-bold text-gray-900 text-lg game-text ">Stok Saat Ini</h3>
+              <span className="text-gray-400 font-bold game-text text-sm">Total Kapasitas: {totalSpace.toFixed(1)} sqft</span>
             </div>
             {inventory.length === 0 ? (
-              <p className="text-gray-400 italic game-text">No inventory items. Add some above.</p>
+              <p className="text-gray-400 italic game-text">Belum ada barang di inventaris. Silakan tambah.</p>
             ) : (
               inventory.map((item) => {
                 const percentage = totalSpace > 0 ? ((item.spaceUsed || 0) / totalSpace * 100).toFixed(1) : "0.0";
@@ -319,7 +319,7 @@ export function RestaurantInventory() {
                     </div>
                     <div className="flex justify-between mt-1 items-center">
                        <div className={`text-xs font-bold game-text ${expired ? 'text-[#EE2737]' : 'text-[#EE2737]'}`}>Exp: {item.expirationDate}</div>
-                       <span className="text-[10px] text-gray-400 font-bold game-text">{percentage}% of Used Cap</span>
+                       <span className="text-[10px] text-gray-400 font-bold game-text">{percentage}% Kapasitas Dipakai</span>
                     </div>
                   </div>
                 </div>
@@ -331,10 +331,10 @@ export function RestaurantInventory() {
         <div>
           <div className="bg-white border border-gray-200 p-6 h-full relative shadow-sm">
             <h3 className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 text-xl game-title flex items-center gap-2 mb-4">
-               <BrainCircuit className="w-6 h-6 text-purple-600" /> <span className="text-gray-900">AI</span> Efficiency Engine
+               <BrainCircuit className="w-6 h-6 text-purple-600" /> <span className="text-gray-900">AI</span> Efisiensi Engine
             </h3>
             <p className="game-text text-gray-700 text-sm mb-6 leading-relaxed">
-               Run AI analysis to evaluate space usage, effectiveness in supporting dominant products (e.g. Avocado Toast), and get expiration warnings.
+               Jalankan analisis AI untuk mengevaluasi kapasitas ruang dan peringatan kedaluwarsa.
             </p>
             
             <button 
@@ -343,16 +343,15 @@ export function RestaurantInventory() {
               className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:opacity-90 disabled:bg-gray-200 disabled:text-gray-400 disabled:from-gray-200 disabled:to-gray-200 disabled:border-gray-200 disabled:shadow-none text-white font-bold game-text text-lg flex items-center justify-center gap-2 transition-all shadow-sm mb-3"
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <BrainCircuit className="w-5 h-5" />}
-              {loading ? "Analyzing Matrix..." : "Hitung Kapasitas"}
+              {loading ? "Menganalisis..." : "Hitung Kapasitas"}
             </button>
 
             <button 
               onClick={() => setIsWeatherModalOpen(true)}
-              disabled={inventory.length === 0}
-              className="w-full py-3 bg-white hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400 text-blue-600 font-bold game-text text-lg flex items-center justify-center gap-2 transition-all border border-blue-600 shadow-sm mb-6"
+              className="w-full py-3 bg-white hover:bg-gray-50 text-blue-600 font-bold game-text text-lg flex items-center justify-center gap-2 transition-all border border-blue-600 shadow-sm mb-6"
             >
               <CloudRain className="w-5 h-5" />
-              Cek Harga
+              Cek Cuaca
             </button>
 
 
@@ -360,22 +359,22 @@ export function RestaurantInventory() {
               <div className="space-y-4 animate-in fade-in duration-300">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-white p-3 border border-gray-100 text-center">
-                    <div className="text-xs text-gray-400 font-bold   game-text mb-1">Efficiency</div>
+                    <div className="text-xs text-gray-400 font-bold   game-text mb-1">Efisiensi</div>
                     <div className="text-2xl font-bold text-gray-900 game-title">{aiReport.efficiencyScore}%</div>
                   </div>
                   <div className="bg-white p-3 border border-gray-100 text-center">
-                    <div className="text-xs text-gray-400 font-bold   game-text mb-1">Effectiveness</div>
+                    <div className="text-xs text-gray-400 font-bold   game-text mb-1">Efektivitas</div>
                     <div className="text-2xl font-bold text-[#00AA13] game-title">{aiReport.effectivenessScore}%</div>
                   </div>
                 </div>
 
                 <div className="bg-white p-4 border border-gray-100">
-                  <h4 className="text-sm font-bold text-gray-400  game-text mb-1">Capacity Status</h4>
+                  <h4 className="text-sm font-bold text-gray-400  game-text mb-1">Status Kapasitas</h4>
                   <p className="text-gray-900 game-text leading-snug">{aiReport.capacityWarning}</p>
                 </div>
 
                 <div className="bg-white p-4 border border-gray-100 border-l-4 border-l-red-500">
-                  <h4 className="text-sm font-bold text-[#EE2737]  game-text mb-2">Expiration Reminders</h4>
+                  <h4 className="text-sm font-bold text-[#EE2737]  game-text mb-2">Pengingat Kedaluwarsa</h4>
                   <ul className="list-disc pl-4 space-y-1">
                     {aiReport.expirationReminders.map((rem, i) => (
                       <li key={i} className="text-gray-900 text-sm game-text">{rem}</li>
@@ -385,22 +384,22 @@ export function RestaurantInventory() {
 
                 <div className="bg-white p-4 border border-gray-100">
                   <h4 className="text-sm font-bold text-gray-400  game-text mb-1 flex justify-between">
-                    <span>Dominant Products Sync</span>
-                    <span className="text-xs text-[#EE2737]">SALES DATA</span>
+                    <span>Analisis Produk Utama</span>
+                    <span className="text-xs text-[#EE2737]">DATA PENJUALAN</span>
                   </h4>
                   <p className="text-gray-900 text-sm game-text leading-relaxed">{aiReport.dominantProductsAnalysis}</p>
                 </div>
 
                 <div className="bg-[#00AA13]/10 p-4 border border-[#00AA13]">
-                  <h4 className="text-sm font-bold text-[#00AA13]  game-text mb-1">AI Recommendation</h4>
+                  <h4 className="text-sm font-bold text-[#00AA13]  game-text mb-1">Rekomendasi AI</h4>
                   <p className="text-gray-900 text-sm game-text italic">"{aiReport.actionableAdvice}"</p>
                 </div>
 
                 {aiReport.discountRecommendations && aiReport.discountRecommendations.length > 0 && (
                   <div className="bg-orange-500/10 p-4 border border-orange-500/50">
                     <h4 className="text-sm font-bold text-orange-500  game-text mb-3 flex items-center justify-between">
-                       <span>Menu Discount Recommendations</span>
-                       <span className="text-[10px] bg-orange-500 text-black px-2 py-0.5 font-bold">INCREASE ORDERS</span>
+                       <span>Rekomendasi Diskon Menu</span>
+                       <span className="text-[10px] bg-orange-500 text-black px-2 py-0.5 font-bold">TINGKATKAN PESANAN</span>
                     </h4>
                     <div className="space-y-3">
                       {aiReport.discountRecommendations.map((rec, i) => (
@@ -410,7 +409,7 @@ export function RestaurantInventory() {
                              <div className="text-xs text-gray-400 game-text leading-snug">{rec.reason}</div>
                           </div>
                           <div className="text-orange-400 font-bold text-lg game-text whitespace-nowrap bg-orange-500/20 px-2 py-1 border border-orange-500/30 shrink-0">
-                            -{rec.suggestedDiscountPercentage}% OFF
+                            -{rec.suggestedDiscountPercentage}% DISKON
                           </div>
                         </div>
                       ))}

@@ -29,9 +29,9 @@ export function EstimateExpirationModal({ isOpen, onClose, itemName, onSelectDat
         Estimate the typical shelf life of the item: "${itemName}".
         
         Provide estimates for 3 storage conditions:
-        1. Room Temperature (Suhu Ruangan 20-25°C)
-        2. Chiller / Refrigerator (Kulkas 1-4°C)
-        3. Freezer (Pendingin <-18°C)
+        1. Suhu Ruanganerature (Suhu Ruangan 20-25°C)
+        2. Kulkas / Refrigerator (Kulkas 1-4°C)
+        3. Pembeku (Pendingin <-18°C)
 
         For each condition, provide the estimated number of days it will last, and a brief suggestion in Indonesian (1 sentence).
         Today's date is: ${new Date().toISOString().split('T')[0]}.
@@ -155,7 +155,7 @@ export function EstimateExpirationModal({ isOpen, onClose, itemName, onSelectDat
                 </div>
                 <div className="flex-1">
                   <div className="font-bold text-blue-800 game-text text-lg flex justify-between">
-                    Chiller (1-4°C) <span className="text-blue-600">{estimates.chiller.days} Hari</span>
+                    Kulkas (1-4°C) <span className="text-blue-600">{estimates.chiller.days} Hari</span>
                   </div>
                   <div className="text-sm text-blue-600/80 font-bold game-text mt-1">{estimates.chiller.suggestion}</div>
                   <div className="text-xs text-blue-500 font-bold mt-2">Estimasi Tgl: {estimates.chiller.date}</div>
@@ -171,7 +171,7 @@ export function EstimateExpirationModal({ isOpen, onClose, itemName, onSelectDat
                 </div>
                 <div className="flex-1">
                   <div className="font-bold text-indigo-800 game-text text-lg flex justify-between">
-                    Freezer (-18°C) <span className="text-indigo-600">{estimates.freezer.days} Hari</span>
+                    Pembeku (-18°C) <span className="text-indigo-600">{estimates.freezer.days} Hari</span>
                   </div>
                   <div className="text-sm text-indigo-600/80 font-bold game-text mt-1">{estimates.freezer.suggestion}</div>
                   <div className="text-xs text-indigo-500 font-bold mt-2">Estimasi Tgl: {estimates.freezer.date}</div>

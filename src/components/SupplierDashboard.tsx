@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Store, Truck, MapPin, X, ImagePlus, Link as LinkIcon, Navigation, MessageCircle } from "lucide-react";
+import { Store, Truck, MapPin, X, ImagePlus, Link as LinkIcon, Navigation, MessageCircle, Map, User, Package, Calculator, Handshake } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from "react-leaflet";
 import L from "leaflet";
 import { useAppContext } from "../store/AppContext";
@@ -173,7 +173,7 @@ export function SupplierDashboard() {
           />
         )}
 
-        <h3 className="text-lg font-bold text-[#00AA13]  tracking-wide mb-3 mt-6 game-text border-b border-gray-200 pb-1">Menu & Market Deals</h3>
+        <h3 className="text-lg font-bold text-[#00AA13]  tracking-wide mb-3 mt-6 game-text border-b border-gray-200 pb-1">Tawaran Pasar & Menu</h3>
         
         {!selectedRestaurant || selectedRestaurant.menu.length === 0 ? (
           <p className="text-gray-400 text-lg game-text font-bold">This restaurant hasn't added any menu items yet.</p>
@@ -190,7 +190,7 @@ export function SupplierDashboard() {
                     <span className="font-bold text-sm text-gray-900 bg-white game-text  px-2 py-1 border border-gray-200">{item.category}</span>
                     {item.quantity && (
                       <span className="px-2 py-1 bg-white text-[#EE2737] text-sm font-bold  border border-[#EE2737]/50 game-text">
-                        Qty: {item.quantity}
+                        Jml: {item.quantity}
                       </span>
                     )}
                   </div>
@@ -255,7 +255,7 @@ export function SupplierDashboard() {
                         }}
                         className="px-4 py-2 border border-gray-200 bg-white text-gray-900 hover:bg-gray-50 game-text transition-colors text-lg rounded-xl"
                       >
-                        Cancel
+                        Batal
                       </button>
                       <button 
                         onClick={handleProposeDeal}
@@ -302,12 +302,12 @@ export function SupplierDashboard() {
                     {restaurant?.address && <div className="text-xs text-gray-500 font-bold mt-0.5">{restaurant.address}</div>}
                   </div>
                   <span className={`text-sm font-bold px-3 py-1 border  game-text ${
-                    deal.status === 'Accepted' ? 'bg-[#00AA13] text-white border-[#00AA13]' :
-deal.status === 'Sample Requested' ? 'bg-blue-100 text-blue-800 border-blue-200' :
-deal.status === 'Sample Arrived' ? 'bg-purple-100 text-purple-800 border-purple-200' :
+                    deal.status === 'Diterima' ? 'bg-[#00AA13] text-white border-[#00AA13]' :
+deal.status === 'Diminta Sampel' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200' :
                     deal.status === 'Rejected' ? 'bg-[#EE2737] text-white border-[#EE2737]' :
-                    deal.status === 'On Delivery' ? 'bg-[#F1B51A] text-black border-[#F1B51A]' :
-                    deal.status === 'Delivered' ? 'bg-purple-600 text-gray-900 border-purple-600' :
+                    deal.status === 'Sedang Dikirim' ? 'bg-[#F1B51A] text-black border-[#F1B51A]' :
+                    deal.status === 'Terkirim' ? 'bg-purple-600 text-gray-900 border-purple-600' :
                     'bg-white text-gray-400 border-gray-600'
                   }`}>
                     {deal.status}
@@ -318,7 +318,7 @@ deal.status === 'Sample Arrived' ? 'bg-purple-100 text-purple-800 border-purple-
                 </div>
                 
                 {/* Status update actions for accepted/sample deals */}
-                {['Accepted', 'On Delivery', 'Delivered', 'Sample Requested', 'Sample Arrived'].includes(deal.status) && (
+                {['Diterima', 'Sedang Dikirim', 'Terkirim', 'Diminta Sampel', 'Sampel Tiba'].includes(deal.status) && (
                   <div className="flex flex-col gap-3">
                     <div className="flex gap-3">
                       <button 
@@ -332,28 +332,28 @@ deal.status === 'Sample Arrived' ? 'bg-purple-100 text-purple-800 border-purple-
                           </span>
                         )}
                       </button>
-                      {deal.status === 'Sample Requested' && (
+                      {deal.status === 'Diminta Sampel' && (
                         <button 
-                          onClick={() => updateDealStatus(deal.id, 'Sample Arrived')}
+                          onClick={() => updateDealStatus(deal.id, 'Sampel Tiba')}
                           className="flex-1 py-2 bg-white border rounded-lg border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white text-sm font-bold transition-colors game-text"
                         >
-                          Mark Sample Delivered
+                          Mark Sample Terkirim
                         </button>
                       )}
-                      {deal.status === 'Accepted' && (
+                      {deal.status === 'Diterima' && (
                         <button 
-                          onClick={() => updateDealStatus(deal.id, 'On Delivery')}
+                          onClick={() => updateDealStatus(deal.id, 'Sedang Dikirim')}
                           className="flex-1 py-2 bg-white border rounded-lg border-[#F1B51A] text-[#F1B51A] hover:bg-[#F1B51A] hover:text-black text-sm font-bold transition-colors game-text"
                         >
-                          Mark On Delivery
+                          Tandai Sedang Dikirim
                         </button>
                       )}
-                      {(deal.status === 'Accepted' || deal.status === 'On Delivery') && (
+                      {(deal.status === 'Diterima' || deal.status === 'Sedang Dikirim') && (
                         <button 
-                          onClick={() => updateDealStatus(deal.id, 'Delivered')}
+                          onClick={() => updateDealStatus(deal.id, 'Terkirim')}
                           className="flex-1 py-2 bg-white border rounded-lg border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white text-sm font-bold transition-colors game-text"
                         >
-                          Mark Delivered
+                          Mark Terkirim
                         </button>
                       )}
                     </div>
@@ -404,7 +404,7 @@ deal.status === 'Sample Arrived' ? 'bg-purple-100 text-purple-800 border-purple-
           </div>
           <div className="pt-4">
             <button type="submit" className="w-full py-3 bg-[#00AA13] hover:bg-[#00AA13]/90 font-bold transition-all text-xl game-text text-white rounded-xl  ">
-              Save Profile
+              Simpan Profil
             </button>
           </div>
         </form>
@@ -427,41 +427,48 @@ deal.status === 'Sample Arrived' ? 'bg-purple-100 text-purple-800 border-purple-
           <span className="px-3 py-1 bg-[#EE2737] text-white text-xs font-bold rounded-full game-text shadow-sm">{translate("Supplier Portal", language)}</span>
         </div>
 
-        <div className="flex border-b border-gray-100 bg-white">
+        <div className="flex overflow-x-auto custom-scrollbar border-b border-gray-100 bg-white shadow-sm px-2 sm:px-6 justify-start lg:justify-center">
           <button 
-            className={`flex-1 py-4 text-sm font-bold game-text border-b-2 transition-colors ${activeTab === "market" ? "border-[#00AA13] text-[#00AA13]" : "border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-50"}`}
+            className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-6 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold game-text border-b-2 whitespace-nowrap transition-all duration-300 ${activeTab === "market" ? "border-[#00AA13] text-[#00AA13] sm:scale-105" : "border-transparent text-gray-500 hover:text-[#00AA13] hover:bg-gray-50"}`}
             onClick={() => setActiveTab('market')}
           >
-            {translate("Marketplace Map", language).split(" ")[0]}
+            <Map className="w-5 h-5 sm:w-4 sm:h-4" />
+            <span>{translate("Marketplace Map", language).split(" ")[0]}</span>
           </button>
           <button 
-            className={`flex-1 py-4 text-sm font-bold game-text border-b-2 transition-colors relative ${activeTab === "orders" ? "border-[#00AA13] text-[#00AA13]" : "border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-50"}`}
+            className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-6 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold game-text border-b-2 whitespace-nowrap transition-all duration-300 relative ${activeTab === "orders" ? "border-[#00AA13] text-[#00AA13] sm:scale-105" : "border-transparent text-gray-500 hover:text-[#00AA13] hover:bg-gray-50"}`}
             onClick={() => setActiveTab('orders')}
           >
-            {translate("Deals", language)}
-            {totalUnreadOrders > 0 && (
-              <span className="absolute top-1 right-1 bg-red-600 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full shadow-[0_0_10px_rgba(220,38,38,0.8)]">
-                {totalUnreadOrders}
-              </span>
-            )}
+            <div className="relative">
+              <Handshake className="w-5 h-5 sm:w-4 sm:h-4" />
+              {totalUnreadOrders > 0 && (
+                <span className="absolute -top-1 -right-2 sm:-top-2 sm:-right-3 bg-[#EE2737] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full ring-2 ring-white">
+                  {totalUnreadOrders}
+                </span>
+              )}
+            </div>
+            <span>{translate("Deals", language)}</span>
           </button>
           <button 
-            className={`flex-1 py-4 text-sm font-bold game-text border-b-2 transition-colors ${activeTab === "inventory" ? "border-[#00AA13] text-[#00AA13]" : "border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-50"}`}
+            className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-6 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold game-text border-b-2 whitespace-nowrap transition-all duration-300 ${activeTab === "inventory" ? "border-[#00AA13] text-[#00AA13] sm:scale-105" : "border-transparent text-gray-500 hover:text-[#00AA13] hover:bg-gray-50"}`}
             onClick={() => setActiveTab('inventory')}
           >
-            {translate("Inventory", language)}
+            <Package className="w-5 h-5 sm:w-4 sm:h-4" />
+            <span>{translate("Inventory", language)}</span>
           </button>
           <button 
-            className={`flex-1 py-4 text-sm font-bold game-text border-b-2 transition-colors ${activeTab === "hitung" ? "border-[#00AA13] text-[#00AA13]" : "border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-50"}`}
+            className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-6 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold game-text border-b-2 whitespace-nowrap transition-all duration-300 ${activeTab === "hitung" ? "border-[#00AA13] text-[#00AA13] sm:scale-105" : "border-transparent text-gray-500 hover:text-[#00AA13] hover:bg-gray-50"}`}
             onClick={() => setActiveTab('hitung')}
           >
-            Hitung
+            <Calculator className="w-5 h-5 sm:w-4 sm:h-4" />
+            <span>Hitung</span>
           </button>
           <button 
-            className={`flex-1 py-4 text-sm font-bold game-text border-b-2 transition-colors ${activeTab === "profile" ? "border-[#00AA13] text-[#00AA13]" : "border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-50"}`}
+            className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-6 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold game-text border-b-2 whitespace-nowrap transition-all duration-300 ${activeTab === "profile" ? "border-[#00AA13] text-[#00AA13] sm:scale-105" : "border-transparent text-gray-500 hover:text-[#00AA13] hover:bg-gray-50"}`}
             onClick={() => setActiveTab('profile')}
           >
-            {translate("Profile", language)}
+            <User className="w-5 h-5 sm:w-4 sm:h-4" />
+            <span>{translate("Profile", language)}</span>
           </button>
         </div>
 

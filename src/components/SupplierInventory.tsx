@@ -20,7 +20,7 @@ export function SupplierInventory() {
 
   const [newName, setNewName] = useState("");
   const [newQuantity, setNewQuantity] = useState("");
-  const [newUnit, setNewUnit] = useState("");
+  const [newSatuan, setNewSatuan] = useState("");
   const [newBasePrice, setNewBasePrice] = useState("");
   const [newSpace, setNewSpace] = useState("");
   const [newExp, setNewExp] = useState("");
@@ -52,7 +52,7 @@ export function SupplierInventory() {
       id: `sinv-${Date.now()}`,
       name: newName,
       quantity: Number(newQuantity),
-      unit: newUnit,
+      unit: newSatuan,
       basePrice: Number(newBasePrice),
       spaceUsed: Number(newSpace),
       expirationDate: newExp,
@@ -61,7 +61,7 @@ export function SupplierInventory() {
     updateSupplierInventory(activeSupplier.id, [...inventory, newItem]);
     setNewName("");
     setNewQuantity("");
-    setNewUnit("");
+    setNewSatuan("");
     setNewBasePrice("");
     setNewSpace("");
     setNewExp("");
@@ -158,12 +158,12 @@ export function SupplierInventory() {
         ${JSON.stringify(allMenuNames, null, 2)}
         
         Calculate:
-        1. A score for Space Efficiency (0-100).
-        2. A score for Market Effectiveness (0-100) based on how well the supplier's inventory matches the aggregate restaurant market demands.
+        1. A score for Space Efisiensi (0-100).
+        2. A score for Market Efektivitas (0-100) based on how well the supplier's inventory matches the aggregate restaurant market demands.
         3. Capacity warnings (total space used vs typical warehouse max capacity).
         4. Expiration reminders (what expires soon and needs immediate liquidation).
         5. Dominant products analysis (how well inventory supports top market demands).
-        6. Discount Recommendations: If there is a "Lot of stock" for an item but "Lower ordering" (low market demand based on menu), recommend a discount to increase orders for that item.
+        6. Rekomendasi Diskon: If there is a "Lot of stock" for an item but "Lower ordering" (low market demand based on menu), recommend a discount to increase orders for that item.
       `;
 
       const response = await ai.models.generateContent({
@@ -219,10 +219,10 @@ export function SupplierInventory() {
       <div className="flex flex-col gap-6">
         <div>
           <div className="game-panel-inner p-4 hover:border-gray-200 transition-colors mb-6">
-            <h3 className="font-bold text-lg text-gray-900 mb-3 game-text">Add Item</h3>
+            <h3 className="font-bold text-lg text-gray-900 mb-3 game-text">Tambah Barang</h3>
             <form onSubmit={handleAdd} className="space-y-3">
               <div>
-                 <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Item Name</label>
+                 <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Nama Barang</label>
                  <input type="text" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none focus:border-[#00AA13]" placeholder="e.g., Avocado Toast" value={newName} onChange={e => setNewName(e.target.value)} required />
               </div>
               <div className="grid grid-cols-3 gap-3">
@@ -231,14 +231,14 @@ export function SupplierInventory() {
                    <input type="number" min="1" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none focus:border-[#00AA13]" value={newQuantity} onChange={e => setNewQuantity(e.target.value)} required />
                 </div>
                 <div>
-                   <label className="block text-xs font-bold text-gray-400 mb-1 game-text">Unit</label>
-                   <select className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none focus:border-[#00AA13]" value={newUnit} onChange={e => setNewUnit(e.target.value)} required>
+                   <label className="block text-xs font-bold text-gray-400 mb-1 game-text">Satuan</label>
+                   <select className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none focus:border-[#00AA13]" value={newSatuan} onChange={e => setNewSatuan(e.target.value)} required>
                      <option value="">Select</option>
                      <option value="kg">kg</option><option value="Liter">Liter</option><option value="Drum">Drum</option><option value="Karton">Karton</option><option value="Karung">Karung</option><option value="Pallet">Pallet</option><option value="Biji">Biji</option>
                    </select>
                 </div>
                 <div>
-                   <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Base Price (Rp)</label>
+                   <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Harga Pokok (Rp)</label>
                    <input type="number" step="0.01" min="0" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none focus:border-[#00AA13]" value={newBasePrice} onChange={e => setNewBasePrice(e.target.value)} required />
                 </div>
               </div>
@@ -249,7 +249,7 @@ export function SupplierInventory() {
                 </div>
                 <div>
                   <div className="flex justify-between items-center mb-1">
-                    <label className="block text-xs font-bold text-gray-400 game-text">Expiration Date</label>
+                    <label className="block text-xs font-bold text-gray-400 game-text">Tanggal Kedaluwarsa</label>
                     <button 
                       type="button" 
                       onClick={() => setIsExpModalOpen(true)}
@@ -269,7 +269,7 @@ export function SupplierInventory() {
                 <div className="w-full border-t border-gray-200"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-400 font-bold game-text   text-xs">OR AI AUTO-IMPORT</span>
+                <span className="px-2 bg-white text-gray-400 font-bold game-text   text-xs">ATAU AI AUTO-IMPORT</span>
               </div>
             </div>
 
@@ -288,7 +288,7 @@ export function SupplierInventory() {
                 className="flex-1 py-2 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-gray-900 font-bold  game-text flex flex-col items-center justify-center gap-1 transition-colors border border-purple-400"
               >
                 <Camera className="w-5 h-5" />
-                <span className="text-[10px]">Photo/Receipt</span>
+                <span className="text-[10px]">Foto/Struk</span>
               </button>
               <button 
                 type="button" 
@@ -297,7 +297,7 @@ export function SupplierInventory() {
                 className="flex-1 py-2 bg-[#EE2737] hover:bg-[#EE2737]/80 disabled:opacity-50 text-white font-bold  game-text flex flex-col items-center justify-center gap-1 transition-colors border border-[#EE2737]"
               >
                 <UploadCloud className="w-5 h-5" />
-                <span className="text-[10px]">Upload CSV/Excel</span>
+                <span className="text-[10px]">Unggah CSV/Excel</span>
               </button>
             </div>
           </div>
@@ -317,16 +317,15 @@ export function SupplierInventory() {
                 className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:opacity-90 disabled:bg-gray-200 disabled:text-gray-400 disabled:from-gray-200 disabled:to-gray-200 disabled:border-gray-200 disabled:shadow-none text-white font-bold game-text text-lg flex items-center justify-center gap-2 transition-all shadow-sm mb-3"
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <BrainCircuit className="w-5 h-5" />}
-                {loading ? "Analyzing Matrix..." : "Hitung Kapasitas"}
+                {loading ? "Menganalisis..." : "Hitung Kapasitas"}
               </button>
 
             <button 
               onClick={() => setIsWeatherModalOpen(true)}
-              disabled={inventory.length === 0}
-              className="w-full py-3 bg-white hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400 text-blue-600 font-bold game-text text-lg flex items-center justify-center gap-2 transition-all border border-blue-600 shadow-sm mb-6"
+              className="w-full py-3 bg-white hover:bg-gray-50 text-blue-600 font-bold game-text text-lg flex items-center justify-center gap-2 transition-all border border-blue-600 shadow-sm mb-6"
             >
               <CloudRain className="w-5 h-5" />
-              Cek Harga
+              Cek Cuaca
             </button>
     
 
@@ -334,17 +333,17 @@ export function SupplierInventory() {
                 <div className="space-y-4 animate-in fade-in duration-300">
                   <div className="grid grid-cols-2 gap-3">
                     <div className="bg-white p-3 border border-gray-100 text-center">
-                      <div className="text-xs text-gray-400 font-bold   game-text mb-1">Space Efficiency</div>
+                      <div className="text-xs text-gray-400 font-bold   game-text mb-1">Space Efisiensi</div>
                       <div className="text-2xl font-bold text-gray-900 game-title">{aiReport.efficiencyScore}%</div>
                     </div>
                     <div className="bg-white p-3 border border-gray-100 text-center">
-                      <div className="text-xs text-gray-400 font-bold   game-text mb-1">Mkt Effectiveness</div>
+                      <div className="text-xs text-gray-400 font-bold   game-text mb-1">Mkt Efektivitas</div>
                       <div className="text-2xl font-bold text-[#00AA13] game-title">{aiReport.effectivenessScore}%</div>
                     </div>
                   </div>
 
                   <div className="bg-white p-4 border border-gray-100">
-                    <h4 className="text-sm font-bold text-gray-400  game-text mb-1">Capacity Status</h4>
+                    <h4 className="text-sm font-bold text-gray-400  game-text mb-1">Status Kapasitas</h4>
                     <p className="text-gray-900 game-text leading-snug">{aiReport.capacityWarning}</p>
                   </div>
 
@@ -360,13 +359,13 @@ export function SupplierInventory() {
                   <div className="bg-white p-4 border border-gray-100">
                     <h4 className="text-sm font-bold text-gray-400  game-text mb-1 flex justify-between">
                       <span>Dominant Market Sync</span>
-                      <span className="text-xs text-[#EE2737]">SALES DATA</span>
+                      <span className="text-xs text-[#EE2737]">DATA PENJUALAN</span>
                     </h4>
                     <p className="text-gray-900 text-xs game-text leading-relaxed">{aiReport.dominantProductsAnalysis}</p>
                   </div>
 
                   <div className="bg-[#00AA13]/10 p-4 border border-[#00AA13]">
-                    <h4 className="text-sm font-bold text-[#00AA13]  game-text mb-1">AI Recommendation</h4>
+                    <h4 className="text-sm font-bold text-[#00AA13]  game-text mb-1">Rekomendasi AI</h4>
                     <p className="text-gray-900 text-xs game-text italic">"{aiReport.actionableAdvice}"</p>
                   </div>
 
@@ -384,7 +383,7 @@ export function SupplierInventory() {
                                <div className="text-xs text-gray-400 game-text leading-snug">{rec.reason}</div>
                             </div>
                             <div className="text-orange-400 font-bold text-lg game-text whitespace-nowrap bg-orange-500/20 px-2 py-1 border border-orange-500/30 shrink-0">
-                              -{rec.suggestedDiscountPercentage}% OFF
+                              -{rec.suggestedDiscountPercentage}% DISKON
                             </div>
                           </div>
                         ))}
@@ -398,11 +397,11 @@ export function SupplierInventory() {
 
           <div className="space-y-3">
             <div className="flex justify-between items-end mb-4 border-b border-gray-200 pb-1">
-              <h3 className="text-sm font-bold text-[#00AA13]  tracking-wide game-text">Current Stock</h3>
-              <span className="text-gray-400 font-bold game-text text-sm">Total Space: {totalSpace.toFixed(1)} sqft</span>
+              <h3 className="text-sm font-bold text-[#00AA13]  tracking-wide game-text">Stok Saat Ini</h3>
+              <span className="text-gray-400 font-bold game-text text-sm">Total Kapasitas: {totalSpace.toFixed(1)} sqft</span>
             </div>
             {inventory.length === 0 ? (
-              <div className="text-center py-6 text-gray-400 font-bold game-text italic">No inventory items.</div>
+              <div className="text-center py-6 text-gray-400 font-bold game-text italic">Belum ada barang di inventaris.</div>
             ) : (
               inventory.map(item => {
                 const dynamicInfo = calculateDynamicPrice(item.name);
@@ -436,7 +435,7 @@ export function SupplierInventory() {
                       </div>
                       <div className="flex justify-between mt-1 items-center">
                          <div className={`text-xs font-bold game-text ${expired ? 'text-[#EE2737]' : 'text-[#EE2737]'}`}>Exp: {item.expirationDate || 'N/A'}</div>
-                         <span className="text-[10px] text-gray-400 font-bold game-text">{percentage}% of Used Cap</span>
+                         <span className="text-[10px] text-gray-400 font-bold game-text">{percentage}% Kapasitas Dipakai</span>
                       </div>
                     </div>
                   </div>

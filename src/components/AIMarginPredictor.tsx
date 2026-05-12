@@ -35,7 +35,7 @@ interface IngredientInput {
 
 export function AIMarginPredictor({ isOpen, onClose }: AIMarginPredictorProps) {
   const [margin, setMargin] = useState<string>("10");
-  const [productName, setProductName] = useState<string>("Avocado Toast");
+  const [productName, setProductName] = useState<string>("Roti Alpukat");
   const [productQuantity, setProductQuantity] = useState<string>("100");
   const [productRevenue, setProductRevenue] = useState<string>("1500");
 
@@ -76,7 +76,7 @@ Estimated Total Revenue (Selling Price): ${productRevenue}
 Target Profit Margin: ${margin}%
 
 Ingredients needed:
-${ingredients.map(ing => `- ${ing.quantity}x ${ing.name}: ${ing.isFixed ? `Locked at ${ing.price}` : 'Variable (Calculate Max Allowed Price)'}`).join("\n")}
+${ingredients.map(ing => `- ${ing.quantity}x ${ing.name}: ${ing.isFixed ? `Locked at ${ing.price}` : 'Variable (Hitung Max Allowed Price)'}`).join("\n")}
 
 Please calculate the maximum allowed price for the variable ingredients to ensure we hit the ${margin}% target margin based on the estimated revenue, accounting for the locked costs.
 `;
@@ -95,7 +95,7 @@ ${promptStr}`,
             properties: {
               productName: {
                 type: Type.STRING,
-                description: "Name of the product being analyzed (e.g., 100 Avocado Toast)",
+                description: "Name of the product being analyzed (e.g., 100 Roti Alpukat)",
               },
               targetMarginPercentage: {
                 type: Type.NUMBER,
@@ -115,7 +115,7 @@ ${promptStr}`,
                   type: Type.OBJECT,
                   properties: {
                     name: { type: Type.STRING, description: "Name of the supply item (e.g., Sourdough, Smashed Avocado)" },
-                    maxPrice: { type: Type.NUMBER, description: "Calculated maximum price to pay for this batch/amount to keep margin relative to other fixed costs. If cost is locked, output the locked cost." },
+                    maxPrice: { type: Type.NUMBER, description: "Hitungd maximum price to pay for this batch/amount to keep margin relative to other fixed costs. If cost is locked, output the locked cost." },
                     reason: { type: Type.STRING, description: "Brief explanation of how this max price was derived." },
                   },
                   required: ["name", "maxPrice", "reason"],
@@ -138,7 +138,7 @@ ${promptStr}`,
       }
     } catch (error) {
       console.error(error);
-      alert("Failed to analyze margin. Check the console for details.");
+      alert("Gagal menganalisis margin. Cek konsol.");
     } finally {
       setLoading(false);
     }
@@ -155,8 +155,8 @@ ${promptStr}`,
               <Calculator className="w-6 h-6 text-gray-900" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 shadow-sm game-title">AI Margin Calculator</h2>
-              <p className="text-sm font-bold text-gray-400   game-text shadow-sm drop-shadow-sm">Dynamic Pricing & Target Margins</p>
+              <h2 className="text-2xl font-bold text-gray-900 shadow-sm game-title">Kalkulator Margin AI</h2>
+              <p className="text-sm font-bold text-gray-400   game-text shadow-sm drop-shadow-sm">Harga Dinamis & Target Margin</p>
             </div>
           </div>
           <button 
@@ -174,15 +174,15 @@ ${promptStr}`,
             
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
               <div>
-                 <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Product Name</label>
-                 <input type="text" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none focus:border-[#EE2737]" value={productName} onChange={e => setProductName(e.target.value)} placeholder="Avocado Toast" />
+                 <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Nama Produk</label>
+                 <input type="text" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none focus:border-[#EE2737]" value={productName} onChange={e => setProductName(e.target.value)} placeholder="Roti Alpukat" />
               </div>
               <div>
-                 <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Quantity (e.g. 100)</label>
+                 <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Kuantitas (cth. 100)</label>
                  <input type="number" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none focus:border-[#EE2737]" value={productQuantity} onChange={e => setProductQuantity(e.target.value)} placeholder="100" />
               </div>
               <div>
-                 <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Est. Revenue (Rp)</label>
+                 <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Est. Penjualan (Rp)</label>
                  <input type="number" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none focus:border-[#EE2737]" value={productRevenue} onChange={e => setProductRevenue(e.target.value)} placeholder="1000" />
               </div>
               <div>
@@ -192,9 +192,9 @@ ${promptStr}`,
             </div>
 
             <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-2">
-              <h3 className="font-bold text-gray-900 text-lg game-text ">Ingredients List</h3>
+              <h3 className="font-bold text-gray-900 text-lg game-text ">Daftar Bahan</h3>
               <button onClick={handleAddIngredient} className="flex items-center gap-1 text-xs  font-bold text-[#EE2737] hover:text-gray-900 transition-colors">
-                <Plus className="w-4 h-4" /> Add Ingredient
+                <Plus className="w-4 h-4" /> Tambah Bahan
               </button>
             </div>
 
@@ -202,21 +202,21 @@ ${promptStr}`,
               {ingredients.map((ing, idx) => (
                 <div key={ing.id} className="flex flex-col sm:flex-row gap-3 items-end p-3 border border-gray-100 bg-white relative">
                   <div className="w-full sm:w-1/3">
-                    <label className="block text-[10px]  font-bold text-gray-400 mb-1 game-text">Ingredient Name</label>
+                    <label className="block text-[10px]  font-bold text-gray-400 mb-1 game-text">Nama Bahan</label>
                     <input type="text" className="w-full bg-white border border-gray-200 text-gray-900 p-2 text-sm game-text focus:outline-none focus:border-[#EE2737]" value={ing.name} onChange={e => handleIngredientChange(ing.id, 'name', e.target.value)} placeholder="Sourdough" />
                   </div>
                   <div className="w-full sm:w-1/4">
-                    <label className="block text-[10px]  font-bold text-gray-400 mb-1 game-text">Quantity Req.</label>
+                    <label className="block text-[10px]  font-bold text-gray-400 mb-1 game-text">Jml. Butuh</label>
                     <input type="text" className="w-full bg-white border border-gray-200 text-gray-900 p-2 text-sm game-text focus:outline-none focus:border-[#EE2737]" value={ing.quantity} onChange={e => handleIngredientChange(ing.id, 'quantity', e.target.value)} placeholder="20" />
                   </div>
                   <div className="w-full sm:w-1/4">
-                    <label className="block text-[10px]  font-bold text-gray-400 mb-1 game-text">Price (Rp)</label>
-                    <input type="number" disabled={!ing.isFixed} className="w-full bg-white border border-gray-200 text-gray-900 p-2 text-sm game-text focus:outline-none focus:border-[#EE2737] disabled:opacity-50" value={ing.price} onChange={e => handleIngredientChange(ing.id, 'price', e.target.value)} placeholder="Calculate" />
+                    <label className="block text-[10px]  font-bold text-gray-400 mb-1 game-text">Harga (Rp)</label>
+                    <input type="number" disabled={!ing.isFixed} className="w-full bg-white border border-gray-200 text-gray-900 p-2 text-sm game-text focus:outline-none focus:border-[#EE2737] disabled:opacity-50" value={ing.price} onChange={e => handleIngredientChange(ing.id, 'price', e.target.value)} placeholder="Hitung" />
                   </div>
                   <div className="w-full sm:w-auto flex items-center gap-3">
                     <label className="flex items-center gap-2 cursor-pointer pt-2 sm:pt-0">
                       <input type="checkbox" checked={ing.isFixed} onChange={e => handleIngredientChange(ing.id, 'isFixed', e.target.checked)} className="w-4 h-4 accent-[#1A92D4]" />
-                      <span className="text-[10px]  font-bold text-gray-400 game-text">Fixed Price?</span>
+                      <span className="text-[10px]  font-bold text-gray-400 game-text">Harga Tetap?</span>
                     </label>
                     <button onClick={() => handleRemoveIngredient(ing.id)} className="p-2 text-gray-400 hover:text-[#EE2737] transition-colors pt-2 sm:pt-0">
                       <Trash2 className="w-4 h-4" />
@@ -232,7 +232,7 @@ ${promptStr}`,
               className="w-full px-8 py-4 bg-[#EE2737] hover:bg-[#EE2737]/80 disabled:bg-white disabled:text-white text-gray-900 font-bold border border-[#EE2737] shadow-sm transition-all flex justify-center items-center gap-2 game-text text-xl "
             >
               {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Calculator className="w-6 h-6" />}
-              {loading ? "Calculating Models..." : "Run Margin AI"}
+              {loading ? "Menghitung Model..." : "Jalankan Margin AI"}
             </button>
           </div>
 
@@ -242,7 +242,7 @@ ${promptStr}`,
               <div className="bg-white border border-gray-200 p-1 shadow-sm overflow-hidden">
                  <div className="bg-[#EE2737]/10 border-b border-[#EE2737] p-4 flex justify-between items-center">
                     <h3 className="font-bold text-[#EE2737] text-xl game-title  ">
-                       Financial Projection Summary
+                       Ringkasan Proyeksi Keuangan
                     </h3>
                     <span className="text-[#EE2737] font-bold game-text text-sm border border-[#EE2737] px-2 py-0.5 ">Pro Forma</span>
                  </div>
@@ -250,11 +250,11 @@ ${promptStr}`,
                  <table className="w-full text-left game-text">
                    <tbody>
                      <tr className="border-b border-gray-100">
-                       <td className="p-4 font-bold text-gray-700">ESTIMATED REVENUE <span className="text-sm font-normal text-gray-400 break-words line-clamp-1">({prediction.productName})</span></td>
+                       <td className="p-4 font-bold text-gray-700">ESTIMASI PENJUALAN <span className="text-sm font-normal text-gray-400 break-words line-clamp-1">({prediction.productName})</span></td>
                        <td className="p-4 font-bold text-gray-900 text-right text-xl">Rp {prediction.recommendedSellingPrice.toFixed(2)}</td>
                      </tr>
                      <tr className="border-b border-gray-100 bg-white">
-                       <td className="p-4 font-bold text-gray-700 pl-8">Less: Max Allowed COGS</td>
+                       <td className="p-4 font-bold text-gray-700 pl-8">Dikurangi: Max HPP (Beban)</td>
                        <td className="p-4 font-bold text-[#EE2737] text-right text-xl">-${prediction.totalAllowedCost.toFixed(2)}</td>
                      </tr>
                      
@@ -283,7 +283,7 @@ ${promptStr}`,
               </div>
 
               <div className="bg-white border border-gray-200 p-5 shadow-sm">
-                <h3 className="font-bold text-gray-900 text-xl game-title mb-3">AI Analysis</h3>
+                <h3 className="font-bold text-gray-900 text-xl game-title mb-3">Analisis AI</h3>
                 <p className="text-lg text-gray-700 font-bold leading-relaxed game-text">
                   {prediction.analysis}
                 </p>

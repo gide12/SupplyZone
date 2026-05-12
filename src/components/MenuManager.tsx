@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { MenuItem, Category } from "../types";
+import { MenuItem, Kategori } from "../types";
 import { Plus, Edit2, Trash2, X, Check, Sparkles, MapPin, Search, MessageCircle } from "lucide-react";
 import { useAppContext } from "../store/AppContext";
 import { PredictSupplyModal } from "./PredictSupplyModal";
@@ -132,7 +132,7 @@ export function MenuManager() {
                       <Sparkles className="w-4 h-4 text-purple-600" />
                     </div>
                     <div>
-                      <div className="game-text text-gray-900 font-bold leading-tight">Predict Needs</div>
+                      <div className="game-text text-gray-900 font-bold leading-tight">Predict Butuh</div>
                       <div className="text-[10px] text-gray-400 game-text mt-0.5">Supply AI</div>
                     </div>
                   </button>
@@ -158,7 +158,7 @@ export function MenuManager() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <input
                 type="text"
-                placeholder="Item Name"
+                placeholder="Nama Menu"
                 className="px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] game-text font-bold"
                 value={formData.name}
                 onChange={e => setFormData({ ...formData, name: e.target.value })}
@@ -175,7 +175,7 @@ export function MenuManager() {
                 <select
                   className="px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] w-1/2 game-text font-bold"
                   value={formData.category}
-                  onChange={e => setFormData({ ...formData, category: e.target.value as Category })}
+                  onChange={e => setFormData({ ...formData, category: e.target.value as Kategori })}
                 >
                   <option value="Appetizer">Appetizer</option>
                   <option value="Main Course">Main Course</option>
@@ -203,13 +203,13 @@ export function MenuManager() {
                 onClick={() => { setIsAdding(false); resetForm(); }}
                 className="px-6 py-2 text-lg font-bold text-gray-900 border border-gray-200 hover:bg-gray-50 transition-colors game-text bg-white rounded-xl"
               >
-                Cancel
+                Batal
               </button>
               <button
                 onClick={handleSaveAdd}
                 className="px-6 py-2 text-lg game-btn game-btn-green font-bold transition-all game-text text-gray-900"
               >
-                Save Item
+                Simpan Menu
               </button>
             </div>
           </div>
@@ -248,7 +248,7 @@ export function MenuManager() {
                         <select
                           className="px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] w-1/2 game-text font-bold"
                           value={formData.category}
-                          onChange={e => setFormData({ ...formData, category: e.target.value as Category })}
+                          onChange={e => setFormData({ ...formData, category: e.target.value as Kategori })}
                         >
                           <option value="Appetizer">Appetizer</option>
                           <option value="Main Course">Main Course</option>
@@ -274,14 +274,14 @@ export function MenuManager() {
                       <button
                         onClick={() => setIsEditing(null)}
                         className="p-3 rounded-lg text-gray-900 border border-gray-200 bg-white hover:bg-gray-50 transition-all"
-                        title="Cancel"
+                        title="Batal"
                       >
                         <X className="w-6 h-6" />
                       </button>
                       <button
                         onClick={() => handleSaveEdit(item.id)}
                         className="p-3 game-btn game-btn-green"
-                        title="Save Changes"
+                        title="Simpan Perubahan"
                       >
                         <Check className="w-6 h-6" />
                       </button>
@@ -383,7 +383,7 @@ export function MenuManager() {
                                               Waiting for Sample
                                             </span>
                                           </div>
-                                        ) : deal.status === 'Sample Arrived' ? (
+                                        ) : deal.status === 'Sampel Tiba' ? (
                                           <div className="flex w-full items-center gap-2">
                                             <button 
                                               onClick={() => { setReviewingDeal(deal); setReviewForm({ rating: 5, text: "" }); }} 
@@ -397,7 +397,7 @@ export function MenuManager() {
                                             <span className={`text-lg font-bold px-2 py-1 border flex-1 text-center game-text shadow-sm ${
                                               deal.status === 'Accepted' ? 'bg-[#00AA13] text-white border-[#00AA13]' :
 deal.status === 'Sample Requested' ? 'bg-blue-100 text-blue-800 border-blue-200' :
-deal.status === 'Sample Arrived' ? 'bg-purple-100 text-purple-800 border-purple-200' : 
+deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200' : 
                                               deal.status === 'Rejected' ? 'bg-[#EE2737] text-white border-[--color-gta-red]' : 
                                               deal.status === 'On Delivery' ? 'bg-[#F1B51A] text-black border-[#F1B51A]' : 
                                               deal.status === 'Delivered' ? 'bg-purple-600 text-gray-900 border-purple-600' : 
