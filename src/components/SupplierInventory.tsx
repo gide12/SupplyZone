@@ -225,7 +225,7 @@ export function SupplierInventory() {
                  <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Nama Barang</label>
                  <input type="text" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none focus:border-[#00AA13]" placeholder="e.g., Avocado Toast" value={newName} onChange={e => setNewName(e.target.value)} required />
               </div>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
                    <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Quantity</label>
                    <input type="number" min="1" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none focus:border-[#00AA13]" value={newQuantity} onChange={e => setNewQuantity(e.target.value)} required />
@@ -242,7 +242,7 @@ export function SupplierInventory() {
                    <input type="number" step="0.01" min="0" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none focus:border-[#00AA13]" value={newBasePrice} onChange={e => setNewBasePrice(e.target.value)} required />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Space Used (sq ft/pallet)</label>
                   <input type="number" step="0.1" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none" value={newSpace} onChange={e => setNewSpace(e.target.value)} placeholder="e.g. 5.5" required />
@@ -331,7 +331,7 @@ export function SupplierInventory() {
 
               {aiReport && (
                 <div className="space-y-4 animate-in fade-in duration-300">
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="bg-white p-3 border border-gray-100 text-center">
                       <div className="text-xs text-gray-400 font-bold   game-text mb-1">Space Efisiensi</div>
                       <div className="text-2xl font-bold text-gray-900 game-title">{aiReport.efficiencyScore}%</div>

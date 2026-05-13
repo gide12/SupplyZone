@@ -87,7 +87,7 @@ Note: Please provide all text values (distance, fuelUsed, estimatedCost, routeNo
 
       {estimate && (
         <div className="space-y-4 mt-4 border-t-4 border-black pt-4">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="bg-white border-2 border-black p-3 text-center shadow-[2px_2px_0_#000]">
               <span className="block text-xs  font-bold text-gray-400 game-text shadow-sm">Jarak</span>
               <span className="block text-xl font-bold text-black mt-1 game-text">{estimate.distance}</span>

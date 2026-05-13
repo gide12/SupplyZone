@@ -119,15 +119,15 @@ export function RestaurantDashboard() {
   return (
     <div className="min-h-screen bg-white">
       {/* Top Navbar */}
-      <nav className="game-panel m-4 sticky top-4 z-10 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-white rounded flex items-center justify-center border border-gray-200">
-            <Store className="w-6 h-6 text-[#00AA13]" />
+      <nav className="game-panel m-2 md:m-4 sticky top-2 md:top-4 z-10 px-3 md:px-6 py-2 md:py-4 flex items-center justify-between gap-1">
+        <div className="flex items-center gap-1 md:gap-3">
+          <div className="w-8 h-8 md:w-10 md:h-10 bg-white rounded flex items-center justify-center border border-gray-200 shrink-0">
+            <Store className="w-5 h-5 md:w-6 md:h-6 text-[#00AA13]" />
           </div>
-          <span className="text-2xl game-title ">Dapurku</span>
-          <span className="ml-2 px-2 py-0.5 bg-[#00AA13] text-white border border-[#00AA13] text-xs rounded  tracking-wider game-text shadow-sm">{translate("Restaurant Portal", language)}</span>
+          <span className="text-lg md:text-2xl game-title leading-none">Dapurku</span>
+          <span className="ml-1 md:ml-2 px-1 py-0.5 md:px-2 md:py-0.5 bg-[#00AA13] text-white border border-[#00AA13] text-[10px] md:text-xs rounded tracking-wider game-text shadow-sm whitespace-nowrap">{translate("Restaurant Portal", language)}</span>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4 shrink-0">
           <div className="relative">
             <button 
               onClick={() => setShowNotifications(!showNotifications)}
@@ -171,32 +171,32 @@ export function RestaurantDashboard() {
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 h-full flex flex-col md:flex-row gap-8">
+      <main className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-2 md:py-4 h-full flex flex-col md:flex-row gap-4 md:gap-8">
         
         {/* Sidebar Nav */}
-        <aside className="w-full md:w-64 flex-shrink-0 flex flex-col min-h-[calc(100vh-10rem)]">
-          <div className="space-y-4">
+        <aside className="w-full md:w-64 flex-shrink-0 flex flex-col min-h-fit md:min-h-[calc(100vh-10rem)]">
+          <div className="flex flex-row md:flex-col gap-2 overflow-x-auto pb-2 md:pb-0 custom-scrollbar">
             <button 
               onClick={() => setActiveTab("menu")}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded font-bold transition-colors game-btn ${activeTab === 'menu' ? 'game-btn-blue text-lg' : 'bg-white text-gray-900 text-lg border-gray-200 hover:bg-gray-50'}`}>
+              className={`w-full flex items-center md:flex-row flex-col justify-center md:justify-start gap-1 md:gap-3 px-2 md:px-4 py-2 md:py-3 rounded font-bold transition-colors game-btn ${activeTab === 'menu' ? 'game-btn-blue text-sm md:text-lg' : 'bg-white text-gray-900 text-sm md:text-lg border-gray-200 hover:bg-gray-50'}`}>
               <Settings className="w-5 h-5" />
-              <span className="game-text">{translate("Menu Manager", language)}</span>
+              <span className="game-text whitespace-nowrap">{translate("Menu Manager", language)}</span>
             </button>
             <button 
               onClick={() => setActiveTab("inventory")}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded font-bold transition-colors game-btn ${activeTab === 'inventory' ? 'game-btn-blue text-lg' : 'bg-white text-gray-900 text-lg border-gray-200 hover:bg-gray-50'}`}>
+              className={`w-full flex items-center md:flex-row flex-col justify-center md:justify-start gap-1 md:gap-3 px-2 md:px-4 py-2 md:py-3 rounded font-bold transition-colors game-btn ${activeTab === 'inventory' ? 'game-btn-blue text-sm md:text-lg' : 'bg-white text-gray-900 text-sm md:text-lg border-gray-200 hover:bg-gray-50'}`}>
               <Package className="w-5 h-5" />
-              <span className="game-text">{translate("Inventory", language)} & AI</span>
+              <span className="game-text whitespace-nowrap">{translate("Inventory", language)} & AI</span>
             </button>
             <button 
               onClick={() => setActiveTab("profile")}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded font-bold transition-colors game-btn ${activeTab === 'profile' ? 'game-btn-blue text-lg' : 'bg-white text-gray-900 text-lg border-gray-200 hover:bg-gray-50'}`}>
+              className={`w-full flex items-center md:flex-row flex-col justify-center md:justify-start gap-1 md:gap-3 px-2 md:px-4 py-2 md:py-3 rounded font-bold transition-colors game-btn ${activeTab === 'profile' ? 'game-btn-blue text-sm md:text-lg' : 'bg-white text-gray-900 text-sm md:text-lg border-gray-200 hover:bg-gray-50'}`}>
               <User className="w-5 h-5" />
-              <span className="game-text">{translate("Profile", language)}</span>
+              <span className="game-text whitespace-nowrap">{translate("Profile", language)}</span>
             </button>
           </div>
 
-          <div className="mt-8 md:mt-auto pt-8 flex justify-center hidden sm:flex pb-4">
+          <div className="mt-4 md:mt-auto pt-4 md:pt-8 flex justify-center hidden sm:flex pb-4">
             <div className="relative group p-4 border border-gray-200 bg-white w-full text-center rounded-xl shadow-sm">
               <div className="text-sm font-bold text-[#00AA13] game-text">
                 DAPURKU

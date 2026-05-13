@@ -409,21 +409,21 @@ deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200
   );
 
   return (
-    <div className="flex h-screen bg-white flex-col md:flex-row overflow-hidden relative">
+    <div className="flex h-screen bg-white flex-col-reverse md:flex-row overflow-hidden relative">
       
       {/* Sidebar: List of Restaurants or Selected Restaurant Detail */}
-      <div className="w-full md:w-96 bg-white flex flex-col h-full z-10 border-r border-gray-200 shrink-0 relative">
-        <div className="flex items-center justify-between px-6 py-5 bg-white ">
-          <div className="flex items-center gap-3 p-2">
-            <div className="w-12 h-12 bg-[#00AA13] rounded-xl flex items-center justify-center shadow-sm">
-              <Truck className="w-7 h-7 text-gray-900" />
+      <div className="w-full md:w-96 bg-white flex flex-col h-[50vh] md:h-full z-10 border-t md:border-t-0 border-r-0 md:border-r border-gray-200 shrink-0 relative">
+        <div className="flex items-center justify-between px-3 md:px-6 py-3 md:py-5 bg-white shrink-0">
+          <div className="flex items-center gap-2 md:gap-3 p-1 md:p-2">
+            <div className="w-8 h-8 md:w-12 md:h-12 bg-[#00AA13] rounded-lg md:rounded-xl flex items-center justify-center shadow-sm shrink-0">
+              <Truck className="w-5 h-5 md:w-7 md:h-7 text-gray-900" />
             </div>
-            <span className="text-3xl font-bold  text-gray-900 game-title ">Dapurku</span>
+            <span className="text-xl md:text-3xl font-bold text-gray-900 game-title leading-none">Dapurku</span>
           </div>
-          <span className="px-3 py-1 bg-[#EE2737] text-white text-xs font-bold rounded-full game-text shadow-sm">{translate("Supplier Portal", language)}</span>
+          <span className="px-2 md:px-3 py-1 bg-[#EE2737] text-white text-[10px] md:text-xs font-bold rounded-full game-text shadow-sm whitespace-nowrap">{translate("Supplier Portal", language)}</span>
         </div>
 
-        <div className="flex overflow-x-auto custom-scrollbar border-b border-gray-100 bg-white shadow-sm px-2 sm:px-6 justify-start lg:justify-center">
+        <div className="flex overflow-x-auto custom-scrollbar border-b border-gray-100 bg-white shadow-sm px-2 sm:px-6 justify-start lg:justify-center shrink-0">
           <button 
             className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-6 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold game-text border-b-2 whitespace-nowrap transition-all duration-300 ${activeTab === "market" ? "border-[#00AA13] text-[#00AA13] sm:scale-105" : "border-transparent text-gray-500 hover:text-[#00AA13] hover:bg-gray-50"}`}
             onClick={() => setActiveTab('market')}
@@ -480,7 +480,7 @@ deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200
 
 
       {/* Main Map Area */}
-      <div className="flex-1 relative z-0 h-full min-h-[50vh]">
+      <div className="flex-1 relative z-0 h-[50vh] md:h-full">
         <MapContainer center={mapCenter} zoom={13} style={{ height: "100%", width: "100%" }}>
           <TileLayer
             url="https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"

@@ -221,7 +221,7 @@ export function RestaurantInventory() {
                 <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Nama Bahan</label>
                 <input type="text" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none focus:border-[#00AA13]" value={newName} onChange={e => setNewName(e.target.value)} placeholder="e.g. Avocado" required />
               </div>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Quantity</label>
                   <input type="number" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none" value={newQuantity} onChange={e => setNewQuantity(e.target.value)} placeholder="e.g. 50" required />
@@ -357,7 +357,7 @@ export function RestaurantInventory() {
 
             {aiReport && (
               <div className="space-y-4 animate-in fade-in duration-300">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div className="bg-white p-3 border border-gray-100 text-center">
                     <div className="text-xs text-gray-400 font-bold   game-text mb-1">Efisiensi</div>
                     <div className="text-2xl font-bold text-gray-900 game-title">{aiReport.efficiencyScore}%</div>

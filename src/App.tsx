@@ -16,7 +16,7 @@ function RoleSwitcher() {
   const unreadSupplier = messages.filter(m => m.senderRole === "restaurant" && !m.isRead && deals.some(d => d.id === m.dealId && d.supplierId === activeSupplier.id)).length;
 
   return (
-    <div className="fixed bottom-6 right-6 z-[9999] game-panel p-2 flex gap-2">
+    <div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-[9999] game-panel p-2 flex gap-2 scale-90 sm:scale-100 origin-bottom-right">
       <button
         onClick={() => setLanguage(language === "en" ? "id" : "en")}
         className="flex items-center justify-center w-10 h-10 bg-white border border-gray-200 rounded-full hover:bg-gray-100 text-gray-900 shadow-sm"
