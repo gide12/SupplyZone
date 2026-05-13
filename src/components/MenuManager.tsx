@@ -5,7 +5,8 @@ import { useAppContext } from "../store/AppContext";
 import { PredictSupplyModal } from "./PredictSupplyModal";
 import { ChatModal } from "./ChatModal";
 import { AIMarginPredictor } from "./AIMarginPredictor";
-import { Calculator } from "lucide-react";
+import { AIPricingOptimizer } from "./AIPricingOptimizer";
+import { Calculator, TrendingUp } from "lucide-react";
 
 export function MenuManager() {
   const { restaurants, activeRestaurantId, addMenuItem, updateMenuItem, deleteMenuItem, deals, proposeDeal, updateDealStatus, updateDeal, messages, suppliers, calculateDynamicPrice } = useAppContext();
@@ -13,6 +14,7 @@ export function MenuManager() {
   const [isAdding, setIsAdding] = useState(false);
   const [isPredictModalOpen, setIsPredictModalOpen] = useState(false);
   const [isMarginPredictorOpen, setIsMarginPredictorOpen] = useState(false);
+  const [pricingMenuItem, setPricingMenuItem] = useState<MenuItem | null>(null);
   const [findingSuppliersFor, setFindingSuppliersFor] = useState<string | null>(null);
   const [activeChatDeal, setActiveChatDeal] = useState<any | null>(null);
   const [reviewingDeal, setReviewingDeal] = useState<any | null>(null);
@@ -457,14 +459,23 @@ deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200
                       <button 
                         onClick={() => startEdit(item)}
                         className="p-3 border border-gray-200 bg-white text-[#EE2737] hover:bg-[#EE2737] hover:text-white transition-all hover:border-[#EE2737]"
+                        title="Edit Menu"
                       >
                         <Edit2 className="w-5 h-5" />
                       </button>
                       <button 
                         onClick={() => deleteMenuItem(restaurant.id, item.id)}
                         className="p-3 border border-gray-200 bg-white text-[--color-gta-red] hover:bg-[#EE2737] hover:text-white transition-all mt-0 md:mt-2 hover:border-[--color-gta-red]"
+                        title="Hapus Menu"
                       >
                         <Trash2 className="w-5 h-5" />
+                      </button>
+                      <button 
+                        onClick={() => setPricingMenuItem(item)}
+                        title="AI Harga Jual (Cek HPP Pemasok)"
+                        className="p-3 border border-gray-200 bg-white text-[#00AA13] hover:bg-[#00AA13] hover:text-white transition-all mt-0 md:mt-2 hover:border-[#00AA13]"
+                      >
+                        <TrendingUp className="w-5 h-5" />
                       </button>
                     </div>
                   </>
@@ -486,6 +497,13 @@ deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200
       <AIMarginPredictor 
         isOpen={isMarginPredictorOpen} 
         onClose={() => setIsMarginPredictorOpen(false)} 
+      />
+
+      <AIPricingOptimizer
+        isOpen={pricingMenuItem !== null}
+        onClose={() => setPricingMenuItem(null)}
+        menuItem={pricingMenuItem}
+        suppliers={suppliers}
       />
 
       {reviewingDeal && (
