@@ -9,6 +9,7 @@ interface AppContextType {
   setCurrentUserMode: (mode: "restaurant" | "supplier") => void;
   // Restaurant actions
   activeRestaurantId: string | null;
+  setActiveRestaurantId: (id: string) => void;
   addMenuItem: (restaurantId: string, item: Omit<MenuItem, "id">) => void;
   updateMenuItem: (restaurantId: string, itemId: string, item: Omit<MenuItem, "id">) => void;
   deleteMenuItem: (restaurantId: string, itemId: string) => void;
@@ -17,6 +18,7 @@ interface AppContextType {
   // Supplier actions
   suppliers: SupplierProfile[];
   activeSupplier: SupplierProfile;
+  setActiveSupplierId: (id: string) => void;
   updateSupplierProfile: (id: string, name: string, lat: number, lng: number, address?: string) => void;
   updateSupplierInventory: (id: string, inventory: SupplierInventoryItem[]) => void;
   // Dynamic Pricing
@@ -40,8 +42,8 @@ const defaultRestaurants: Restaurant[] = [
   {
     id: "r-1",
     name: "The Rustic Spoon",
-    lat: 51.505,
-    lng: -0.09,
+    lat: -5.147665,
+    lng: 119.432731,
     menu: [
       { id: "m-1", name: "Avocado Toast", description: "Sourdough, smashed avocado, poached egg", price: 12.5, category: "Appetizer" },
       { id: "m-2", name: "Truffle Pasta", description: "Fresh tagliatelle, black truffle siding", price: 24.0, category: "Main Course" },
@@ -50,8 +52,8 @@ const defaultRestaurants: Restaurant[] = [
   {
     id: "r-2",
     name: "Burger Joint",
-    lat: 51.51,
-    lng: -0.1,
+    lat: -5.15,
+    lng: 119.44,
     menu: [
       { id: "m-3", name: "Classic Cheeseburger", description: "Beef patty, cheddar, lettuce, tomato", price: 14.0, category: "Main Course" },
       { id: "m-4", name: "Sweet Potato Fries", description: "Crispy fries with aioli", price: 6.5, category: "Appetizer" },
@@ -60,17 +62,17 @@ const defaultRestaurants: Restaurant[] = [
 ];
 
 const defaultSuppliers: SupplierProfile[] = [
-  { id: "s-1", name: "FreshLogistics Inc.", lat: 51.52, lng: -0.11, inventory: [
+  { id: "s-1", name: "FreshLogistics Inc.", lat: -5.13, lng: 119.45, inventory: [
       { id: "i-1", name: "Avocado Toast", quantity: 50, basePrice: 2.5, spaceUsed: 5.0, expirationDate: "2026-06-01" },
       { id: "i-2", name: "Classic Cheeseburger", quantity: 100, basePrice: 3.0, spaceUsed: 10.0, expirationDate: "2026-05-15" },
     ] 
   },
-  { id: "s-2", name: "Valley Farms", lat: 51.49, lng: -0.08, inventory: [
+  { id: "s-2", name: "Valley Farms", lat: -5.16, lng: 119.42, inventory: [
       { id: "i-3", name: "Truffle Pasta", quantity: 30, basePrice: 8.0, spaceUsed: 2.0, expirationDate: "2026-05-10" },
       { id: "i-4", name: "Avocado Toast", quantity: 10, basePrice: 3.0, spaceUsed: 1.0, expirationDate: "2026-06-01" },
     ]
   },
-  { id: "s-3", name: "Metro Meat & Veg", lat: 51.515, lng: -0.105, inventory: [
+  { id: "s-3", name: "Metro Meat & Veg", lat: -5.14, lng: 119.43, inventory: [
       { id: "i-5", name: "Classic Cheeseburger", quantity: 200, basePrice: 2.8, spaceUsed: 20.0, expirationDate: "2026-05-20" },
       { id: "i-6", name: "Sweet Potato Fries", quantity: 150, basePrice: 1.5, spaceUsed: 15.0, expirationDate: "2026-07-01" },
     ]
@@ -85,8 +87,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const parsed = JSON.parse(saved);
         return parsed.map((r: any) => ({
           ...r,
-          lat: r.lat ?? (51.505 + (Math.random() * 0.1 - 0.05)),
-          lng: r.lng ?? (-0.09 + (Math.random() * 0.1 - 0.05)),
+          lat: r.lat ?? (-5.147665 + (Math.random() * 0.1 - 0.05)),
+          lng: r.lng ?? (119.432731 + (Math.random() * 0.1 - 0.05)),
         }));
       } catch (e) {
         return defaultRestaurants;
@@ -105,12 +107,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return saved ? JSON.parse(saved) : [];
   });
 
-  const [activeSupplier, setActiveSupplier] = useState<SupplierProfile>(() => {
-    const saved = localStorage.getItem("supplymap_supplier");
-    // Default to the first supplier in the defaultSuppliers list if no saved profile is found.
-    // Ensure that it has an inventory property.
-    return saved ? JSON.parse(saved) : defaultSuppliers[0];
+  const [currentUserMode, setCurrentUserMode] = useState<"restaurant" | "supplier">("restaurant");
+  // Simulating being logged in as the first restaurant
+  const [activeRestaurantId, setActiveRestaurantId] = useState<string>(() => {
+    const saved = localStorage.getItem("supplymap_activeRestaurantId");
+    return saved || "r-1";
   });
+  
+  const [activeSupplierId, setActiveSupplierId] = useState<string>(() => {
+    const saved = localStorage.getItem("supplymap_activeSupplierId");
+    return saved || defaultSuppliers[0].id;
+  });
+
+  // activeSupplier is now derived
+  const activeSupplier = suppliers.find(s => s.id === activeSupplierId) || suppliers[0];
 
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
     const saved = localStorage.getItem("supplymap_messages");
@@ -121,10 +131,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const saved = localStorage.getItem("supplymap_language");
     return saved === "id" ? "id" : "en";
   });
+  
+  useEffect(() => {
+    localStorage.setItem("supplymap_activeRestaurantId", activeRestaurantId);
+  }, [activeRestaurantId]);
 
-  const [currentUserMode, setCurrentUserMode] = useState<"restaurant" | "supplier">("restaurant");
-  // Simulating being logged in as the first restaurant
-  const [activeRestaurantId] = useState<string>("r-1");
+  useEffect(() => {
+    localStorage.setItem("supplymap_activeSupplierId", activeSupplierId);
+  }, [activeSupplierId]);
 
   useEffect(() => {
     localStorage.setItem("supplymap_restaurants", JSON.stringify(restaurants));
@@ -188,16 +202,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const updateSupplierProfile = (id: string, name: string, lat: number, lng: number, address?: string) => {
     setSuppliers(prev => prev.map(s => s.id === id ? { ...s, name, lat, lng, address } : s));
-    if (activeSupplier.id === id) {
-      setActiveSupplier(prev => ({ ...prev, name, lat, lng, address }));
-    }
   };
 
   const updateSupplierInventory = (id: string, inventory: SupplierInventoryItem[]) => {
     setSuppliers(prev => prev.map(s => s.id === id ? { ...s, inventory } : s));
-    if (activeSupplier.id === id) {
-      setActiveSupplier(prev => ({ ...prev, inventory }));
-    }
   };
 
   const calculateDynamicPrice = (itemName: string) => {
@@ -289,6 +297,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       currentUserMode,
       setCurrentUserMode,
       activeRestaurantId,
+      setActiveRestaurantId,
       addMenuItem,
       updateMenuItem,
       deleteMenuItem,
@@ -296,6 +305,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       updateRestaurantInventory,
       suppliers,
       activeSupplier,
+      setActiveSupplierId,
       updateSupplierProfile,
       updateSupplierInventory,
       calculateDynamicPrice,

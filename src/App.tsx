@@ -10,7 +10,7 @@ import { Store, Truck, Globe } from "lucide-react";
 import { translate } from "./lib/i18n";
 
 function RoleSwitcher() {
-  const { currentUserMode, setCurrentUserMode, messages, activeRestaurantId, activeSupplier, deals, language, setLanguage } = useAppContext();
+  const { currentUserMode, setCurrentUserMode, messages, activeRestaurantId, activeSupplier, deals, language, setLanguage, restaurants, suppliers, setActiveRestaurantId, setActiveSupplierId } = useAppContext();
 
   const unreadRestaurant = messages.filter(m => m.senderRole === "supplier" && !m.isRead && deals.some(d => d.id === m.dealId && d.restaurantId === activeRestaurantId)).length;
   const unreadSupplier = messages.filter(m => m.senderRole === "restaurant" && !m.isRead && deals.some(d => d.id === m.dealId && d.supplierId === activeSupplier.id)).length;
@@ -27,38 +27,62 @@ function RoleSwitcher() {
         <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-[10px] px-1.5 py-0.5 rounded shadow-sm font-bold uppercase">{language}</span>
       </button>
 
-      <button
-        onClick={() => setCurrentUserMode("restaurant")}
-        className={`flex items-center gap-2 px-4 py-2 text-sm game-btn relative ${
-          currentUserMode === "restaurant" 
-            ? "bg-[#EE2737] text-white border-[#EE2737] font-bold shadow-sm" 
-            : "bg-white text-gray-500 border-gray-200 hover:text-gray-900"
-        }`}
-      >
-        <Store className="w-4 h-4" />
-        <span className="hidden sm:inline game-text">{translate("Restaurant Portal", language)}</span>
-        {unreadRestaurant > 0 && (
-          <span className="absolute -top-2 -right-2 bg-[#EE2737] text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full shadow-sm">
-            {unreadRestaurant}
-          </span>
-        )}
-      </button>
-      <button
-        onClick={() => setCurrentUserMode("supplier")}
-        className={`flex items-center gap-2 px-4 py-2 text-sm game-btn relative ${
-          currentUserMode === "supplier" 
-            ? "bg-[#00AA13] text-white border-[#00AA13] font-bold shadow-sm" 
-            : "bg-white text-gray-500 border-gray-200 hover:text-gray-900"
-        }`}
-      >
-        <Truck className="w-4 h-4" />
-        <span className="hidden sm:inline game-text">{translate("Supplier Portal", language)}</span>
-        {unreadSupplier > 0 && (
-          <span className="absolute -top-2 -right-2 bg-[#EE2737] text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full shadow-sm">
-            {unreadSupplier}
-          </span>
-        )}
-      </button>
+      <div className="flex flex-col gap-1 items-end">
+        <select 
+          value={activeRestaurantId || ""} 
+          onChange={(e) => {
+            setActiveRestaurantId(e.target.value);
+            setCurrentUserMode("restaurant");
+          }}
+          className="text-xs p-1 border rounded bg-white max-w-[120px] truncate"
+        >
+          {restaurants.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+        </select>
+        <button
+          onClick={() => setCurrentUserMode("restaurant")}
+          className={`flex items-center gap-2 px-4 py-2 text-sm game-btn relative ${
+            currentUserMode === "restaurant" 
+              ? "bg-[#EE2737] text-white border-[#EE2737] font-bold shadow-sm" 
+              : "bg-white text-gray-500 border-gray-200 hover:text-gray-900"
+          }`}
+        >
+          <Store className="w-4 h-4" />
+          <span className="hidden sm:inline game-text">{translate("Restaurant Portal", language)}</span>
+          {unreadRestaurant > 0 && (
+            <span className="absolute -top-2 -right-2 bg-[#EE2737] text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full shadow-sm">
+              {unreadRestaurant}
+            </span>
+          )}
+        </button>
+      </div>
+      <div className="flex flex-col gap-1 items-end">
+        <select 
+          value={activeSupplier?.id || ""} 
+          onChange={(e) => {
+            setActiveSupplierId(e.target.value);
+            setCurrentUserMode("supplier");
+          }}
+          className="text-xs p-1 border rounded bg-white max-w-[120px] truncate"
+        >
+          {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+        </select>
+        <button
+          onClick={() => setCurrentUserMode("supplier")}
+          className={`flex items-center gap-2 px-4 py-2 text-sm game-btn relative ${
+            currentUserMode === "supplier" 
+              ? "bg-[#00AA13] text-white border-[#00AA13] font-bold shadow-sm" 
+              : "bg-white text-gray-500 border-gray-200 hover:text-gray-900"
+            }`}
+          >
+          <Truck className="w-4 h-4" />
+          <span className="hidden sm:inline game-text">{translate("Supplier Portal", language)}</span>
+          {unreadSupplier > 0 && (
+            <span className="absolute -top-2 -right-2 bg-[#EE2737] text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full shadow-sm">
+              {unreadSupplier}
+            </span>
+          )}
+        </button>
+      </div>
     </div>
   );
 }

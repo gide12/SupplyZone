@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { MenuItem, Kategori } from "../types";
-import { Plus, Edit2, Trash2, X, Check, Sparkles, MapPin, Search, MessageCircle } from "lucide-react";
+import { MenuItem, Category } from "../types";
+import { Plus, Edit2, Trash2, X, Check, Sparkles, MapPin, Search, MessageCircle, Handshake } from "lucide-react";
 import { useAppContext } from "../store/AppContext";
 import { PredictSupplyModal } from "./PredictSupplyModal";
 import { ChatModal } from "./ChatModal";
@@ -175,7 +175,7 @@ export function MenuManager() {
                 <select
                   className="px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] w-1/2 game-text font-bold"
                   value={formData.category}
-                  onChange={e => setFormData({ ...formData, category: e.target.value as Kategori })}
+                  onChange={e => setFormData({ ...formData, category: e.target.value as Category })}
                 >
                   <option value="Appetizer">Appetizer</option>
                   <option value="Main Course">Main Course</option>
@@ -248,7 +248,7 @@ export function MenuManager() {
                         <select
                           className="px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] w-1/2 game-text font-bold"
                           value={formData.category}
-                          onChange={e => setFormData({ ...formData, category: e.target.value as Kategori })}
+                          onChange={e => setFormData({ ...formData, category: e.target.value as Category })}
                         >
                           <option value="Appetizer">Appetizer</option>
                           <option value="Main Course">Main Course</option>
@@ -341,12 +341,12 @@ export function MenuManager() {
                         {itemDeals.length > 0 ? (
                           <div className="space-y-3">
                             <h5 className="text-sm font-bold text-[#F1B51A]  tracking-wider flex items-center gap-2 game-text">
-                              <MapPin className="w-5 h-5 text-[#F1B51A]" /> Nearby Supplier Bids
+                              <Handshake className="w-5 h-5 text-[#F1B51A]" /> Penawaran Kesepakatan Pemasok
                             </h5>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               {itemDeals.map(deal => {
                                 const supplier = suppliers.find(s => s.id === deal.supplierId);
-                                const supplierName = supplier?.name || "Unknown Supplier";
+                                const supplierName = supplier?.name || "Pemasok Tidak Diketahui";
                                 const unreadCount = messages.filter(m => m.dealId === deal.id && m.senderRole === "supplier" && !m.isRead).length;
                                 return (
                                   <div key={deal.id} className="p-3 bg-white border border-gray-100 space-y-2 relative shadow-sm">
@@ -362,19 +362,19 @@ export function MenuManager() {
                                               onClick={() => updateDealStatus(deal.id, 'Accepted')} 
                                               className="flex-1 py-2 game-btn game-btn-green text-sm"
                                             >
-                                              <span className="game-text text-lg">Accept</span>
+                                              <span className="game-text text-lg">Terima</span>
                                             </button>
                                             <button 
                                               onClick={() => updateDealStatus(deal.id, 'Sample Requested')} 
                                               className="flex-1 py-2 game-btn game-btn-blue text-sm"
                                             >
-                                              <span className="game-text text-lg">Sample</span>
+                                              <span className="game-text text-lg">Minta Sampel</span>
                                             </button>
                                             <button 
                                               onClick={() => updateDealStatus(deal.id, 'Rejected')} 
                                               className="flex-1 py-2 game-btn game-btn-red text-sm"
                                             >
-                                              <span className="game-text text-lg">Reject</span>
+                                              <span className="game-text text-lg">Tolak</span>
                                             </button>
                                           </div>
                                         ) : deal.status === 'Sample Requested' ? (

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Bensin, Loader2, Navigation } from "lucide-react";
+import { Fuel, Loader2, Navigation } from "lucide-react";
 import { GoogleGenAI, Type } from "@google/genai";
 import { Restaurant } from "../types";
 

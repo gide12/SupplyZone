@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { Store, Truck, MapPin, X, ImagePlus, Link as LinkIcon, Navigation, MessageCircle, Map, User, Package, Calculator, Handshake } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from "react-leaflet";
 import L from "leaflet";
+import { AddressAutocomplete } from "./AddressAutocomplete";
 import { useAppContext } from "../store/AppContext";
 import { Restaurant, MenuItem } from "../types";
 import { FuelEstimateCard } from "./FuelEstimateCard";
@@ -56,7 +57,7 @@ export function SupplierDashboard() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Default map center (London)
-  const defaultCenter: [number, number] = [51.505, -0.09];
+  const defaultCenter: [number, number] = [-5.147665, 119.432731];
   const [mapCenter, setMapCenter] = useState<[number, number]>(defaultCenter);
   
   // Simulated supplier location (can be made draggable if desired, static for now)
@@ -66,27 +67,18 @@ export function SupplierDashboard() {
   const [profileName, setProfileName] = useState(activeSupplier.name);
   
   const [profileAddress, setProfileAddress] = useState(activeSupplier?.address || "");
+  const [profileLat, setProfileLat] = useState<number | undefined>(activeSupplier.lat);
+  const [profileLng, setProfileLng] = useState<number | undefined>(activeSupplier.lng);
   const [activeChatDeal, setActiveChatDeal] = useState<any | null>(null);
 
   const handleProfileSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    let finalLat = activeSupplier.lat;
-    let finalLng = activeSupplier.lng;
     
-    if (profileAddress) {
-      try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(profileAddress)}`);
-        const data = await res.json();
-        if (data && data.length > 0) {
-          finalLat = parseFloat(data[0].lat);
-          finalLng = parseFloat(data[0].lon);
-        }
-      } catch (err) {
-        console.error("Geocoding failed", err);
-      }
-    }
+    let finalLat = profileLat ?? activeSupplier.lat;
+    let finalLng = profileLng ?? activeSupplier.lng;
     
-    updateSupplierProfile(profileName, finalLat, finalLng, profileAddress);
+    updateSupplierProfile(activeSupplier.id, profileName, finalLat, finalLng, profileAddress);
+    setMapCenter([finalLat, finalLng]);
     alert("Profile updated successfully with location!");
   };
 
@@ -283,10 +275,13 @@ export function SupplierDashboard() {
 
   const renderOrders = () => (
     <div className="p-4">
-      <h2 className="text-sm font-bold text-[#00AA13]  tracking-wide mb-4 game-text border-b border-gray-200 pb-1">My Deal Bids & Orders</h2>
+      <h2 className="text-sm font-bold text-[#00AA13]  tracking-wide mb-4 game-text border-b border-gray-200 pb-1 flex items-center gap-2">
+        <Handshake className="w-5 h-5" />
+        Penawaran Kesepakatan & Pesanan Saya
+      </h2>
       <div className="space-y-5">
         {deals.filter(d => d.supplierId === activeSupplier.id).length === 0 ? (
-          <div className="text-center py-12 text-lg font-bold text-gray-400 border border-gray-100 bg-white game-text">You haven't proposed any deals yet.</div>
+          <div className="text-center py-12 text-lg font-bold text-gray-400 border border-gray-100 bg-white game-text">Anda belum mengajukan kesepakatan apa pun.</div>
         ) : (
           deals.filter(d => d.supplierId === activeSupplier.id).map((deal) => {
             const restaurant = restaurants.find(r => r.id === deal.restaurantId);
@@ -394,12 +389,13 @@ deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200
           </div>
           <div>
              <label className="block text-xl text-gray-700 mb-2 game-text">Address</label>
-             <textarea
-               value={profileAddress}
-               onChange={(e) => setProfileAddress(e.target.value)}
-               className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-[#00AA13] focus:ring-1 focus:ring-[#00AA13] outline-none transition-all game-text text-lg"
-               required
-               rows={3}
+             <AddressAutocomplete 
+               value={profileAddress} 
+               onChange={(addr, lat, lng) => {
+                  setProfileAddress(addr);
+                  setProfileLat(lat);
+                  setProfileLng(lng);
+               }}
              />
           </div>
           <div className="pt-4">
@@ -504,14 +500,14 @@ deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200
           {/* Route Line (if a restaurant is selected) */}
           {selectedRestaurant && (
             <Polyline 
-              positions={[supplierLocation, [selectedRestaurant.lat ?? 51.505, selectedRestaurant.lng ?? -0.09]]} 
+              positions={[supplierLocation, [selectedRestaurant.lat ?? -5.147665, selectedRestaurant.lng ?? 119.432731]]} 
               pathOptions={{ color: '#10b981', weight: 4, opacity: 0.7, dashArray: '10, 10' }} 
             />
           )}
 
           {restaurants.map(restaurant => {
-            const lat = restaurant.lat ?? 51.505;
-            const lng = restaurant.lng ?? -0.09;
+            const lat = restaurant.lat ?? -5.147665;
+            const lng = restaurant.lng ?? 119.432731;
             return (
               <Marker 
                 key={restaurant.id} 

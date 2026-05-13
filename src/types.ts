@@ -24,7 +24,6 @@ export interface Restaurant {
   lat: number;
   lng: number;
   address?: string;
-  address?: string;
   menu: MenuItem[];
   inventory?: RestaurantInventoryItem[];
 }
