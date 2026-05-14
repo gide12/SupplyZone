@@ -28,7 +28,7 @@ export function MenuManager() {
     description: "",
     price: 0,
     category: "Main Course",
-    quantity: ""
+    quantity: "",
   });
 
   if (!restaurant) return <div>Restaurant not found</div>;
@@ -59,7 +59,7 @@ export function MenuManager() {
       description: item.description,
       price: item.price,
       category: item.category,
-      quantity: item.quantity || ""
+      quantity: item.quantity || "",
     });
   };
 
@@ -125,7 +125,7 @@ export function MenuManager() {
                       <Calculator className="w-4 h-4 text-[#EE2737]" />
                     </div>
                     <div>
-                      <div className="game-text text-gray-900 font-bold leading-tight">AI Margin</div>
+                      <div className="game-text text-gray-900 font-bold leading-tight">Margin Menu</div>
                       <div className="text-[10px] text-gray-400 game-text mt-0.5">Price calculator</div>
                     </div>
                   </button>
@@ -135,7 +135,7 @@ export function MenuManager() {
                     </div>
                     <div>
                       <div className="game-text text-gray-900 font-bold leading-tight">Predict Butuh</div>
-                      <div className="text-[10px] text-gray-400 game-text mt-0.5">Supply AI</div>
+                      <div className="text-[10px] text-gray-400 game-text mt-0.5">Supply Predictor</div>
                     </div>
                   </button>
                 </div>
@@ -192,13 +192,15 @@ export function MenuManager() {
                 value={formData.description}
                 onChange={e => setFormData({ ...formData, description: e.target.value })}
               />
-              <input
-                type="text"
-                placeholder="Required Quantity (e.g., 24 x 1L Bottles)"
-                className="px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] md:col-span-2 game-text font-bold"
-                value={formData.quantity}
-                onChange={e => setFormData({ ...formData, quantity: e.target.value })}
-              />
+              <div className="flex gap-2 relative md:col-span-2">
+                <input
+                  type="text"
+                  placeholder="Required Quantity (e.g., 24 x 1L Bottles)"
+                  className="px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] w-full game-text font-bold"
+                  value={formData.quantity}
+                  onChange={e => setFormData({ ...formData, quantity: e.target.value })}
+                />
+              </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <button
@@ -264,13 +266,15 @@ export function MenuManager() {
                         value={formData.description}
                         onChange={e => setFormData({ ...formData, description: e.target.value })}
                       />
-                      <input
-                        type="text"
-                        placeholder="Required Quantity (e.g., 24 x 1L Bottles)"
-                        className="px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] md:col-span-2 game-text font-bold"
-                        value={formData.quantity}
-                        onChange={e => setFormData({ ...formData, quantity: e.target.value })}
-                      />
+                      <div className="flex gap-2 relative md:col-span-2">
+                        <input
+                          type="text"
+                          placeholder="Required Quantity (e.g., 24 x 1L Bottles)"
+                          className="px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] w-full game-text font-bold"
+                          value={formData.quantity}
+                          onChange={e => setFormData({ ...formData, quantity: e.target.value })}
+                        />
+                      </div>
                     </div>
                     <div className="flex justify-end gap-2">
                       <button
@@ -472,7 +476,7 @@ deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200
                       </button>
                       <button 
                         onClick={() => setPricingMenuItem(item)}
-                        title="AI Harga Jual (Cek HPP Pemasok)"
+                        title="Optimasi Harga Jual (Cek HPP Pemasok)"
                         className="p-3 border border-gray-200 bg-white text-[#00AA13] hover:bg-[#00AA13] hover:text-white transition-all mt-0 md:mt-2 hover:border-[#00AA13]"
                       >
                         <TrendingUp className="w-5 h-5" />

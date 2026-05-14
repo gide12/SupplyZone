@@ -131,7 +131,7 @@ ${promptStr}`,
               <TrendingUp className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 shadow-sm game-title">AI Optimasi Harga Jual</h2>
+              <h2 className="text-2xl font-bold text-gray-900 shadow-sm game-title">Optimasi Harga Jual</h2>
               <p className="text-sm font-bold text-gray-400 game-text shadow-sm drop-shadow-sm">{menuItem.name}</p>
             </div>
           </div>
@@ -204,7 +204,7 @@ ${promptStr}`,
                 </div>
               </div>
 
-              {/* AI Analysis & Predictions */}
+              {/* Analysis & Predictions */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-white border border-gray-200 p-5 shadow-sm">
                   <div className="flex items-center gap-2 mb-3">

@@ -23,6 +23,7 @@ export function RestaurantInventory() {
   const [newUnit, setNewUnit] = useState("");
   const [newSpace, setNewSpace] = useState("");
   const [newExp, setNewExp] = useState("");
+  const [newPreOrderDate, setNewPreOrderDate] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
@@ -46,15 +47,16 @@ export function RestaurantInventory() {
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newName || !newQuantity || !newSpace || !newExp) return;
+    if (!newName || !newQuantity || !newExp) return;
 
     const newItem = {
       id: `rinv-${Date.now()}`,
       name: newName,
       quantity: Number(newQuantity),
       unit: newUnit,
-      spaceUsed: Number(newSpace),
+      spaceUsed: newSpace ? Number(newSpace) : undefined,
       expirationDate: newExp,
+      preOrderDate: newPreOrderDate
     };
 
     updateRestaurantInventory(restaurant.id, [...inventory, newItem]);
@@ -63,6 +65,7 @@ export function RestaurantInventory() {
     setNewUnit("");
     setNewSpace("");
     setNewExp("");
+    setNewPreOrderDate("");
   };
 
   const handleRemove = (id: string) => {
@@ -76,7 +79,7 @@ export function RestaurantInventory() {
     setLoading(true);
     try {
       let contents: any[] = [];
-      const prompt = `Extract inventory items from this document (image of receipt/invoice or CSV text). Provide a JSON array. For each item: name, quantity (number), unit (string: one of kg, Liter, Drum, Karton, Karung, Pallet, Biji), spaceUsed (number in sqft, if not provided guess a tiny amount like 1.0 or 0.5), and expirationDate (YYYY-MM-DD, if not provided guess e.g. 1-2 weeks from now).`;
+      const prompt = `Extract inventory items from this document (image of receipt/invoice or CSV text). Provide a JSON array. For each item: name, quantity (number), unit (string: one of kg, Liter, Drum, Karton, Karung, Pallet, Biji), spaceUsed (number in sqft, optional), and expirationDate (YYYY-MM-DD, if not provided guess e.g. 1-2 weeks from now).`;
 
       if (file.type.startsWith('image/')) {
         const reader = new FileReader();
@@ -107,10 +110,10 @@ export function RestaurantInventory() {
                 name: { type: Type.STRING },
                 quantity: { type: Type.NUMBER },
                 unit: { type: Type.STRING },
-                spaceUsed: { type: Type.NUMBER },
+                spaceUsed: { type: Type.NUMBER, description: "Optional capacity" },
                 expirationDate: { type: Type.STRING, description: "YYYY-MM-DD" },
               },
-              required: ["name", "quantity", "unit", "spaceUsed", "expirationDate"]
+              required: ["name", "quantity", "unit", "expirationDate"]
             }
           }
         }
@@ -234,13 +237,17 @@ export function RestaurantInventory() {
                    </select>
                 </div>
                 <div>
-                  <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Kapasitas (sq ft)</label>
-                  <input type="number" step="0.1" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none" value={newSpace} onChange={e => setNewSpace(e.target.value)} placeholder="e.g. 2.5" required />
+                  <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Kapasitas (sq ft) (Opsional)</label>
+                  <input type="number" step="0.1" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none" value={newSpace} onChange={e => setNewSpace(e.target.value)} placeholder="e.g. 2.5" />
                 </div>
               </div>
               <div>
                 <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Tanggal Kedaluwarsa</label>
                 <input type="date" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none" value={newExp} onChange={e => setNewExp(e.target.value)} required />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-400 mb-1 game-text">Tersedia Tanggal (Keep Order)</label>
+                <input type="date" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none" title="Jadwalkan ketersediaan berdasarkan tanggal masuk/panen" value={newPreOrderDate} onChange={e => setNewPreOrderDate(e.target.value)} />
               </div>
               <button type="submit" className="w-full py-2 game-btn game-btn-green text-gray-900 font-bold  game-text mt-2 flex items-center justify-center gap-2">
                 <Plus className="w-5 h-5" /> Masuk ke Inventaris
@@ -252,7 +259,7 @@ export function RestaurantInventory() {
                 <div className="w-full border-t border-gray-200"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-400 font-bold game-text   text-xs">ATAU AI AUTO-IMPORT</span>
+                <span className="px-2 bg-white text-gray-400 font-bold game-text   text-xs">ATAU AUTO-IMPORT</span>
               </div>
             </div>
 
@@ -311,7 +318,7 @@ export function RestaurantInventory() {
                     
                     <div className="text-sm font-bold text-gray-400 game-text flex flex-wrap gap-4 mt-1">
                       <span>Qty: {item.quantity} {item.unit || ""}</span>
-                      <span>Space: {item.spaceUsed} sqft</span>
+                      {item.spaceUsed !== undefined && <span>Space: {item.spaceUsed} sqft</span>}
                     </div>
 
                     <div className="mt-2 w-full bg-white h-2 rounded overflow-hidden flex border border-gray-100">
@@ -321,6 +328,11 @@ export function RestaurantInventory() {
                        <div className={`text-xs font-bold game-text ${expired ? 'text-[#EE2737]' : 'text-[#EE2737]'}`}>Exp: {item.expirationDate}</div>
                        <span className="text-[10px] text-gray-400 font-bold game-text">{percentage}% Kapasitas Dipakai</span>
                     </div>
+                    {item.preOrderDate && (
+                      <div className="mt-2 text-xs font-bold text-[#1A92D4] game-text">
+                         Keep Order: {item.preOrderDate}
+                      </div>
+                    )}
                   </div>
                 </div>
               )})
@@ -331,10 +343,10 @@ export function RestaurantInventory() {
         <div>
           <div className="bg-white border border-gray-200 p-6 h-full relative shadow-sm">
             <h3 className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 text-xl game-title flex items-center gap-2 mb-4">
-               <BrainCircuit className="w-6 h-6 text-purple-600" /> <span className="text-gray-900">AI</span> Efisiensi Engine
+               <BrainCircuit className="w-6 h-6 text-purple-600" /> <span className="text-gray-900">Analisis Gudang</span>
             </h3>
             <p className="game-text text-gray-700 text-sm mb-6 leading-relaxed">
-               Jalankan analisis AI untuk mengevaluasi kapasitas ruang dan peringatan kedaluwarsa.
+               Jalankan analisis untuk mengevaluasi efisiensi ruang dan peringatan kedaluwarsa.
             </p>
             
             <button 
@@ -391,7 +403,7 @@ export function RestaurantInventory() {
                 </div>
 
                 <div className="bg-[#00AA13]/10 p-4 border border-[#00AA13]">
-                  <h4 className="text-sm font-bold text-[#00AA13]  game-text mb-1">Rekomendasi AI</h4>
+                  <h4 className="text-sm font-bold text-[#00AA13]  game-text mb-1">Rekomendasi Analisis</h4>
                   <p className="text-gray-900 text-sm game-text italic">"{aiReport.actionableAdvice}"</p>
                 </div>
 

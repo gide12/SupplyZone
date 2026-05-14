@@ -14,8 +14,9 @@ export interface RestaurantInventoryItem {
   name: string;
   quantity: number;
   unit?: string;
-  spaceUsed: number;
+  spaceUsed?: number;
   expirationDate: string;
+  preOrderDate?: string;
 }
 
 export interface Restaurant {
@@ -36,6 +37,8 @@ export interface SupplierInventoryItem {
   basePrice: number;
   spaceUsed?: number;
   expirationDate?: string;
+  expectedSupplyDate?: string;
+  supplyCycle?: string;
 }
 
 export interface SupplierProfile {
@@ -43,6 +46,7 @@ export interface SupplierProfile {
   name: string;
   lat: number;
   lng: number;
+  address?: string;
   inventory: SupplierInventoryItem[];
 }
 

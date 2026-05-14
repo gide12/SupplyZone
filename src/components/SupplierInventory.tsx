@@ -24,6 +24,9 @@ export function SupplierInventory() {
   const [newBasePrice, setNewBasePrice] = useState("");
   const [newSpace, setNewSpace] = useState("");
   const [newExp, setNewExp] = useState("");
+  const [newExpectedSupplyDate, setNewExpectedSupplyDate] = useState("");
+  const [newSupplyCycleValue, setNewSupplyCycleValue] = useState("");
+  const [newSupplyCycleUnit, setNewSupplyCycleUnit] = useState("Bulan");
 
   const [loading, setLoading] = useState(false);
   const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
@@ -46,16 +49,18 @@ export function SupplierInventory() {
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newName || !newQuantity || !newBasePrice || !newSpace || !newExp) return;
+    if (!newName || !newQuantity || !newBasePrice || !newExp) return;
 
-    const newItem = {
+    const newItem: any = { // Use any temporarily if types are complaining, but SupplierInventoryItem has expectedSupplyDate and supplyCycle. Let's just use it
       id: `sinv-${Date.now()}`,
       name: newName,
       quantity: Number(newQuantity),
       unit: newSatuan,
       basePrice: Number(newBasePrice),
-      spaceUsed: Number(newSpace),
+      spaceUsed: newSpace ? Number(newSpace) : undefined,
       expirationDate: newExp,
+      expectedSupplyDate: newExpectedSupplyDate,
+      supplyCycle: newSupplyCycleValue ? `${newSupplyCycleValue} ${newSupplyCycleUnit}` : "",
     };
 
     updateSupplierInventory(activeSupplier.id, [...inventory, newItem]);
@@ -65,6 +70,9 @@ export function SupplierInventory() {
     setNewBasePrice("");
     setNewSpace("");
     setNewExp("");
+    setNewExpectedSupplyDate("");
+    setNewSupplyCycleValue("");
+    setNewSupplyCycleUnit("Bulan");
   };
 
   const handleRemove = (id: string) => {
@@ -214,7 +222,7 @@ export function SupplierInventory() {
 
   return (
     <div className="p-4 space-y-6 max-h-full overflow-y-auto">
-      <h2 className="text-sm font-bold text-[#00AA13]  tracking-wide mb-4 game-text border-b border-gray-200 pb-1">Supplier Inventory & AI Engine</h2>
+      <h2 className="text-sm font-bold text-[#00AA13]  tracking-wide mb-4 game-text border-b border-gray-200 pb-1">Supplier Inventory Analisis</h2>
 
       <div className="flex flex-col gap-6">
         <div>
@@ -244,8 +252,8 @@ export function SupplierInventory() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Space Used (sq ft/pallet)</label>
-                  <input type="number" step="0.1" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none" value={newSpace} onChange={e => setNewSpace(e.target.value)} placeholder="e.g. 5.5" required />
+                  <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Space Used (sq ft/pallet) (Opsional)</label>
+                  <input type="number" step="0.1" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none" value={newSpace} onChange={e => setNewSpace(e.target.value)} placeholder="e.g. 5.5" />
                 </div>
                 <div>
                   <div className="flex justify-between items-center mb-1">
@@ -255,11 +263,28 @@ export function SupplierInventory() {
                       onClick={() => setIsExpModalOpen(true)}
                       className="text-[10px] text-purple-600 font-bold hover:underline flex items-center gap-1"
                     >
-                      <CalendarClock className="w-3 h-3" /> AI Predict
+                      <CalendarClock className="w-3 h-3" /> Prediksi Exp
                     </button>
                   </div>
                   <input type="date" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none" value={newExp} onChange={e => setNewExp(e.target.value)} required />
                 </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                 <div>
+                    <label className="block text-xs font-bold text-gray-400 mb-1 game-text">Tanggal Masuk (Tersedia)</label>
+                    <input type="date" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none" value={newExpectedSupplyDate} onChange={e => setNewExpectedSupplyDate(e.target.value)} />
+                 </div>
+                 <div>
+                    <label className="block text-xs font-bold text-gray-400 mb-1 game-text">Siklus Pasokan (Opsional)</label>
+                    <div className="flex gap-2">
+                      <input type="number" className="w-1/2 bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none" placeholder="Angka" value={newSupplyCycleValue} onChange={e => setNewSupplyCycleValue(e.target.value)} />
+                      <select className="w-1/2 bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none focus:border-[#00AA13]" value={newSupplyCycleUnit} onChange={e => setNewSupplyCycleUnit(e.target.value)}>
+                        <option value="Hari">Hari</option>
+                        <option value="Minggu">Minggu</option>
+                        <option value="Bulan">Bulan</option>
+                      </select>
+                    </div>
+                 </div>
               </div>
               <button type="submit" className="w-full py-2 game-btn game-btn-green text-gray-900 font-bold  game-text mt-2 flex justify-center items-center gap-2"><Plus className="w-5 h-5"/> Add To Inventory</button>
             </form>
@@ -269,7 +294,7 @@ export function SupplierInventory() {
                 <div className="w-full border-t border-gray-200"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-400 font-bold game-text   text-xs">ATAU AI AUTO-IMPORT</span>
+                <span className="px-2 bg-white text-gray-400 font-bold game-text   text-xs">ATAU AUTO-IMPORT</span>
               </div>
             </div>
 
@@ -305,7 +330,7 @@ export function SupplierInventory() {
           <div className="mb-6">
             <div className="bg-white border border-gray-200 p-6 relative shadow-sm">
               <h3 className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 text-xl game-title flex items-center gap-2 mb-4">
-                 <BrainCircuit className="w-6 h-6 text-purple-600" /> <span className="text-gray-900">AI</span> Logistics Engine
+                 <BrainCircuit className="w-6 h-6 text-purple-600" /> <span className="text-gray-900">Efisiensi & Analisis</span> Engine
               </h3>
               <p className="game-text text-gray-700 text-sm mb-6 leading-relaxed">
                  Evaluate warehouse efficiency, market effectiveness against dominant products (Avocado Toast, etc.), and expiration warnings.
@@ -365,7 +390,7 @@ export function SupplierInventory() {
                   </div>
 
                   <div className="bg-[#00AA13]/10 p-4 border border-[#00AA13]">
-                    <h4 className="text-sm font-bold text-[#00AA13]  game-text mb-1">Rekomendasi AI</h4>
+                    <h4 className="text-sm font-bold text-[#00AA13]  game-text mb-1">Rekomendasi Strategis</h4>
                     <p className="text-gray-900 text-xs game-text italic">"{aiReport.actionableAdvice}"</p>
                   </div>
 
@@ -430,6 +455,13 @@ export function SupplierInventory() {
                         <span>Est. Market Price: Rp {dynamicInfo.estimatedPrice.toFixed(2)}</span>
                         <span className="text-[10px] text-gray-400 mb-2">(Demand: {dynamicInfo.marketDemand} | Supply: {dynamicInfo.marketSupply})</span>
                       </div>
+                      
+                      {item.expectedSupplyDate && (
+                        <div className="mt-1 text-xs font-bold text-[#00AA13] game-text">
+                           Tersedia: {item.expectedSupplyDate} {item.supplyCycle ? `(${item.supplyCycle})` : ''}
+                        </div>
+                      )}
+
                       <div className="mt-2 w-full bg-white h-2 rounded overflow-hidden flex border border-gray-100">
                          <div className="bg-[#EE2737] h-full" style={{ width: `${percentage}%` }}></div>
                       </div>

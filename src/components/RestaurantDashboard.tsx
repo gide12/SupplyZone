@@ -47,7 +47,7 @@ function LocationMarker({ position, setPosition }: { position: L.LatLngExpressio
 
 export function RestaurantDashboard() {
   const { restaurants, activeRestaurantId, updateRestaurantProfile, suppliers, language } = useAppContext();
-  const [activeTab, setActiveTab] = useState<"menu" | "inventory" | "profile">("menu");
+  const [activeTab, setActiveTab] = useState<"menu" | "inventory" | "profile">("inventory");
   const [showNotifications, setShowNotifications] = useState(false);
   
   const restaurant = restaurants.find(r => r.id === activeRestaurantId);
@@ -177,16 +177,16 @@ export function RestaurantDashboard() {
         <aside className="w-full md:w-64 flex-shrink-0 flex flex-col min-h-fit md:min-h-[calc(100vh-10rem)]">
           <div className="flex flex-row md:flex-col gap-2 overflow-x-auto pb-2 md:pb-0 custom-scrollbar">
             <button 
+              onClick={() => setActiveTab("inventory")}
+              className={`w-full flex items-center md:flex-row flex-col justify-center md:justify-start gap-1 md:gap-3 px-2 md:px-4 py-2 md:py-3 rounded font-bold transition-colors game-btn ${activeTab === 'inventory' ? 'game-btn-blue text-sm md:text-lg' : 'bg-white text-gray-900 text-sm md:text-lg border-gray-200 hover:bg-gray-50'}`}>
+              <Package className="w-5 h-5" />
+              <span className="game-text whitespace-nowrap">{translate("Inventory", language)}</span>
+            </button>
+            <button 
               onClick={() => setActiveTab("menu")}
               className={`w-full flex items-center md:flex-row flex-col justify-center md:justify-start gap-1 md:gap-3 px-2 md:px-4 py-2 md:py-3 rounded font-bold transition-colors game-btn ${activeTab === 'menu' ? 'game-btn-blue text-sm md:text-lg' : 'bg-white text-gray-900 text-sm md:text-lg border-gray-200 hover:bg-gray-50'}`}>
               <Settings className="w-5 h-5" />
               <span className="game-text whitespace-nowrap">{translate("Menu Manager", language)}</span>
-            </button>
-            <button 
-              onClick={() => setActiveTab("inventory")}
-              className={`w-full flex items-center md:flex-row flex-col justify-center md:justify-start gap-1 md:gap-3 px-2 md:px-4 py-2 md:py-3 rounded font-bold transition-colors game-btn ${activeTab === 'inventory' ? 'game-btn-blue text-sm md:text-lg' : 'bg-white text-gray-900 text-sm md:text-lg border-gray-200 hover:bg-gray-50'}`}>
-              <Package className="w-5 h-5" />
-              <span className="game-text whitespace-nowrap">{translate("Inventory", language)} & AI</span>
             </button>
             <button 
               onClick={() => setActiveTab("profile")}

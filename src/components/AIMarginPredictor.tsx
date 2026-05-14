@@ -29,6 +29,7 @@ interface IngredientInput {
   id: string;
   name: string;
   quantity: string;
+  unit: string;
   price: string;
   isFixed: boolean;
 }
@@ -40,9 +41,9 @@ export function AIMarginPredictor({ isOpen, onClose }: AIMarginPredictorProps) {
   const [productRevenue, setProductRevenue] = useState<string>("1500");
 
   const [ingredients, setIngredients] = useState<IngredientInput[]>([
-    { id: "1", name: "Sourdough", quantity: "20", price: "", isFixed: false },
-    { id: "2", name: "Smashed avocado", quantity: "35", price: "", isFixed: false },
-    { id: "3", name: "Poached egg", quantity: "70", price: "180", isFixed: true },
+    { id: "1", name: "Sourdough", quantity: "20", unit: "Pcs", price: "", isFixed: false },
+    { id: "2", name: "Smashed avocado", quantity: "35", unit: "Gram", price: "", isFixed: false },
+    { id: "3", name: "Poached egg", quantity: "70", unit: "Butir", price: "180", isFixed: true },
   ]);
 
   const [loading, setLoading] = useState(false);
@@ -53,7 +54,7 @@ export function AIMarginPredictor({ isOpen, onClose }: AIMarginPredictorProps) {
   const handleAddIngredient = () => {
     setIngredients([
       ...ingredients,
-      { id: Date.now().toString(), name: "", quantity: "", price: "", isFixed: false }
+      { id: Date.now().toString(), name: "", quantity: "", unit: "Gram", price: "", isFixed: false }
     ]);
   };
 
@@ -76,7 +77,7 @@ Estimated Total Revenue (Selling Price): ${productRevenue}
 Target Profit Margin: ${margin}%
 
 Ingredients needed:
-${ingredients.map(ing => `- ${ing.quantity}x ${ing.name}: ${ing.isFixed ? `Locked at ${ing.price}` : 'Variable (Hitung Max Allowed Price)'}`).join("\n")}
+${ingredients.map(ing => `- ${ing.quantity} ${ing.unit} ${ing.name}: ${ing.isFixed ? `Locked at ${ing.price}` : 'Variable (Hitung Max Allowed Price)'}`).join("\n")}
 
 Please calculate the maximum allowed price for the variable ingredients to ensure we hit the ${margin}% target margin based on the estimated revenue, accounting for the locked costs.
 `;
@@ -155,7 +156,7 @@ ${promptStr}`,
               <Calculator className="w-6 h-6 text-gray-900" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 shadow-sm game-title">Kalkulator Margin AI</h2>
+              <h2 className="text-2xl font-bold text-gray-900 shadow-sm game-title">Kalkulator Margin</h2>
               <p className="text-sm font-bold text-gray-400   game-text shadow-sm drop-shadow-sm">Harga Dinamis & Target Margin</p>
             </div>
           </div>
@@ -207,7 +208,20 @@ ${promptStr}`,
                   </div>
                   <div className="w-full sm:w-1/4">
                     <label className="block text-[10px]  font-bold text-gray-400 mb-1 game-text">Jml. Butuh</label>
-                    <input type="text" className="w-full bg-white border border-gray-200 text-gray-900 p-2 text-sm game-text focus:outline-none focus:border-[#EE2737]" value={ing.quantity} onChange={e => handleIngredientChange(ing.id, 'quantity', e.target.value)} placeholder="20" />
+                    <div className="flex gap-1">
+                      <input type="text" className="w-1/2 bg-white border border-gray-200 text-gray-900 p-2 text-sm game-text focus:outline-none focus:border-[#EE2737]" value={ing.quantity} onChange={e => handleIngredientChange(ing.id, 'quantity', e.target.value)} placeholder="20" />
+                      <select className="w-1/2 bg-white border border-gray-200 text-gray-900 p-2 text-sm game-text focus:outline-none focus:border-[#EE2737]" value={ing.unit} onChange={e => handleIngredientChange(ing.id, 'unit', e.target.value)}>
+                        <option value="Buah">Buah</option>
+                        <option value="ML">ML</option>
+                        <option value="Liter">Liter</option>
+                        <option value="Sendok">Sendok</option>
+                        <option value="Bungkus">Bungkus</option>
+                        <option value="Gram">Gram</option>
+                        <option value="Kg">Kg</option>
+                        <option value="Pcs">Pcs</option>
+                        <option value="Butir">Butir</option>
+                      </select>
+                    </div>
                   </div>
                   <div className="w-full sm:w-1/4">
                     <label className="block text-[10px]  font-bold text-gray-400 mb-1 game-text">Harga (Rp)</label>
@@ -232,7 +246,7 @@ ${promptStr}`,
               className="w-full px-8 py-4 bg-[#EE2737] hover:bg-[#EE2737]/80 disabled:bg-white disabled:text-white text-gray-900 font-bold border border-[#EE2737] shadow-sm transition-all flex justify-center items-center gap-2 game-text text-xl "
             >
               {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Calculator className="w-6 h-6" />}
-              {loading ? "Menghitung Model..." : "Jalankan Margin AI"}
+              {loading ? "Menghitung Estimasi..." : "Jalankan Kalkulator"}
             </button>
           </div>
 
@@ -283,7 +297,7 @@ ${promptStr}`,
               </div>
 
               <div className="bg-white border border-gray-200 p-5 shadow-sm">
-                <h3 className="font-bold text-gray-900 text-xl game-title mb-3">Analisis AI</h3>
+                <h3 className="font-bold text-gray-900 text-xl game-title mb-3">Analisis Margin</h3>
                 <p className="text-lg text-gray-700 font-bold leading-relaxed game-text">
                   {prediction.analysis}
                 </p>

@@ -15,12 +15,14 @@ interface AppContextType {
   deleteMenuItem: (restaurantId: string, itemId: string) => void;
   updateRestaurantProfile: (id: string, name: string, lat: number, lng: number, address?: string) => void;
   updateRestaurantInventory: (id: string, inventory: RestaurantInventoryItem[]) => void;
+  addRestaurant: (restaurant: Omit<Restaurant, "id" | "menu">) => string;
   // Supplier actions
   suppliers: SupplierProfile[];
   activeSupplier: SupplierProfile;
   setActiveSupplierId: (id: string) => void;
   updateSupplierProfile: (id: string, name: string, lat: number, lng: number, address?: string) => void;
   updateSupplierInventory: (id: string, inventory: SupplierInventoryItem[]) => void;
+  addSupplier: (supplier: Omit<SupplierProfile, "id" | "inventory">) => string;
   // Dynamic Pricing
   calculateDynamicPrice: (itemName: string) => { estimatedPrice: number; marketSupply: number; marketDemand: number };
   // Deal actions
@@ -194,6 +196,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ));
   };
 
+  const addRestaurant = (restaurant: Omit<Restaurant, "id" | "menu">) => {
+    const newId = `r-${uuidv4()}`;
+    setRestaurants(prev => [...prev, { ...restaurant, id: newId, menu: [] }]);
+    return newId;
+  };
+
   const updateRestaurantInventory = (id: string, inventory: RestaurantInventoryItem[]) => {
     setRestaurants(prev => prev.map(r => 
       r.id === id ? { ...r, inventory } : r
@@ -202,6 +210,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const updateSupplierProfile = (id: string, name: string, lat: number, lng: number, address?: string) => {
     setSuppliers(prev => prev.map(s => s.id === id ? { ...s, name, lat, lng, address } : s));
+  };
+
+  const addSupplier = (supplier: Omit<SupplierProfile, "id" | "inventory">) => {
+    const newId = `s-${uuidv4()}`;
+    setSuppliers(prev => [...prev, { ...supplier, id: newId, inventory: [] }]);
+    return newId;
   };
 
   const updateSupplierInventory = (id: string, inventory: SupplierInventoryItem[]) => {
@@ -303,11 +317,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       deleteMenuItem,
       updateRestaurantProfile,
       updateRestaurantInventory,
+      addRestaurant,
       suppliers,
       activeSupplier,
       setActiveSupplierId,
       updateSupplierProfile,
       updateSupplierInventory,
+      addSupplier,
       calculateDynamicPrice,
       proposeDeal,
       updateDealStatus,
