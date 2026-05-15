@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { Store, Truck, Check, Star, Globe } from "lucide-react";
+import { Store, Truck, Check, Star, Globe, LogIn } from "lucide-react";
 import { useAppContext } from "../store/AppContext";
 import { AddressAutocomplete } from "./AddressAutocomplete";
 
 export function LandingPage({ onComplete }: { onComplete: () => void }) {
   const { language, setLanguage, setCurrentUserMode, setActiveRestaurantId, setActiveSupplierId, restaurants, suppliers, addRestaurant, addSupplier } = useAppContext();
   const [selectedRole, setSelectedRole] = useState<"restaurant" | "supplier" | null>(null);
-  const [step, setStep] = useState<"role" | "register" | "subscription">("role");
+  const [step, setStep] = useState<"role" | "register" | "subscription" | "login">("role");
 
   // Mock form
   const [name, setName] = useState("");
@@ -50,7 +50,12 @@ export function LandingPage({ onComplete }: { onComplete: () => void }) {
       featsEnt: ["API Access", "Dedicated account manager", "Multi-location support"],
       backReg: "Back to registration",
       langSwitch: "Switch to ID 🇮🇩",
-      addrPlaceholder: "Search location on map..."
+      addrPlaceholder: "Search location on map...",
+      alreadyRegistered: "Already registered? Login here",
+      loginTitle: "Select Your Account",
+      loginDesc: "Choose an existing account to continue.",
+      loginAsRest: "Login as Restaurant",
+      loginAsSupp: "Login as Supplier"
     },
     id: {
       title: "Jalur",
@@ -85,7 +90,12 @@ export function LandingPage({ onComplete }: { onComplete: () => void }) {
       featsEnt: ["Akses API terintegrasi", "Manajer akun khusus", "Dukungan multi-cabang"],
       backReg: "Kembali ke registrasi",
       langSwitch: "Switch to EN 🇺🇸",
-      addrPlaceholder: "Cari lokasi di peta..."
+      addrPlaceholder: "Cari lokasi di peta...",
+      alreadyRegistered: "Sudah terdaftar? Masuk di sini",
+      loginTitle: "Pilih Akun Anda",
+      loginDesc: "Pilih akun yang sudah terdaftar untuk melanjutkan.",
+      loginAsRest: "Masuk sebagai Restoran",
+      loginAsSupp: "Masuk sebagai Pemasok"
     }
   };
   
@@ -137,7 +147,7 @@ export function LandingPage({ onComplete }: { onComplete: () => void }) {
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 relative">
       <button 
         onClick={() => setLanguage(language === "en" ? "id" : "en")}
-        className="absolute top-6 right-6 flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full hover:bg-gray-50 text-gray-900 shadow-sm font-bold text-sm"
+        className="absolute top-6 right-6 flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full hover:bg-gray-50 text-gray-900 shadow-sm font-bold text-sm z-50"
       >
         <Globe className="w-4 h-4 text-[#00AA13]" /> {t.langSwitch}
       </button>
@@ -172,6 +182,82 @@ export function LandingPage({ onComplete }: { onComplete: () => void }) {
                 <p className="text-gray-500 text-center font-medium leading-relaxed">{t.suppPortalDesc}</p>
               </button>
             </div>
+            
+            <div className="mt-12 text-center">
+              <button 
+                onClick={() => setStep("login")}
+                className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 font-bold transition-colors"
+               >
+                <LogIn className="w-5 h-5" />
+                {t.alreadyRegistered}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {step === "login" && (
+          <div className="p-8 md:p-12 max-w-2xl mx-auto w-full">
+            <h2 className="text-3xl font-black text-gray-900 mb-3 text-center">{t.loginTitle}</h2>
+            <p className="text-gray-500 text-center mb-8 font-medium">{t.loginDesc}</p>
+            
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <Store className="w-5 h-5 text-[#EE2737]" /> {t.restaurant}
+                </h3>
+                <div className="space-y-3">
+                  {restaurants.map(r => (
+                    <button 
+                      key={r.id}
+                      onClick={() => {
+                        setActiveRestaurantId(r.id);
+                        setCurrentUserMode("restaurant");
+                        onComplete();
+                      }}
+                      className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-[#EE2737]/10 hover:text-[#EE2737] border border-gray-200 rounded-xl font-medium transition-all flex items-center justify-between group"
+                    >
+                      <span className="truncate">{r.name}</span>
+                      <Check className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </button>
+                  ))}
+                  {restaurants.length === 0 && (
+                    <p className="text-sm text-gray-400 italic">No restaurants found.</p>
+                  )}
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <Truck className="w-5 h-5 text-[#00AA13]" /> {t.supplier}
+                </h3>
+                <div className="space-y-3">
+                  {suppliers.map(s => (
+                    <button 
+                      key={s.id}
+                      onClick={() => {
+                        setActiveSupplierId(s.id);
+                        setCurrentUserMode("supplier");
+                        onComplete();
+                      }}
+                      className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-[#00AA13]/10 hover:text-[#00AA13] border border-gray-200 rounded-xl font-medium transition-all flex items-center justify-between group"
+                    >
+                      <span className="truncate">{s.name}</span>
+                      <Check className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </button>
+                  ))}
+                  {suppliers.length === 0 && (
+                    <p className="text-sm text-gray-400 italic">No suppliers found.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            <button 
+              onClick={() => setStep("role")}
+              className="mt-10 w-full text-center text-sm text-gray-500 hover:text-gray-900 font-bold transition-colors"
+            >
+              ← {t.backRole}
+            </button>
           </div>
         )}
 

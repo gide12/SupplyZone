@@ -71,6 +71,38 @@ export function SupplierDashboard() {
   const [profileLng, setProfileLng] = useState<number | undefined>(activeSupplier.lng);
   const [activeChatDeal, setActiveChatDeal] = useState<any | null>(null);
 
+  // Route Geometry state
+  const [routeGeometry, setRouteGeometry] = useState<[number, number][]>([]);
+
+  React.useEffect(() => {
+    if (selectedRestaurant && supplierLocation[0] && supplierLocation[1] && selectedRestaurant.lat && selectedRestaurant.lng) {
+      const fetchRoute = async () => {
+        try {
+          // OSRM expects: longitude,latitude
+          const start = `${supplierLocation[1]},${supplierLocation[0]}`;
+          const end = `${selectedRestaurant.lng},${selectedRestaurant.lat}`;
+          const response = await fetch(`https://router.project-osrm.org/route/v1/driving/${start};${end}?geometries=geojson`);
+          const data = await response.json();
+          if (data.routes && data.routes.length > 0) {
+            // OSRM geojson returns coordinates as [longitude, latitude]. Leaflet expects [latitude, longitude].
+            const coords = data.routes[0].geometry.coordinates.map((c: [number, number]) => [c[1], c[0]]);
+            setRouteGeometry(coords);
+          } else {
+            console.warn("No route found from OSRM");
+            setRouteGeometry([supplierLocation, [selectedRestaurant.lat!, selectedRestaurant.lng!]]);
+          }
+        } catch (err) {
+          console.error("OSRM fetch error:", err);
+          setRouteGeometry([supplierLocation, [selectedRestaurant.lat!, selectedRestaurant.lng!]]);
+        }
+      };
+      setRouteGeometry([]); // reset while loading
+      fetchRoute();
+    } else {
+      setRouteGeometry([]);
+    }
+  }, [selectedRestaurant, supplierLocation[0], supplierLocation[1]]);
+
   const handleProfileSave = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -119,18 +151,18 @@ export function SupplierDashboard() {
 
   const renderMarketList = () => (
     <div className="p-4">
-      <h2 className="text-sm font-bold text-[#00AA13]  tracking-wide mb-4 game-text border-b border-gray-200 pb-1">Restaurants nearby</h2>
+      <h2 className="text-sm font-bold text-[#00AA13] tracking-wide mb-4 border-b border-gray-100 pb-2">Restoran Terdekat</h2>
       <div className="space-y-4">
         {restaurants.map(restaurant => (
           <button
             key={restaurant.id}
             onClick={() => handleMarkerClick(restaurant)}
-            className="w-full text-left p-4 game-panel-inner hover:bg-gray-50 transition-all focus:outline-none cursor-pointer border-l-4 border-l-transparent hover:border-l-[#37B34A] group"
+            className="w-full text-left p-4 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md hover:border-[#00AA13]/30 transition-all focus:outline-none cursor-pointer group"
           >
-            <h3 className="font-bold text-gray-900 text-2xl game-text group-hover:text-[#00AA13]">{restaurant.name}</h3>
-            {restaurant.address && <p className="text-xs text-gray-500 font-bold mt-1 game-text truncate">{restaurant.address}</p>}
-            <p className="text-sm text-gray-700 mt-2 flex items-center gap-2 game-text">
-              <Store className="w-5 h-5 text-gray-400" /> {restaurant.menu.length} menu items
+            <h3 className="font-bold text-gray-900 text-xl group-hover:text-[#00AA13] transition-colors">{restaurant.name}</h3>
+            {restaurant.address && <p className="text-xs text-gray-500 mt-1 truncate">{restaurant.address}</p>}
+            <p className="text-sm text-gray-700 mt-3 flex items-center gap-2">
+              <Store className="w-4 h-4 text-gray-400" /> {restaurant.menu.length} menu items
             </p>
           </button>
         ))}
@@ -140,10 +172,10 @@ export function SupplierDashboard() {
 
   const renderMarketDetail = () => (
     <div className="p-0">
-      <div className="p-4 bg-white border-b border-gray-100 flex justify-between items-center sticky top-0 z-10 ">
+      <div className="p-4 bg-white border-b border-gray-100 flex justify-between items-center sticky top-0 z-10">
         <div>
-          <h2 className="text-2xl font-bold text-[#00AA13] truncate game-text">{selectedRestaurant?.name}</h2>
-          {selectedRestaurant?.address && <p className="text-[10px] text-gray-500 font-bold game-text truncate w-48">{selectedRestaurant.address}</p>}
+          <h2 className="text-xl font-bold text-[#00AA13] truncate">{selectedRestaurant?.name}</h2>
+          {selectedRestaurant?.address && <p className="text-[11px] text-gray-500 mt-0.5 truncate w-48">{selectedRestaurant.address}</p>}
         </div>
         <button 
           onClick={() => {
@@ -151,13 +183,13 @@ export function SupplierDashboard() {
             setDealItem(null);
             setMapCenter(defaultCenter);
           }}
-          className="p-2 text-white bg-[#EE2737] hover:bg-[#EE2737]  transition-colors active:scale-95 border border-[#EE2737]"
+          className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors active:scale-95"
         >
-          <X className="w-6 h-6" />
+          <X className="w-5 h-5" />
         </button>
       </div>
 
-      <div className="p-4 game-panel-inner  min-h-screen bg-white">
+      <div className="p-4 min-h-screen bg-gray-50/30">
         {selectedRestaurant && (
           <FuelEstimateCard 
             restaurant={selectedRestaurant} 
@@ -165,40 +197,42 @@ export function SupplierDashboard() {
           />
         )}
 
-        <h3 className="text-lg font-bold text-[#00AA13]  tracking-wide mb-3 mt-6 game-text border-b border-gray-200 pb-1">Tawaran Pasar & Menu</h3>
+        <h3 className="text-lg font-bold text-gray-900 tracking-wide mb-4 mt-6 pb-2">Tawaran Pasar & Menu</h3>
         
         {!selectedRestaurant || selectedRestaurant.menu.length === 0 ? (
-          <p className="text-gray-400 text-lg game-text font-bold">This restaurant hasn't added any menu items yet.</p>
+          <div className="text-center py-10 bg-white rounded-2xl border border-gray-100">
+            <p className="text-gray-400 text-sm">Belum ada menu yang ditambahkan.</p>
+          </div>
         ) : (
-          <div className="space-y-5">
+          <div className="space-y-4">
             {selectedRestaurant.menu.map(item => (
-              <div key={item.id} className="game-panel-inner p-4 hover:border-[#00AA13] transition-colors group">
+              <div key={item.id} className="bg-white border border-gray-100 rounded-2xl p-5 hover:border-[#00AA13]/30 hover:shadow-sm transition-all group">
                 <div className="flex justify-between items-center mb-3">
-                  <span className="font-bold text-xl text-gray-900 game-text group-hover:text-[#00AA13]">{item.name}</span>
-                  <span className="text-sm font-bold text-gray-400 game-text">#SKU-{item.id.substring(0,4).toUpperCase()}</span>
+                  <span className="font-bold text-gray-900 group-hover:text-[#00AA13] transition-colors">{item.name}</span>
+                  <span className="text-xs font-medium text-gray-400">#SKU-{item.id.substring(0,4).toUpperCase()}</span>
                 </div>
-                <div className="flex items-center justify-between mb-3 border-b border-gray-100 pb-3">
+                <div className="flex items-center justify-between mb-4 border-b border-gray-50 pb-4">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-sm text-gray-900 bg-white game-text  px-2 py-1 border border-gray-200">{item.category}</span>
+                    <span className="font-medium text-[11px] text-gray-600 bg-gray-50 px-2.5 py-1 rounded-full">{item.category}</span>
                     {item.quantity && (
-                      <span className="px-2 py-1 bg-white text-[#EE2737] text-sm font-bold  border border-[#EE2737]/50 game-text">
+                      <span className="px-2.5 py-1 bg-red-50 text-[#EE2737] text-[11px] font-bold rounded-full">
                         Jml: {item.quantity}
                       </span>
                     )}
                   </div>
-                  <div className="text-2xl font-bold text-[#00AA13] game-text">Rp {item.price.toFixed(2)}</div>
+                  <div className="text-lg font-bold text-[#00AA13]">Rp {item.price.toFixed(2)}</div>
                 </div>
                 
                 {dealItem?.id === item.id ? (
-                  <div className="mt-4 p-4 border border-gray-200 bg-white text-gray-900 space-y-4">
+                  <div className="mt-2 p-4 bg-gray-50 border border-gray-100 rounded-xl space-y-4">
                     <div>
-                      <label className="block text-sm  font-bold text-gray-400 mb-2 game-text tracking-wider">Your Target Supply Bid</label>
-                      <div className="flex items-center border-b border-[#00AA13] pb-1">
-                        <span className="text-3xl font-bold text-[#00AA13] mr-2 game-text"></span>
+                      <label className="block text-xs font-bold text-gray-500 mb-2 tracking-wide uppercase">Your Target Supply Bid</label>
+                      <div className="flex items-center border-b border-[#00AA13] pb-1 bg-white px-3 py-2 rounded-lg focus-within:ring-2 focus-within:ring-[#00AA13]/20 transition-all">
+                        <span className="text-lg font-bold text-[#00AA13] mr-2">Rp</span>
                         <input 
                           type="number" 
                           placeholder="0.00"
-                          className="flex-1 w-full bg-white border-none focus:ring-0 text-3xl font-bold text-[#00AA13] p-0 outline-none game-text placeholder-gray-600"
+                          className="flex-1 w-full bg-transparent border-none focus:ring-0 text-xl font-bold text-gray-900 p-0 outline-none placeholder-gray-300"
                           value={proposedPrice}
                           onChange={e => setProposedPrice(e.target.value)}
                         />
@@ -206,13 +240,13 @@ export function SupplierDashboard() {
                     </div>
                     
                     <div>
-                      <label className="block text-sm  font-bold text-gray-400 mb-2 flex items-center justify-between game-text tracking-wider">
+                      <label className="block text-xs font-bold text-gray-500 mb-2 flex items-center justify-between tracking-wide uppercase">
                         <span>Product Photo (Optional)</span>
                         <button 
                           onClick={() => fileInputRef.current?.click()}
-                          className="flex items-center gap-1 text-[#EE2737] hover:text-gray-900 transition-colors bg-white px-2 py-1 border border-[#EE2737]"
+                          className="flex items-center gap-1 text-[#00AA13] hover:text-[#009110] transition-colors text-xs bg-white px-2 py-1 rounded-md border border-gray-200 shadow-sm"
                         >
-                          <ImagePlus className="w-4 h-4" /> Upload
+                          <ImagePlus className="w-3 h-3" /> Upload
                         </button>
                       </label>
                       <input 
@@ -222,36 +256,36 @@ export function SupplierDashboard() {
                         ref={fileInputRef}
                         onChange={handleFileChange}
                       />
-                      <div className="flex items-center border-b border-gray-200 pb-2 mt-2">
-                        <span className="text-gray-400 mr-2"><LinkIcon className="w-5 h-5" /></span>
+                      <div className="flex items-center bg-white border border-gray-200 px-3 py-2 rounded-lg mt-1">
+                        <span className="text-gray-400 mr-2"><LinkIcon className="w-4 h-4" /></span>
                         <input 
                           type="text" 
                           placeholder="Or paste image URL"
-                          className="flex-1 w-full bg-white border-none focus:ring-0 text-lg p-0 outline-none placeholder-gray-500 text-gray-900 game-text"
+                          className="flex-1 w-full bg-transparent border-none focus:ring-0 text-sm p-0 outline-none placeholder-gray-400 text-gray-900"
                           value={mediaUrl}
                           onChange={e => setMediaUrl(e.target.value)}
                         />
                       </div>
                       {mediaUrl && (
-                        <div className="mt-3 relative border border-gray-200 bg-white h-32 p-1">
-                          <img src={mediaUrl} alt="Preview" className="w-full h-full object-contain filter grayscale hover:grayscale-0 transition-opacity" />
+                        <div className="mt-3 relative border border-gray-100 bg-white rounded-lg h-32 p-1 overflow-hidden">
+                          <img src={mediaUrl} alt="Preview" className="w-full h-full object-contain rounded-md" />
                         </div>
                       )}
                     </div>
 
-                    <div className="flex gap-3 pt-4 border-t border-gray-200">
+                    <div className="flex gap-2 pt-2">
                       <button 
                         onClick={() => {
                           setDealItem(null);
                           setMediaUrl("");
                         }}
-                        className="px-4 py-2 border border-gray-200 bg-white text-gray-900 hover:bg-gray-50 game-text transition-colors text-lg rounded-xl"
+                        className="px-4 py-2 border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors text-sm font-medium rounded-full"
                       >
                         Batal
                       </button>
                       <button 
                         onClick={handleProposeDeal}
-                        className="flex-1 game-btn game-btn-green py-2 text-lg font-bold transition-all text-white game-text px-4 rounded-xl"
+                        className="flex-1 bg-[#00AA13] hover:bg-[#009110] py-2 text-sm font-bold transition-all text-white px-4 rounded-full shadow-sm"
                       >
                         Send Proposal
                       </button>
@@ -260,7 +294,7 @@ export function SupplierDashboard() {
                 ) : (
                   <button 
                     onClick={() => setDealItem(item)}
-                    className="mt-3 w-full py-3 border border-[#00AA13] bg-white text-[#00AA13] hover:bg-[#00AA13] hover:text-white text-lg font-bold game-text transition-all rounded-xl "
+                    className="mt-2 w-full py-2.5 border border-[#00AA13] bg-white text-[#00AA13] hover:bg-[#00AA13] hover:text-white text-sm font-bold transition-all rounded-full"
                   >
                     Propose Deal
                   </button>
@@ -274,14 +308,16 @@ export function SupplierDashboard() {
   );
 
   const renderOrders = () => (
-    <div className="p-4">
-      <h2 className="text-sm font-bold text-[#00AA13]  tracking-wide mb-4 game-text border-b border-gray-200 pb-1 flex items-center gap-2">
-        <Handshake className="w-5 h-5" />
+    <div className="p-4 bg-gray-50/30 min-h-[50vh]">
+      <h2 className="text-sm font-bold text-gray-900 tracking-wide mb-4 pb-2 border-b border-gray-100 flex items-center gap-2">
+        <Handshake className="w-4 h-4 text-[#00AA13]" />
         Penawaran Kesepakatan & Pesanan Saya
       </h2>
-      <div className="space-y-5">
+      <div className="space-y-4">
         {deals.filter(d => d.supplierId === activeSupplier.id).length === 0 ? (
-          <div className="text-center py-12 text-lg font-bold text-gray-400 border border-gray-100 bg-white game-text">Anda belum mengajukan kesepakatan apa pun.</div>
+          <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
+             <p className="text-sm font-medium text-gray-400">Anda belum mengajukan kesepakatan apa pun.</p>
+          </div>
         ) : (
           deals.filter(d => d.supplierId === activeSupplier.id).map((deal) => {
             const restaurant = restaurants.find(r => r.id === deal.restaurantId);
@@ -289,26 +325,26 @@ export function SupplierDashboard() {
             const unreadCount = messages.filter(m => m.dealId === deal.id && m.senderRole === "restaurant" && !m.isRead).length;
             
             return (
-              <div key={deal.id} className="game-panel-inner p-4 hover:border-gray-200 transition-colors">
-                <div className="flex justify-between items-start mb-3">
+              <div key={deal.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all">
+                <div className="flex justify-between items-start mb-4">
                   <div>
-                    <span className="font-bold text-xl text-gray-900 game-text">{item?.name || "Unknown Item"}</span>
-                    <div className="text-sm font-bold text-[#EE2737] game-text  mt-1">{restaurant?.name}</div>
-                    {restaurant?.address && <div className="text-xs text-gray-500 font-bold mt-0.5">{restaurant.address}</div>}
+                    <span className="font-bold text-gray-900">{item?.name || "Unknown Item"}</span>
+                    <div className="text-xs font-medium text-[#EE2737] mt-1">{restaurant?.name}</div>
+                    {restaurant?.address && <div className="text-[10px] text-gray-500 mt-1">{restaurant.address}</div>}
                   </div>
-                  <span className={`text-sm font-bold px-3 py-1 border  game-text ${
-                    deal.status === 'Diterima' ? 'bg-[#00AA13] text-white border-[#00AA13]' :
-deal.status === 'Diminta Sampel' ? 'bg-blue-100 text-blue-800 border-blue-200' :
-deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200' :
-                    deal.status === 'Rejected' ? 'bg-[#EE2737] text-white border-[#EE2737]' :
-                    deal.status === 'Sedang Dikirim' ? 'bg-[#F1B51A] text-black border-[#F1B51A]' :
-                    deal.status === 'Terkirim' ? 'bg-purple-600 text-gray-900 border-purple-600' :
-                    'bg-white text-gray-400 border-gray-600'
+                  <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${
+                    deal.status === 'Diterima' ? 'bg-[#00AA13]/10 text-[#00AA13]' :
+                    deal.status === 'Diminta Sampel' ? 'bg-blue-100 text-blue-800' :
+                    deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800' :
+                    deal.status === 'Rejected' ? 'bg-[#EE2737]/10 text-[#EE2737]' :
+                    deal.status === 'Sedang Dikirim' ? 'bg-[#F1B51A]/20 text-[#F1B51A]' :
+                    deal.status === 'Terkirim' ? 'bg-indigo-100 text-indigo-700' :
+                    'bg-gray-100 text-gray-500'
                   }`}>
                     {deal.status}
                   </span>
                 </div>
-                <div className="text-2xl font-bold text-[#00AA13] mb-4 border-b border-gray-100 pb-3 game-text">
+                <div className="text-lg font-bold text-[#00AA13] mb-4 pb-4 border-b border-gray-50">
                   Rp {deal.proposedPrice.toFixed(2)}
                 </div>
                 
@@ -318,11 +354,11 @@ deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200
                     <div className="flex gap-3">
                       <button 
                         onClick={() => setActiveChatDeal(deal)}
-                        className="flex-1 py-2 bg-white border border-[#EE2737] text-[#EE2737] hover:bg-[#EE2737] hover:text-white text-sm font-bold transition-colors game-text flex items-center justify-center gap-2 relative"
+                        className="flex-1 py-2 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-full text-xs font-bold transition-colors flex items-center justify-center gap-1.5 relative shadow-sm"
                       >
-                        <MessageCircle className="w-4 h-4" /> Chat
+                        <MessageCircle className="w-3.5 h-3.5" /> Chat
                         {unreadCount > 0 && (
-                          <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full shadow-[0_0_10px_rgba(220,38,38,0.8)]">
+                          <span className="absolute -top-1 -right-1 bg-[#EE2737] text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full shadow-[0_0_8px_rgba(238,39,55,0.4)]">
                             {unreadCount}
                           </span>
                         )}
@@ -330,7 +366,7 @@ deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200
                       {deal.status === 'Diminta Sampel' && (
                         <button 
                           onClick={() => updateDealStatus(deal.id, 'Sampel Tiba')}
-                          className="flex-1 py-2 bg-white border rounded-lg border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white text-sm font-bold transition-colors game-text"
+                          className="flex-1 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-full text-xs font-bold transition-colors"
                         >
                           Mark Sample Terkirim
                         </button>
@@ -338,7 +374,7 @@ deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200
                       {deal.status === 'Diterima' && (
                         <button 
                           onClick={() => updateDealStatus(deal.id, 'Sedang Dikirim')}
-                          className="flex-1 py-2 bg-white border rounded-lg border-[#F1B51A] text-[#F1B51A] hover:bg-[#F1B51A] hover:text-black text-sm font-bold transition-colors game-text"
+                          className="flex-1 py-2 bg-[#F1B51A] text-white hover:bg-[#F1B51A]/90 rounded-full text-xs font-bold transition-colors shadow-sm"
                         >
                           Tandai Sedang Dikirim
                         </button>
@@ -346,20 +382,20 @@ deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200
                       {(deal.status === 'Diterima' || deal.status === 'Sedang Dikirim') && (
                         <button 
                           onClick={() => updateDealStatus(deal.id, 'Terkirim')}
-                          className="flex-1 py-2 bg-white border rounded-lg border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white text-sm font-bold transition-colors game-text"
+                          className="flex-1 py-2 bg-[#00AA13] text-white hover:bg-[#009110] rounded-full text-xs font-bold transition-colors shadow-sm"
                         >
                           Mark Terkirim
                         </button>
                       )}
                     </div>
                     {deal.review && (
-                      <div className="mt-2 text-left bg-gray-50 border border-gray-100 p-2">
-                        <div className="flex items-center gap-1 mb-1">
+                      <div className="mt-3 text-left bg-gray-50 rounded-xl p-3">
+                        <div className="flex items-center gap-1 mb-1.5">
                           {[1,2,3,4,5].map(s => (
-                             <span key={s} className={s <= (deal.rating || 5) ? 'text-[#F1B51A]' : 'text-gray-300'}>★</span>
+                             <span key={s} className={s <= (deal.rating || 5) ? 'text-[#F1B51A] text-sm' : 'text-gray-300 text-sm'}>★</span>
                           ))}
                         </div>
-                        <p className="text-sm font-bold game-text text-gray-700 italic">"{deal.review}"</p>
+                        <p className="text-xs text-gray-600 italic">"{deal.review}"</p>
                       </div>
                     )}
                   </div>
@@ -373,22 +409,23 @@ deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200
   );
 
   const renderProfile = () => (
-    <div className="p-4">
-      <h2 className="text-sm font-bold text-[#00AA13]  tracking-wide mb-4 game-text border-b border-gray-200 pb-1">Supplier Profile</h2>
-      <div className="game-panel-inner p-6  border-t-4 border-[#00AA13]">
-        <form onSubmit={handleProfileSave} className="space-y-5">
+    <div className="p-4 bg-gray-50/30 min-h-[50vh]">
+      <h2 className="text-sm font-bold text-gray-900 tracking-wide mb-4 pb-2 border-b border-gray-100">Supplier Profile</h2>
+      <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 bg-[#00AA13]"></div>
+        <form onSubmit={handleProfileSave} className="space-y-4">
           <div>
-            <label className="block text-xl text-gray-700 mb-2 game-text">Supplier Name</label>
+            <label className="block text-sm font-bold text-gray-700 mb-1.5">Supplier Name</label>
             <input
               type="text"
               value={profileName}
               onChange={(e) => setProfileName(e.target.value)}
-              className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-[#00AA13] focus:ring-1 focus:ring-[#00AA13] outline-none transition-all game-text text-lg"
+              className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:border-[#00AA13] focus:ring-1 focus:ring-[#00AA13] outline-none transition-all text-sm"
               required
             />
           </div>
           <div>
-             <label className="block text-xl text-gray-700 mb-2 game-text">Address</label>
+             <label className="block text-sm font-bold text-gray-700 mb-1.5">Alamat</label>
              <AddressAutocomplete 
                value={profileAddress} 
                onChange={(addr, lat, lng) => {
@@ -398,8 +435,8 @@ deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200
                }}
              />
           </div>
-          <div className="pt-4">
-            <button type="submit" className="w-full py-3 bg-[#00AA13] hover:bg-[#00AA13]/90 font-bold transition-all text-xl game-text text-white rounded-xl  ">
+          <div className="pt-2">
+            <button type="submit" className="w-full py-2.5 bg-[#00AA13] hover:bg-[#009110] font-bold transition-all text-sm text-white rounded-full shadow-sm">
               Simpan Profil
             </button>
           </div>
@@ -415,24 +452,24 @@ deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200
       <div className="w-full md:w-96 bg-white flex flex-col h-[50vh] md:h-full z-10 border-t md:border-t-0 border-r-0 md:border-r border-gray-200 shrink-0 relative">
         <div className="flex items-center justify-between px-3 md:px-6 py-3 md:py-5 bg-white shrink-0">
           <div className="flex items-center gap-2 md:gap-3 p-1 md:p-2">
-            <div className="w-8 h-8 md:w-12 md:h-12 bg-[#00AA13] rounded-lg md:rounded-xl flex items-center justify-center shadow-sm shrink-0">
-              <Truck className="w-5 h-5 md:w-7 md:h-7 text-gray-900" />
+            <div className="w-8 h-8 md:w-10 md:h-10 bg-[#00AA13] rounded-full flex items-center justify-center shadow-sm shrink-0">
+              <Truck className="w-4 h-4 md:w-5 md:h-5 text-white" />
             </div>
-            <span className="text-xl md:text-3xl font-bold text-gray-900 game-title leading-none">Dapurku</span>
+            <span className="text-xl md:text-2xl font-bold text-[#00AA13] tracking-tight leading-none">Dapurku</span>
           </div>
-          <span className="px-2 md:px-3 py-1 bg-[#EE2737] text-white text-[10px] md:text-xs font-bold rounded-full game-text shadow-sm whitespace-nowrap">{translate("Supplier Portal", language)}</span>
+          <span className="px-3 py-1 bg-[#EE2737]/10 text-[#EE2737] text-[10px] md:text-xs font-bold rounded-full whitespace-nowrap">{translate("Supplier Portal", language)}</span>
         </div>
 
         <div className="flex overflow-x-auto custom-scrollbar border-b border-gray-100 bg-white shadow-sm px-2 sm:px-6 justify-start lg:justify-center shrink-0">
           <button 
-            className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-6 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold game-text border-b-2 whitespace-nowrap transition-all duration-300 ${activeTab === "market" ? "border-[#00AA13] text-[#00AA13] sm:scale-105" : "border-transparent text-gray-500 hover:text-[#00AA13] hover:bg-gray-50"}`}
+            className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-6 sm:px-8 py-3 sm:py-4 text-[11px] sm:text-xs font-bold border-b-2 whitespace-nowrap transition-all duration-200 ${activeTab === "market" ? "border-[#00AA13] text-[#00AA13]" : "border-transparent text-gray-500 hover:text-[#00AA13] hover:bg-gray-50/50"}`}
             onClick={() => setActiveTab('market')}
           >
             <Map className="w-5 h-5 sm:w-4 sm:h-4" />
-            <span>{translate("Marketplace Map", language).split(" ")[0]}</span>
+            <span>{translate("Marketplace", language)}</span>
           </button>
           <button 
-            className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-6 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold game-text border-b-2 whitespace-nowrap transition-all duration-300 relative ${activeTab === "orders" ? "border-[#00AA13] text-[#00AA13] sm:scale-105" : "border-transparent text-gray-500 hover:text-[#00AA13] hover:bg-gray-50"}`}
+            className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-6 sm:px-8 py-3 sm:py-4 text-[11px] sm:text-xs font-bold border-b-2 whitespace-nowrap transition-all duration-200 relative ${activeTab === "orders" ? "border-[#00AA13] text-[#00AA13]" : "border-transparent text-gray-500 hover:text-[#00AA13] hover:bg-gray-50/50"}`}
             onClick={() => setActiveTab('orders')}
           >
             <div className="relative">
@@ -446,21 +483,21 @@ deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200
             <span>{translate("Deals", language)}</span>
           </button>
           <button 
-            className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-6 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold game-text border-b-2 whitespace-nowrap transition-all duration-300 ${activeTab === "inventory" ? "border-[#00AA13] text-[#00AA13] sm:scale-105" : "border-transparent text-gray-500 hover:text-[#00AA13] hover:bg-gray-50"}`}
+            className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-6 sm:px-8 py-3 sm:py-4 text-[11px] sm:text-xs font-bold border-b-2 whitespace-nowrap transition-all duration-200 ${activeTab === "inventory" ? "border-[#00AA13] text-[#00AA13]" : "border-transparent text-gray-500 hover:text-[#00AA13] hover:bg-gray-50/50"}`}
             onClick={() => setActiveTab('inventory')}
           >
             <Package className="w-5 h-5 sm:w-4 sm:h-4" />
             <span>{translate("Inventory", language)}</span>
           </button>
           <button 
-            className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-6 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold game-text border-b-2 whitespace-nowrap transition-all duration-300 ${activeTab === "hitung" ? "border-[#00AA13] text-[#00AA13] sm:scale-105" : "border-transparent text-gray-500 hover:text-[#00AA13] hover:bg-gray-50"}`}
+            className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-6 sm:px-8 py-3 sm:py-4 text-[11px] sm:text-xs font-bold border-b-2 whitespace-nowrap transition-all duration-200 ${activeTab === "hitung" ? "border-[#00AA13] text-[#00AA13]" : "border-transparent text-gray-500 hover:text-[#00AA13] hover:bg-gray-50/50"}`}
             onClick={() => setActiveTab('hitung')}
           >
             <Calculator className="w-5 h-5 sm:w-4 sm:h-4" />
             <span>Hitung</span>
           </button>
           <button 
-            className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-6 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm font-bold game-text border-b-2 whitespace-nowrap transition-all duration-300 ${activeTab === "profile" ? "border-[#00AA13] text-[#00AA13] sm:scale-105" : "border-transparent text-gray-500 hover:text-[#00AA13] hover:bg-gray-50"}`}
+            className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-6 sm:px-8 py-3 sm:py-4 text-[11px] sm:text-xs font-bold border-b-2 whitespace-nowrap transition-all duration-200 ${activeTab === "profile" ? "border-[#00AA13] text-[#00AA13]" : "border-transparent text-gray-500 hover:text-[#00AA13] hover:bg-gray-50/50"}`}
             onClick={() => setActiveTab('profile')}
           >
             <User className="w-5 h-5 sm:w-4 sm:h-4" />
@@ -498,10 +535,10 @@ deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200
           </Marker>
 
           {/* Route Line (if a restaurant is selected) */}
-          {selectedRestaurant && (
+          {selectedRestaurant && routeGeometry.length > 0 && (
             <Polyline 
-              positions={[supplierLocation, [selectedRestaurant.lat ?? -5.147665, selectedRestaurant.lng ?? 119.432731]]} 
-              pathOptions={{ color: '#10b981', weight: 4, opacity: 0.7, dashArray: '10, 10' }} 
+              positions={routeGeometry} 
+              pathOptions={{ color: '#00AA13', weight: 5, opacity: 0.8 }} 
             />
           )}
 

@@ -13,7 +13,7 @@ interface AppContextType {
   addMenuItem: (restaurantId: string, item: Omit<MenuItem, "id">) => void;
   updateMenuItem: (restaurantId: string, itemId: string, item: Omit<MenuItem, "id">) => void;
   deleteMenuItem: (restaurantId: string, itemId: string) => void;
-  updateRestaurantProfile: (id: string, name: string, lat: number, lng: number, address?: string) => void;
+  updateRestaurantProfile: (id: string, name: string, lat: number, lng: number, address?: string, subscriptionPlan?: "basic" | "premium") => void;
   updateRestaurantInventory: (id: string, inventory: RestaurantInventoryItem[]) => void;
   addRestaurant: (restaurant: Omit<Restaurant, "id" | "menu">) => string;
   // Supplier actions
@@ -190,9 +190,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ));
   };
 
-  const updateRestaurantProfile = (id: string, name: string, lat: number, lng: number, address?: string) => {
+  const updateRestaurantProfile = (id: string, name: string, lat: number, lng: number, address?: string, subscriptionPlan?: "basic" | "premium") => {
     setRestaurants(prev => prev.map(r => 
-      r.id === id ? { ...r, name, lat, lng, address } : r
+      r.id === id ? { ...r, name, lat, lng, address, subscriptionPlan: subscriptionPlan || r.subscriptionPlan } : r
     ));
   };
 

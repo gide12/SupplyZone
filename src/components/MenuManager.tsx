@@ -1,33 +1,36 @@
 import React, { useState } from "react";
 import { MenuItem, Category } from "../types";
-import { Plus, Edit2, Trash2, X, Check, Sparkles, MapPin, Search, MessageCircle, Handshake } from "lucide-react";
+import { Plus, Edit2, Trash2, X, Check, Sparkles, MapPin, Search, MessageCircle, Handshake, ChefHat } from "lucide-react";
 import { useAppContext } from "../store/AppContext";
 import { PredictSupplyModal } from "./PredictSupplyModal";
 import { ChatModal } from "./ChatModal";
 import { AIMarginPredictor } from "./AIMarginPredictor";
 import { AIPricingOptimizer } from "./AIPricingOptimizer";
+import { AIRecipeOptimizer } from "./AIRecipeOptimizer";
 import { Calculator, TrendingUp } from "lucide-react";
 
 export function MenuManager() {
   const { restaurants, activeRestaurantId, addMenuItem, updateMenuItem, deleteMenuItem, deals, proposeDeal, updateDealStatus, updateDeal, messages, suppliers, calculateDynamicPrice } = useAppContext();
+  const restaurant = restaurants.find(r => r.id === activeRestaurantId);
+  const isPremium = restaurant?.subscriptionPlan === "premium";
+
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [isPredictModalOpen, setIsPredictModalOpen] = useState(false);
   const [isMarginPredictorOpen, setIsMarginPredictorOpen] = useState(false);
   const [pricingMenuItem, setPricingMenuItem] = useState<MenuItem | null>(null);
+  const [recipeOptimizerItem, setRecipeOptimizerItem] = useState<MenuItem | null>(null);
+
   const [findingSuppliersFor, setFindingSuppliersFor] = useState<string | null>(null);
   const [activeChatDeal, setActiveChatDeal] = useState<any | null>(null);
   const [reviewingDeal, setReviewingDeal] = useState<any | null>(null);
   const [reviewForm, setReviewForm] = useState({ rating: 5, text: "" });
 
-  
-  const restaurant = restaurants.find(r => r.id === activeRestaurantId);
-
   const [formData, setFormData] = useState<Omit<MenuItem, "id">>({
     name: "",
     description: "",
     price: 0,
-    category: "Main Course",
+    category: isPremium ? "Main Course" : "Bahan Pokok" as any,
     quantity: "",
   });
 
@@ -48,7 +51,7 @@ export function MenuManager() {
   };
 
   const resetForm = () => {
-    setFormData({ name: "", description: "", price: 0, category: "Main Course", quantity: "" });
+    setFormData({ name: "", description: "", price: 0, category: isPremium ? "Main Course" : "Bahan Pokok" as any, quantity: "" });
   };
 
   const startEdit = (item: MenuItem) => {
@@ -106,8 +109,12 @@ export function MenuManager() {
     <div className="space-y-6">
       <div className="flex justify-between items-center bg-white">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900 border-b-4 border-[#00AA13] pb-2 game-text">Menu Management</h2>
-          <p className="text-lg text-gray-700 mt-2 font-bold game-text">Add, update, or remove items from your menu.</p>
+          <h2 className="text-3xl font-bold text-gray-900 border-b-4 border-[#00AA13] pb-2 game-text">
+            {isPremium ? "Menu Management" : "Bahan Pokok Management"}
+          </h2>
+          <p className="text-lg text-gray-700 mt-2 font-bold game-text">
+            {isPremium ? "Add, update, or remove items from your menu." : "Add, update, or remove raw materials."}
+          </p>
         </div>
         {!isAdding && (
           <div className="flex items-center gap-2">
@@ -156,11 +163,13 @@ export function MenuManager() {
         {/* ADD NEW ITEM FORM */}
         {isAdding && (
           <div className="p-4 bg-white border border-gray-200 space-y-4">
-            <h3 className="text-xl font-bold text-gray-900 game-text border-b border-[#00AA13] pb-2">New Menu Item</h3>
+            <h3 className="text-xl font-bold text-gray-900 game-text border-b border-[#00AA13] pb-2">
+              {isPremium ? "New Menu Item" : "New Bahan Pokok"}
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <input
                 type="text"
-                placeholder="Nama Menu"
+                placeholder={isPremium ? "Nama Menu" : "Nama Bahan Pokok"}
                 className="px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] game-text font-bold"
                 value={formData.name}
                 onChange={e => setFormData({ ...formData, name: e.target.value })}
@@ -170,10 +179,11 @@ export function MenuManager() {
                   type="number"
                   placeholder="Price"
                   step="0.01"
-                  className="px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] w-1/2 game-text font-bold"
+                  className={`px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] ${isPremium ? 'w-1/2' : 'w-full'} game-text font-bold`}
                   value={formData.price || ""}
                   onChange={e => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
                 />
+                {isPremium && (
                 <select
                   className="px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] w-1/2 game-text font-bold"
                   value={formData.category}
@@ -185,6 +195,7 @@ export function MenuManager() {
                   <option value="Beverage">Beverage</option>
                   <option value="Other">Other</option>
                 </select>
+                )}
               </div>
               <textarea
                 placeholder="Description"
@@ -222,7 +233,7 @@ export function MenuManager() {
         {/* LIST OF ITEMS */}
         {restaurant.menu.length === 0 && !isAdding ? (
           <div className="text-center py-12 text-gray-400 bg-white border border-dashed border-gray-200 game-text font-bold text-xl">
-            No items in your menu yet. Click "Add Item" to get started.
+            {isPremium ? 'No items in your menu yet. Click "Add Item" to get started.' : 'List Bahan Pokok kosong. Klik "Add Item" untuk mulai menambah.'}
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-5">
@@ -245,10 +256,11 @@ export function MenuManager() {
                         <input
                           type="number"
                           step="0.01"
-                          className="px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] w-1/2 game-text font-bold"
+                          className={`px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] ${isPremium ? 'w-1/2' : 'w-full'} game-text font-bold`}
                           value={formData.price || ""}
                           onChange={e => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
                         />
+                        {isPremium && (
                         <select
                           className="px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] w-1/2 game-text font-bold"
                           value={formData.category}
@@ -260,6 +272,7 @@ export function MenuManager() {
                           <option value="Beverage">Beverage</option>
                           <option value="Other">Other</option>
                         </select>
+                        )}
                       </div>
                       <textarea
                         className="px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] md:col-span-2 resize-none h-24 game-text font-bold"
@@ -481,6 +494,15 @@ deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200
                       >
                         <TrendingUp className="w-5 h-5" />
                       </button>
+                      {isPremium && (
+                        <button 
+                          onClick={() => setRecipeOptimizerItem(item)}
+                          title="Ubah Resep (AI Cookpad/YouTube)"
+                          className="p-3 border border-gray-200 bg-white text-purple-600 hover:bg-purple-600 hover:text-white transition-all mt-0 md:mt-2 hover:border-purple-600"
+                        >
+                          <ChefHat className="w-5 h-5" />
+                        </button>
+                      )}
                     </div>
                   </>
                 )}
@@ -509,6 +531,16 @@ deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200
         menuItem={pricingMenuItem}
         suppliers={suppliers}
       />
+
+      {recipeOptimizerItem && restaurant && (
+        <AIRecipeOptimizer
+          item={recipeOptimizerItem}
+          onClose={() => setRecipeOptimizerItem(null)}
+          onUpdate={(updatedData) => {
+            updateMenuItem(restaurant.id, recipeOptimizerItem.id, updatedData);
+          }}
+        />
+      )}
 
       {reviewingDeal && (
         <div className="fixed inset-0 bg-white backdrop-blur-sm z-50 flex items-center justify-center p-4">

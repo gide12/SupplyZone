@@ -7,6 +7,7 @@ import { AppProvider, useAppContext } from "./store/AppContext";
 import { RestaurantDashboard } from "./components/RestaurantDashboard";
 import { SupplierDashboard } from "./components/SupplierDashboard";
 import { LandingPage } from "./components/LandingPage";
+import { ContactSupport } from "./components/ContactSupport";
 import { Store, Truck, Globe } from "lucide-react";
 import { translate } from "./lib/i18n";
 
@@ -85,6 +86,7 @@ export default function App() {
   return (
     <AppProvider>
       <Main />
+      <ContactSupport />
     </AppProvider>
   );
 }

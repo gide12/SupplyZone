@@ -101,6 +101,7 @@ export function RestaurantDashboard() {
   const [profileAddress, setProfileAddress] = useState(restaurant?.address || "");
   const [profileLat, setProfileLat] = useState<number | undefined>(restaurant?.lat);
   const [profileLng, setProfileLng] = useState<number | undefined>(restaurant?.lng);
+  const [profileSubscription, setProfileSubscription] = useState<"basic" | "premium">(restaurant?.subscriptionPlan || "basic");
 
   const handleProfileSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,7 +111,7 @@ export function RestaurantDashboard() {
     let finalLat = profileLat ?? restaurant.lat;
     let finalLng = profileLng ?? restaurant.lng;
     
-    updateRestaurantProfile(restaurant.id, profileName, finalLat, finalLng, profileAddress);
+    updateRestaurantProfile(restaurant.id, profileName, finalLat, finalLng, profileAddress, profileSubscription);
     alert("Profile updated successfully with location!");
   };
 
@@ -186,7 +187,7 @@ export function RestaurantDashboard() {
               onClick={() => setActiveTab("menu")}
               className={`w-full flex items-center md:flex-row flex-col justify-center md:justify-start gap-1 md:gap-3 px-2 md:px-4 py-2 md:py-3 rounded font-bold transition-colors game-btn ${activeTab === 'menu' ? 'game-btn-blue text-sm md:text-lg' : 'bg-white text-gray-900 text-sm md:text-lg border-gray-200 hover:bg-gray-50'}`}>
               <Settings className="w-5 h-5" />
-              <span className="game-text whitespace-nowrap">{translate("Menu Manager", language)}</span>
+              <span className="game-text whitespace-nowrap">{restaurant.subscriptionPlan === 'premium' ? translate("Menu Manager", language) : (language === 'en' ? 'Raw Materials' : 'Pengelola Bahan Pokok')}</span>
             </button>
             <button 
               onClick={() => setActiveTab("profile")}
@@ -209,7 +210,7 @@ export function RestaurantDashboard() {
         <div className="flex-1 space-y-6">
           <header className="game-panel p-4 pb-2 mb-4 ">
             <h1 className="text-3xl game-title">{language === "en" ? "Welcome back" : "Selamat datang kembali"}, {restaurant.name}</h1>
-            <p className="mt-2 text-gray-700 text-lg game-text">{language === "en" ? "Manage your" : "Kelola"} {activeTab === "menu" ? translate("Menu", language).toLowerCase() : activeTab === "inventory" ? translate("Inventory", language).toLowerCase() : translate("Profile", language).toLowerCase()} {language === "en" ? "and connect with suppliers below." : "dan terhubung dengan pemasok di bawah ini."}</p>
+            <p className="mt-2 text-gray-700 text-lg game-text">{language === "en" ? "Manage your" : "Kelola"} {activeTab === "menu" ? (restaurant.subscriptionPlan === "premium" ? translate("Menu", language).toLowerCase() : (language === "en" ? "raw materials" : "bahan pokok")) : activeTab === "inventory" ? translate("Inventory", language).toLowerCase() : translate("Profile", language).toLowerCase()} {language === "en" ? "and connect with suppliers below." : "dan terhubung dengan pemasok di bawah ini."}</p>
           </header>
 
           {activeTab === "menu" ? (
@@ -247,6 +248,17 @@ export function RestaurantDashboard() {
                         }
                      }}
                    />
+                </div>
+                <div>
+                   <label className="block text-xl text-gray-700 mb-2 game-text">Paket Berlangganan</label>
+                   <select
+                     value={profileSubscription}
+                     onChange={(e) => setProfileSubscription(e.target.value as "basic" | "premium")}
+                     className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-[#00AA13] focus:ring-1 focus:ring-[#00AA13] outline-none transition-all game-text text-lg"
+                   >
+                     <option value="basic">Paket Biasa (Logistik & Bahan Pokok)</option>
+                     <option value="premium">Paket Lengkap (Logistik & Seluruh Fitur)</option>
+                   </select>
                 </div>
                 <div className="h-64 mt-4 relative z-0 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
                    <MapContainer center={[profileLat || -5.147, profileLng || 119.432]} zoom={14} style={{ height: "100%", width: "100%" }}>

@@ -27,6 +27,7 @@ export interface Restaurant {
   address?: string;
   menu: MenuItem[];
   inventory?: RestaurantInventoryItem[];
+  subscriptionPlan?: "basic" | "premium";
 }
 
 export interface SupplierInventoryItem {
