@@ -80,7 +80,7 @@ export function RestaurantInventory() {
     setLoading(true);
     try {
       let contents: any[] = [];
-      const prompt = `Extract inventory items from this document (image of receipt/invoice or CSV text). Provide a JSON array. For each item: name, quantity (number), unit (string: one of kg, Liter, Drum, Karton, Karung, Pallet, Biji), spaceUsed (number in sqft, optional), and expirationDate (YYYY-MM-DD, if not provided guess e.g. 1-2 weeks from now).`;
+      const prompt = `Extract inventory items from this document (image of receipt/invoice or CSV text). Provide a JSON array. For each item: name, quantity (number), unit (string: one of kg, Liter, Drum, Karton, Karung, Pallet, Biji), spaceUsed (number in m³, optional), and expirationDate (YYYY-MM-DD, if not provided guess e.g. 1-2 weeks from now).`;
 
       if (file.type.startsWith('image/')) {
         const reader = new FileReader();
@@ -249,7 +249,7 @@ export function RestaurantInventory() {
                    </select>
                 </div>
                 <div>
-                  <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Kapasitas (sq ft) (Opsional)</label>
+                  <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Kapasitas (m³) (Opsional)</label>
                   <input type="number" step="0.1" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none" value={newSpace} onChange={e => setNewSpace(e.target.value)} placeholder="e.g. 2.5" />
                 </div>
               </div>
@@ -307,7 +307,7 @@ export function RestaurantInventory() {
           <div className="space-y-3">
             <div className="flex justify-between items-end mb-2">
               <h3 className="font-bold text-gray-900 text-lg game-text ">Stok Saat Ini</h3>
-              <span className="text-gray-400 font-bold game-text text-sm">Total Kapasitas: {totalSpace.toFixed(1)} sqft</span>
+              <span className="text-gray-400 font-bold game-text text-sm">Total Kapasitas: {totalSpace.toFixed(1)} m³</span>
             </div>
             {inventory.length === 0 ? (
               <p className="text-gray-400 italic game-text">Belum ada barang di inventaris. Silakan tambah.</p>
@@ -330,7 +330,7 @@ export function RestaurantInventory() {
                     
                     <div className="text-sm font-bold text-gray-400 game-text flex flex-wrap gap-4 mt-1">
                       <span>Qty: {item.quantity} {item.unit || ""}</span>
-                      {item.spaceUsed !== undefined && <span>Space: {item.spaceUsed} sqft</span>}
+                      {item.spaceUsed !== undefined && <span>Kapasitas: {item.spaceUsed} m³</span>}
                     </div>
 
                     <div className="mt-2 w-full bg-white h-2 rounded overflow-hidden flex border border-gray-100">

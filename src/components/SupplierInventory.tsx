@@ -86,7 +86,7 @@ export function SupplierInventory() {
     setLoading(true);
     try {
       let contents: any[] = [];
-      const prompt = `Extract inventory items from this document (image of receipt/invoice or CSV text). Provide a JSON array. For each item: name, quantity (number), unit (string: one of kg, Liter, Drum, Karton, Karung, Pallet, Biji), basePrice (number, if not provided guess e.g. 5.0), spaceUsed (number in sqft, if not provided guess e.g. 1.0 or 0.5), and expirationDate (YYYY-MM-DD, if not provided guess e.g. 1-2 weeks from now).`;
+      const prompt = `Extract inventory items from this document (image of receipt/invoice or CSV text). Provide a JSON array. For each item: name, quantity (number), unit (string: one of kg, Liter, Drum, Karton, Karung, Pallet, Biji), basePrice (number, if not provided guess e.g. 5.0), spaceUsed (number in m³, if not provided guess e.g. 1.0 or 0.5), and expirationDate (YYYY-MM-DD, if not provided guess e.g. 1-2 weeks from now).`;
 
       if (file.type.startsWith('image/')) {
         const reader = new FileReader();
@@ -263,7 +263,7 @@ export function SupplierInventory() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Space Used (sq ft/pallet) (Opsional)</label>
+                  <label className="block text-xs  font-bold text-gray-400 mb-1 game-text">Kapasitas (m³) (Opsional)</label>
                   <input type="number" step="0.1" className="w-full bg-white border border-gray-200 text-gray-900 p-2 game-text focus:outline-none" value={newSpace} onChange={e => setNewSpace(e.target.value)} placeholder="e.g. 5.5" />
                 </div>
                 <div>
@@ -431,7 +431,7 @@ export function SupplierInventory() {
           <div className="space-y-3">
             <div className="flex justify-between items-end mb-4 border-b border-gray-200 pb-1">
               <h3 className="text-sm font-bold text-[#00AA13]  tracking-wide game-text">Stok Saat Ini</h3>
-              <span className="text-gray-400 font-bold game-text text-sm">Total Kapasitas: {totalSpace.toFixed(1)} sqft</span>
+              <span className="text-gray-400 font-bold game-text text-sm">Total Kapasitas: {totalSpace.toFixed(1)} m³</span>
             </div>
             {inventory.length === 0 ? (
               <div className="text-center py-6 text-gray-400 font-bold game-text italic">Belum ada barang di inventaris.</div>
@@ -457,7 +457,7 @@ export function SupplierInventory() {
                         <span>|</span>
                         <span>Qty: {item.quantity} {item.unit || ""}</span>
                         <span>|</span>
-                        <span>Space: {item.spaceUsed || 'N/A'} sqft</span>
+                        <span>Kapasitas: {item.spaceUsed || 'N/A'} m³</span>
                       </div>
                       <div className="mt-2 text-xs font-bold text-[#EE2737]  game-text flex flex-col">
                         <span>Est. Market Price: Rp {dynamicInfo.estimatedPrice.toFixed(2)}</span>

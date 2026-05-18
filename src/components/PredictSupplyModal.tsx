@@ -42,7 +42,7 @@ export function PredictSupplyModal({ isOpen, onClose, menuItems, inventory }: Pr
     ).join("\n");
 
     const inventoryContext = inventory.map(
-      (inv) => `- ${inv.name}: ${inv.quantity} units, Space Used: ${inv.spaceUsed} sqft, Expires: ${inv.expirationDate}`
+      (inv) => `- ${inv.name}: ${inv.quantity} units, Space Used: ${inv.spaceUsed} m³, Expires: ${inv.expirationDate}`
     ).join("\n");
 
     try {
