@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Store, Truck, MapPin, X, ImagePlus, Link as LinkIcon, Navigation, MessageCircle, Map, User, Package, Calculator, Handshake } from "lucide-react";
+import { Store, Truck, MapPin, X, ImagePlus, Link as LinkIcon, Navigation, MessageCircle, Map, User, Package, Calculator, Handshake, Bell } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from "react-leaflet";
 import L from "leaflet";
 import { AddressAutocomplete } from "./AddressAutocomplete";
@@ -70,6 +70,82 @@ export function SupplierDashboard() {
   const [profileLat, setProfileLat] = useState<number | undefined>(activeSupplier.lat);
   const [profileLng, setProfileLng] = useState<number | undefined>(activeSupplier.lng);
   const [activeChatDeal, setActiveChatDeal] = useState<any | null>(null);
+
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  const getNotifications = () => {
+    const alerts: { id: string; message: string; subtext: string; isAlert: boolean }[] = [];
+
+    // 1. Inventory Notifications (Out of stock, Expired, Incoming)
+    (activeSupplier.inventory || []).forEach((item, index) => {
+      if (item.quantity <= 0) {
+         alerts.push({
+            id: `inv-empty-${item.id}-${index}`,
+            message: language === "en" ? `OUT OF STOCK: ${item.name}` : `STOK HABIS: ${item.name}`,
+            subtext: language === "en" ? `You have 0 ${item.unit || 'units'} left.` : `Anda kehabisan stok (${item.quantity} ${item.unit || 'unit'}).`,
+            isAlert: true
+         });
+      }
+      
+      if (item.expirationDate) {
+        const expDate = new Date(item.expirationDate).getTime();
+        const now = new Date().getTime();
+        const daysLeft = Math.ceil((expDate - now) / (1000 * 3600 * 24));
+        
+        if (daysLeft < 0) {
+          alerts.push({
+            id: `inv-exp-${item.id}-${index}`,
+            message: language === "en" ? `EXPIRED: ${item.name}` : `KEDALUWARSA: ${item.name}`,
+            subtext: language === "en" ? `Expired on ${item.expirationDate}` : `Telah kedaluwarsa sejak ${item.expirationDate}`,
+            isAlert: true
+          });
+        } else if (daysLeft <= 3) {
+          alerts.push({
+            id: `inv-warn-${item.id}-${index}`,
+            message: language === "en" ? `EXPIRING SOON: ${item.name}` : `HAMPIR KEDALUWARSA: ${item.name}`,
+            subtext: language === "en" ? `Expiring in ${daysLeft} days (${item.expirationDate})` : `Akan kedaluwarsa dalam ${daysLeft} hari (${item.expirationDate})`,
+            isAlert: true
+          });
+        }
+      }
+
+      if (item.expectedSupplyDate) {
+        alerts.push({
+           id: `inv-inc-${item.id}-${index}`,
+           message: language === "en" ? `INCOMING: ${item.name}` : `BARANG MASUK: ${item.name}`,
+           subtext: language === "en" ? `Scheduled for ${item.expectedSupplyDate}` : `Dijadwalkan masuk pada ${item.expectedSupplyDate}`,
+           isAlert: false
+        });
+      }
+    });
+
+    // 2. Deals / Order Notification
+    const supplierDeals = deals.filter(d => d.supplierId === activeSupplier.id);
+    supplierDeals.forEach(deal => {
+      const rest = restaurants.find(r => r.id === deal.restaurantId);
+      const restName = rest ? rest.name : "Unknown Restaurant";
+
+      if (deal.status === "Pending") {
+         alerts.push({
+           id: `deal-status-${deal.id}`,
+           message: language === "en" ? `NEW ORDER PENDING` : `ORDER BARU TERTUNDA`,
+           subtext: language === "en" ? `New order from ${restName}.` : `Ada pesanan masuk dari ${restName}.`,
+           isAlert: true
+         });
+      } else {
+         alerts.push({
+           id: `deal-status-${deal.id}`,
+           message: language === "en" ? `ORDER UPDATE: ${deal.status}` : `UPDATE ORDERAN: ${deal.status}`,
+           subtext: language === "en" ? `Order with ${restName} is now ${deal.status}.` : `Pesanan dengan ${restName} saat ini berstatus ${deal.status}.`,
+           isAlert: false
+         });
+      }
+    });
+
+    return alerts;
+  };
+
+  const notifications = getNotifications();
 
   // Route Geometry state
   const [routeGeometry, setRouteGeometry] = useState<[number, number][]>([]);
@@ -457,7 +533,46 @@ export function SupplierDashboard() {
             </div>
             <span className="text-xl md:text-2xl font-bold text-[#00AA13] tracking-tight leading-none">Dapurku</span>
           </div>
-          <span className="px-3 py-1 bg-[#EE2737]/10 text-[#EE2737] text-[10px] md:text-xs font-bold rounded-full whitespace-nowrap">{translate("Supplier Portal", language)}</span>
+          
+          <div className="flex items-center gap-2">
+            <div className="relative z-50">
+              <button 
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="w-8 h-8 md:w-10 md:h-10 bg-white hover:bg-gray-50 rounded-full flex items-center justify-center border border-gray-200 transition-colors relative"
+              >
+                <Bell className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
+                {notifications.length > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#EE2737] text-[10px] font-bold text-white">
+                    {notifications.length}
+                  </span>
+                )}
+              </button>
+              
+              {showNotifications && (
+                <div className="absolute right-0 mt-2 w-72 md:w-80 bg-white border border-gray-200 shadow-2xl p-4 z-[9999]">
+                  <h3 className="text-gray-900 font-bold text-sm md:text-lg border-b border-gray-200 pb-2 mb-3">
+                    {language === "en" ? "Notifications" : "Notifikasi"}
+                  </h3>
+                  {notifications.length === 0 ? (
+                    <p className="text-gray-400 text-xs md:text-sm italic text-center py-4">
+                      {language === "en" ? "No new notifications." : "Tidak ada notifikasi baru."}
+                    </p>
+                  ) : (
+                    <div className="space-y-3 max-h-64 overflow-y-auto custom-scrollbar">
+                      {notifications.map(note => (
+                        <div key={note.id} className={`${note.isAlert ? 'bg-[#EE2737]/10 border-[#EE2737]' : 'bg-gray-50 border-gray-200'} border p-3 text-left rounded-md`}>
+                          <div className="text-gray-900 font-bold text-xs md:text-sm leading-snug">{note.message}</div>
+                          <div className="text-gray-500 text-[10px] md:text-xs mt-1">{note.subtext}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          
+            <span className="px-3 py-1 bg-[#EE2737]/10 text-[#EE2737] text-[10px] md:text-xs font-bold rounded-full whitespace-nowrap">{translate("Supplier Portal", language)}</span>
+          </div>
         </div>
 
         <div className="flex overflow-x-auto custom-scrollbar border-b border-gray-100 bg-white shadow-sm px-2 sm:px-6 justify-start lg:justify-center shrink-0">

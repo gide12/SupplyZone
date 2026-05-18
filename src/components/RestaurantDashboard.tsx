@@ -46,7 +46,7 @@ function LocationMarker({ position, setPosition }: { position: L.LatLngExpressio
 }
 
 export function RestaurantDashboard() {
-  const { restaurants, activeRestaurantId, updateRestaurantProfile, suppliers, language } = useAppContext();
+  const { restaurants, activeRestaurantId, updateRestaurantProfile, suppliers, language, deals } = useAppContext();
   const [activeTab, setActiveTab] = useState<"menu" | "inventory" | "profile">("inventory");
   const [showNotifications, setShowNotifications] = useState(false);
   
@@ -55,6 +55,70 @@ export function RestaurantDashboard() {
   // Calculate notifications
   const getNotifications = () => {
     if (!restaurant) return [];
+    const alerts: { id: string; message: string; subtext: string; isAlert: boolean }[] = [];
+
+    // 1. Inventory Notifications (Out of stock, Expired, Incoming)
+    (restaurant.inventory || []).forEach((item, index) => {
+      // Out of stock
+      if (item.quantity <= 0) {
+         alerts.push({
+            id: `inv-empty-${item.id}-${index}`,
+            message: language === "en" ? `OUT OF STOCK: ${item.name}` : `STOK HABIS: ${item.name}`,
+            subtext: language === "en" ? `You have 0 ${item.unit || 'units'} left.` : `Anda kehabisan stok (${item.quantity} ${item.unit || 'unit'}).`,
+            isAlert: true
+         });
+      }
+      
+      // Expired or expiring soon (within 3 days)
+      if (item.expirationDate) {
+        const expDate = new Date(item.expirationDate).getTime();
+        const now = new Date().getTime();
+        const daysLeft = Math.ceil((expDate - now) / (1000 * 3600 * 24));
+        
+        if (daysLeft < 0) {
+          alerts.push({
+            id: `inv-exp-${item.id}-${index}`,
+            message: language === "en" ? `EXPIRED: ${item.name}` : `KEDALUWARSA: ${item.name}`,
+            subtext: language === "en" ? `Expired on ${item.expirationDate}` : `Telah kedaluwarsa sejak ${item.expirationDate}`,
+            isAlert: true
+          });
+        } else if (daysLeft <= 3) {
+          alerts.push({
+            id: `inv-warn-${item.id}-${index}`,
+            message: language === "en" ? `EXPIRING SOON: ${item.name}` : `HAMPIR KEDALUWARSA: ${item.name}`,
+            subtext: language === "en" ? `Expiring in ${daysLeft} days (${item.expirationDate})` : `Akan kedaluwarsa dalam ${daysLeft} hari (${item.expirationDate})`,
+            isAlert: true
+          });
+        }
+      }
+
+      // Scheduled incoming items (Keep Order)
+      if (item.preOrderDate) {
+        alerts.push({
+           id: `inv-inc-${item.id}-${index}`,
+           message: language === "en" ? `INCOMING: ${item.name}` : `BARANG MASUK: ${item.name}`,
+           subtext: language === "en" ? `Scheduled for ${item.preOrderDate}` : `Dijadwalkan masuk pada ${item.preOrderDate}`,
+           isAlert: false
+        });
+      }
+    });
+
+    // 2. Deals / Order Status Notification
+    const myDeals = deals.filter(d => d.restaurantId === restaurant.id);
+    myDeals.forEach(deal => {
+      // Find supplier name
+      const supplier = suppliers.find(s => s.id === deal.supplierId);
+      const supplierName = supplier ? supplier.name : "Unknown Supplier";
+
+      if (deal.status !== "Pending") {
+         alerts.push({
+           id: `deal-status-${deal.id}`,
+           message: language === "en" ? `ORDER UPDATE: ${deal.status}` : `UPDATE ORDERAN: ${deal.status}`,
+           subtext: language === "en" ? `Order from ${supplierName} is now ${deal.status}.` : `Pesanan ke ${supplierName} saat ini berstatus ${deal.status}.`,
+           isAlert: false // Neutral since it can be "On Delivery", "Accepted" etc.
+         });
+      }
+    });
     
     // items restaurant buys (from inventory or menu)
     const trackedItems = new Set([
@@ -70,8 +134,6 @@ export function RestaurantDashboard() {
       acc[key].push(curr);
       return acc;
     }, {} as Record<string, {supplier: string, item: string, price: number}[]>);
-
-    const alerts: { id: string; message: string; subtext: string; isAlert: boolean }[] = [];
 
     Object.entries(itemGroups).forEach(([key, items]: [string, {supplier: string, item: string, price: number}[]]) => {
       if (trackedItems.has(key) && items.length > 1) {
