@@ -47,7 +47,7 @@ Untuk setiap resep, berikan:
 PENTING: Output HARUS dalam format JSON valid sesuai schema.`;
 
       const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3-flash-preview",
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -94,9 +94,14 @@ PENTING: Output HARUS dalam format JSON valid sesuai schema.`;
       } else {
         throw new Error("Invalid response format");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Recipe generation failed:", err);
-      setError("Gagal menghasilkan resep alternatif. Silakan coba lagi nanti.");
+      const errorMessage = err?.message || err?.toString() || "";
+      if (errorMessage.includes("503") || errorMessage.includes("high demand") || errorMessage.includes("UNAVAILABLE")) {
+        setError("Sistem AI sedang sibuk karena tingginya permintaan. Silakan coba lagi dalam beberapa saat.");
+      } else {
+        setError("Gagal menghasilkan resep alternatif. Silakan coba lagi nanti.");
+      }
     } finally {
       setLoading(false);
     }

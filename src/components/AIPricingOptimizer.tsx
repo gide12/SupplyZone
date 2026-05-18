@@ -72,7 +72,7 @@ Task:
 
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3-flash-preview",
         contents: `You are an expert restaurant financial advisor and supply chain analyst. Analyzed the HPP (COGS) and recommend a selling price to ensure safe cash flow.
         
 User Input:

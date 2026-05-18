@@ -39,7 +39,7 @@ Untuk setiap rute, berikan perkiraan jarak tempuh, durasi, taksiran biaya BBM/To
 Berikan juga "recommendation" satu kalimat mengenai rute terbaik dari pilihan tersebut.`;
 
       const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3-flash-preview",
         contents: prompt,
         config: {
           responseMimeType: "application/json",

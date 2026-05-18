@@ -105,7 +105,7 @@ export function SupplierInventory() {
       }
 
       const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3-flash-preview",
         contents,
         config: {
           responseMimeType: "application/json",
@@ -141,9 +141,14 @@ export function SupplierInventory() {
         
         updateSupplierInventory(activeSupplier.id, [...inventory, ...newItems]);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Failed to analyze uploaded file.");
+      const errorMessage = err?.message || err?.toString() || "";
+      if (errorMessage.includes("503") || errorMessage.includes("high demand") || errorMessage.includes("UNAVAILABLE")) {
+        alert("Sistem AI sedang sibuk karena tingginya permintaan. Silakan coba lagi dalam beberapa saat.");
+      } else {
+        alert("Gagal menganalisis file yang diunggah.");
+      }
     } finally {
       setLoading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -157,25 +162,26 @@ export function SupplierInventory() {
       const allMenuNames = restaurants.flatMap(r => r.menu.map(m => m.name));
       
       const prompt = `
-        As an AI Supplier Supply Chain Analyst, evaluate this supplier's inventory efficiency and market effectiveness.
+        Sebagai AI analitik supply chain pemasok, evaluasi efisiensi inventaris dan efektivitas pasar pemasok ini secara optimal menggunakan pendekatan matriks.
+        Berikan jawaban penuh dalam Bahasa Indonesia.
+        PENTING: Jawaban harus sangat SINGKAT, PADAT, dan TO THE POINT (Maksimal 1 kalimat atau bullet point pendek).
         
-        Current Supplier Inventory Data:
-        ${JSON.stringify(inventory.map(i => ({ name: i.name, quantity: i.quantity, spaceUsed: i.spaceUsed, expirationDate: i.expirationDate, basePrice: i.basePrice })), null, 2)}
+        Data Inventaris Pemasok Saat Ini (termasuk preOrderDate/stok masuk):
+        ${JSON.stringify(inventory.map(i => ({ name: i.name, quantity: i.quantity, spaceUsed: i.spaceUsed, expirationDate: i.expirationDate, expectedSupplyDate: i.expectedSupplyDate, basePrice: i.basePrice })), null, 2)}
         
-        Current Restaurants Market Demand (Menu items across all restaurants, indicating dominant items like Avocado Toast, Truffle Pasta, etc.):
+        Kebutuhan Pasar / Demand Restoran (Data menu gabungan restoran yang mengindikasikan bahan populer):
         ${JSON.stringify(allMenuNames, null, 2)}
         
-        Calculate:
-        1. A score for Space Efisiensi (0-100).
-        2. A score for Market Efektivitas (0-100) based on how well the supplier's inventory matches the aggregate restaurant market demands.
-        3. Capacity warnings (total space used vs typical warehouse max capacity).
-        4. Expiration reminders (what expires soon and needs immediate liquidation).
-        5. Dominant products analysis (how well inventory supports top market demands).
-        6. Rekomendasi Diskon: If there is a "Lot of stock" for an item but "Lower ordering" (low market demand based on menu), recommend a discount to increase orders for that item.
+        Harap evaluasi dan hitung poin-poin berikut berdasarkan matriks keputusan prioritas secara ringkas:
+        1. Skor Efisiensi (0-100) dan Skor Efektivitas (0-100). Pertimbangkan bahan demand tinggi dan cepat expired.
+        2. Peringatan kapasitas (capacityWarning) yang memperhitungkan total barang saat ini + stok terjadwal masuk. (Max 1 kalimat)
+        3. Pengingat expired (expirationReminders) untuk barang butuh likuidasi segera. (Singkat, nama barang dan tgl)
+        4. Analisis Produk Dominan (dominantProductsAnalysis): sinkronisasi inventaris dengan permintaan agregat. (Max 1 kalimat)
+        5. Rekomendasi Diskon: Jika stok bertumpuk sedangkan demand lambat.
       `;
 
       const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3-flash-preview",
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -212,9 +218,14 @@ export function SupplierInventory() {
       if (response.text) {
         setAiReport(JSON.parse(response.text));
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Failed to analyze supplier inventory.");
+      const errorMessage = err?.message || err?.toString() || "";
+      if (errorMessage.includes("503") || errorMessage.includes("high demand") || errorMessage.includes("UNAVAILABLE")) {
+        alert("Sistem AI sedang sibuk karena tingginya permintaan. Silakan coba lagi dalam beberapa saat.");
+      } else {
+        alert("Gagal menganalisis supplier inventory.");
+      }
     } finally {
       setLoading(false);
     }
@@ -330,10 +341,10 @@ export function SupplierInventory() {
           <div className="mb-6">
             <div className="bg-white border border-gray-200 p-6 relative shadow-sm">
               <h3 className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 text-xl game-title flex items-center gap-2 mb-4">
-                 <BrainCircuit className="w-6 h-6 text-purple-600" /> <span className="text-gray-900">Efisiensi & Analisis</span> Engine
+                 <BrainCircuit className="w-6 h-6 text-purple-600" /> <span className="text-gray-900">Analisa</span> Artificial Intelligence
               </h3>
               <p className="game-text text-gray-700 text-sm mb-6 leading-relaxed">
-                 Evaluate warehouse efficiency, market effectiveness against dominant products (Avocado Toast, etc.), and expiration warnings.
+                 Evaluasi efisiensi gudang, efektivitas pasar terhadap produk dominan (seperti Avocado Toast, dsb.), dan peringatan masa kedaluwarsa dengan Artificial Intelligence.
               </p>
               
               <button 
@@ -355,60 +366,57 @@ export function SupplierInventory() {
     
 
               {aiReport && (
-                <div className="space-y-4 animate-in fade-in duration-300">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div className="bg-white p-3 border border-gray-100 text-center">
-                      <div className="text-xs text-gray-400 font-bold   game-text mb-1">Space Efisiensi</div>
-                      <div className="text-2xl font-bold text-gray-900 game-title">{aiReport.efficiencyScore}%</div>
+                <div className="space-y-3 animate-in fade-in duration-300">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-gray-50 p-3 border border-gray-100 rounded-lg text-center flex flex-col items-center justify-center">
+                      <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Efisiensi Ruang</span>
+                      <span className="text-2xl font-bold text-gray-900">{aiReport.efficiencyScore}%</span>
                     </div>
-                    <div className="bg-white p-3 border border-gray-100 text-center">
-                      <div className="text-xs text-gray-400 font-bold   game-text mb-1">Mkt Efektivitas</div>
-                      <div className="text-2xl font-bold text-[#00AA13] game-title">{aiReport.effectivenessScore}%</div>
+                    <div className="bg-gray-50 p-3 border border-gray-100 rounded-lg text-center flex flex-col items-center justify-center">
+                      <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Efektivitas Pasar</span>
+                      <span className="text-2xl font-bold text-[#00AA13]">{aiReport.effectivenessScore}%</span>
                     </div>
                   </div>
 
-                  <div className="bg-white p-4 border border-gray-100">
-                    <h4 className="text-sm font-bold text-gray-400  game-text mb-1">Status Kapasitas</h4>
-                    <p className="text-gray-900 game-text leading-snug">{aiReport.capacityWarning}</p>
+                  <div className="bg-white p-3 border border-gray-100 rounded-lg shadow-sm">
+                    <div className="flex items-center gap-2 mb-1.5"><strong className="text-xs text-gray-900 bg-gray-100 px-2 py-0.5 rounded">Status</strong></div>
+                    <p className="text-gray-700 text-xs leading-relaxed">{aiReport.capacityWarning}</p>
                   </div>
 
-                  <div className="bg-white p-4 border border-gray-100 border-l-4 border-l-red-500">
-                    <h4 className="text-sm font-bold text-[#EE2737]  game-text mb-2">Shelf-Life Reminders</h4>
-                    <ul className="list-disc pl-4 space-y-1">
-                      {aiReport.expirationReminders.map((rem, i) => (
-                        <li key={i} className="text-gray-900 text-xs game-text">{rem}</li>
-                      ))}
-                    </ul>
+                  {aiReport.expirationReminders.length > 0 && (
+                    <div className="bg-red-50 p-3 border border-red-100 rounded-lg">
+                      <div className="flex items-center gap-2 mb-1.5"><strong className="text-xs text-[#EE2737] bg-white px-2 py-0.5 rounded shadow-sm">Shelf-Life Reminders</strong></div>
+                      <ul className="text-xs space-y-1 list-disc pl-4 text-red-700">
+                        {aiReport.expirationReminders.map((rem, i) => <li key={i}>{rem}</li>)}
+                      </ul>
+                    </div>
+                  )}
+
+                  <div className="bg-white p-3 border border-gray-100 rounded-lg shadow-sm">
+                     <div className="flex items-center gap-2 mb-1.5"><strong className="text-xs text-[#00AA13] bg-green-50 px-2 py-0.5 rounded">Sinkronisasi Pasar Dominan</strong></div>
+                     <p className="text-gray-700 text-xs leading-relaxed">{aiReport.dominantProductsAnalysis}</p>
                   </div>
 
-                  <div className="bg-white p-4 border border-gray-100">
-                    <h4 className="text-sm font-bold text-gray-400  game-text mb-1 flex justify-between">
-                      <span>Dominant Market Sync</span>
-                      <span className="text-xs text-[#EE2737]">DATA PENJUALAN</span>
-                    </h4>
-                    <p className="text-gray-900 text-xs game-text leading-relaxed">{aiReport.dominantProductsAnalysis}</p>
-                  </div>
-
-                  <div className="bg-[#00AA13]/10 p-4 border border-[#00AA13]">
-                    <h4 className="text-sm font-bold text-[#00AA13]  game-text mb-1">Rekomendasi Strategis</h4>
-                    <p className="text-gray-900 text-xs game-text italic">"{aiReport.actionableAdvice}"</p>
-                  </div>
+                  {aiReport.actionableAdvice && (
+                    <div className="bg-purple-50 p-3 border border-purple-100 rounded-lg">
+                       <p className="text-purple-800 text-xs font-medium italic">"{aiReport.actionableAdvice}"</p>
+                    </div>
+                  )}
 
                   {aiReport.discountRecommendations && aiReport.discountRecommendations.length > 0 && (
-                    <div className="bg-orange-500/10 p-4 border border-orange-500/50">
-                      <h4 className="text-sm font-bold text-orange-500  game-text mb-3 flex items-center justify-between">
-                         <span>Promotional Discounts</span>
-                         <span className="text-[10px] bg-orange-500 text-black px-2 py-0.5 font-bold">INCREASE ORDERS</span>
-                      </h4>
-                      <div className="space-y-3">
+                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                      <div className="text-[10px] font-bold text-orange-600 mb-2 uppercase tracking-wider flex items-center justify-between">
+                        <span>Diskon Promosi / Penawaran</span> <span className="bg-white px-1.5 py-0.5 rounded shadow-sm text-black">TINGKATKAN PESANAN</span>
+                      </div>
+                      <div className="space-y-2">
                         {aiReport.discountRecommendations.map((rec, i) => (
-                          <div key={i} className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-3 border border-orange-500/30 gap-2">
-                            <div className="flex-1">
-                               <div className="text-gray-900 font-bold text-sm game-text">{rec.itemName}</div>
-                               <div className="text-xs text-gray-400 game-text leading-snug">{rec.reason}</div>
+                          <div key={i} className="flex justify-between items-center bg-white p-2 rounded shadow-sm border border-orange-100">
+                            <div className="flex-1 pr-2">
+                              <div className="font-bold text-xs text-gray-900">{rec.itemName}</div>
+                              <div className="text-[10px] text-gray-500 leading-tight mt-0.5">{rec.reason}</div>
                             </div>
-                            <div className="text-orange-400 font-bold text-lg game-text whitespace-nowrap bg-orange-500/20 px-2 py-1 border border-orange-500/30 shrink-0">
-                              -{rec.suggestedDiscountPercentage}% DISKON
+                            <div className="text-orange-600 font-bold text-xs bg-orange-100 px-2 py-1 rounded shrink-0">
+                              -{rec.suggestedDiscountPercentage}%
                             </div>
                           </div>
                         ))}

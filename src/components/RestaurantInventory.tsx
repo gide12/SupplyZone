@@ -11,6 +11,7 @@ export function RestaurantInventory() {
   const { restaurants, activeRestaurantId, updateRestaurantInventory } = useAppContext();
   const restaurant = restaurants.find(r => r.id === activeRestaurantId);
   const inventory = restaurant?.inventory || [];
+  const isPremium = restaurant?.subscriptionPlan === "premium";
 
   const totalSpace = inventory.reduce((sum, item) => sum + (item.spaceUsed || 0), 0);
   const isExpired = (dateString: string) => {
@@ -98,7 +99,7 @@ export function RestaurantInventory() {
       }
 
       const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3-flash-preview",
         contents,
         config: {
           responseMimeType: "application/json",
@@ -132,9 +133,14 @@ export function RestaurantInventory() {
         
         updateRestaurantInventory(restaurant.id, [...inventory, ...newItems]);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Failed to analyze uploaded file.");
+      const errorMessage = err?.message || err?.toString() || "";
+      if (errorMessage.includes("503") || errorMessage.includes("high demand") || errorMessage.includes("UNAVAILABLE")) {
+        alert("Sistem AI sedang sibuk karena tingginya permintaan. Silakan coba lagi dalam beberapa saat.");
+      } else {
+        alert("Gagal menganalisis file yang diunggah.");
+      }
     } finally {
       setLoading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -145,25 +151,26 @@ export function RestaurantInventory() {
     setLoading(true);
     try {
       const prompt = `
-        As an AI Restaurant Supply Chain Analyst, evaluate this restaurant's inventory efficiency and effectiveness.
+        Sebagai AI supply chain analyst, evaluasi efisiensi dan efektivitas inventaris restoran ini berdasarkan pendekatan matriks ketersediaan dan kebutuhan.
+        Berikan jawaban sepenuhnya dalam Bahasa Indonesia.
+        PENTING: Jawaban harus sangat SINGKAT, PADAT, dan TO THE POINT (Maksimal 1 kalimat atau bullet point pendek).
         
-        Current Inventory Data:
+        Data Inventaris Saat Ini (termasuk preOrderDate/barang masuk):
         ${JSON.stringify(inventory, null, 2)}
         
-        Current Menu Items (Dominance check - e.g. Avocado Toast, Truffle Pasta):
+        Data Menu Saat Ini (cek tren menu & kemungkinan demand tinggi):
         ${JSON.stringify(restaurant.menu.map(m => m.name), null, 2)}
         
-        Calculate:
-        1. A score for Space Efisiensi (0-100).
-        2. A score for Efektivitas (0-100) based on how well inventory matches menu.
-        3. Capacity warnings (total space used vs typical max).
-        4. Expiration reminders (what expires soon).
-        5. Dominant products analysis (how inventory supports top items like Avocado Toast/Truffle Pasta).
-        6. Discount Recommendations: If there is a lot of stock for an ingredient but low sales/ordering of the associated menu item, recommend a discount on the menu item to increase orders and clear stock.
+        Harap hitung dan evaluasi hal-hal berikut secara singkat:
+        1. Skor Efisiensi Ruang/Kapasitas (0-100) dan Skor Efektivitas (0-100) dengan memprioritaskan bahan pokok yang akan cepat kedaluwarsa dan demand tinggi.
+        2. Peringatan kapasitas (capacityWarning) berdasarkan total barang saat ini + barang masuk vis-a-vis rata-rata maksimum, dimaksimalkan untuk efektivitas tinggi. (Max 1 kalimat)
+        3. Pengingat kedaluwarsa (expirationReminders) yang segera habis. (Singkat, nama barang dan tgl)
+        4. Analisis Produk Dominan (dominantProductsAnalysis): sejauh mana ketersediaan bahan mendukung menu unggulan. (Max 1 kalimat)
+        5. Rekomendasi Diskon: Jika stok bahan terlalu banyak/cepat basi tapi penjualan menu lambat.
       `;
 
       const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3-flash-preview",
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -200,9 +207,14 @@ export function RestaurantInventory() {
       if (response.text) {
         setAiReport(JSON.parse(response.text));
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Failed to analyze inventory.");
+      const errorMessage = err?.message || err?.toString() || "";
+      if (errorMessage.includes("503") || errorMessage.includes("high demand") || errorMessage.includes("UNAVAILABLE")) {
+        alert("Sistem AI sedang sibuk karena tingginya permintaan. Silakan coba lagi dalam beberapa saat.");
+      } else {
+        alert("Gagal menganalisis inventaris.");
+      }
     } finally {
       setLoading(false);
     }
@@ -343,92 +355,100 @@ export function RestaurantInventory() {
         <div>
           <div className="bg-white border border-gray-200 p-6 h-full relative shadow-sm">
             <h3 className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 text-xl game-title flex items-center gap-2 mb-4">
-               <BrainCircuit className="w-6 h-6 text-purple-600" /> <span className="text-gray-900">Analisis Gudang</span>
+               <BrainCircuit className="w-6 h-6 text-purple-600" /> <span className="text-gray-900">Analisa</span> Artificial Intelligence
             </h3>
             <p className="game-text text-gray-700 text-sm mb-6 leading-relaxed">
-               Jalankan analisis untuk mengevaluasi efisiensi ruang dan peringatan kedaluwarsa.
+               Evaluasi efisiensi gudang, efektivitas menu terhadap produk dominan, dan peringatan kedaluwarsa dengan Artificial Intelligence.
             </p>
             
-            <button 
-              onClick={handleAICalculation}
-              disabled={loading || inventory.length === 0}
-              className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:opacity-90 disabled:bg-gray-200 disabled:text-gray-400 disabled:from-gray-200 disabled:to-gray-200 disabled:border-gray-200 disabled:shadow-none text-white font-bold game-text text-lg flex items-center justify-center gap-2 transition-all shadow-sm mb-3"
-            >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <BrainCircuit className="w-5 h-5" />}
-              {loading ? "Menganalisis..." : "Hitung Kapasitas"}
-            </button>
+            {!isPremium ? (
+               <div className="bg-purple-50 border border-purple-100 p-6 text-center">
+                 <div className="mx-auto w-12 h-12 bg-white rounded-full flex items-center justify-center mb-3 shadow-sm border border-purple-100">
+                    <BrainCircuit className="w-6 h-6 text-purple-600 opacity-50" />
+                 </div>
+                 <h4 className="font-bold text-gray-900 mb-1 game-text">Fitur Terkunci</h4>
+                 <p className="text-xs text-gray-500 mb-4 game-text">Tingkatkan profil Anda menjadi Paket Lengkap di halaman Profile untuk menggunakan AI Analyst.</p>
+               </div>
+            ) : (
+              <>
+                <button 
+                  onClick={handleAICalculation}
+                  disabled={loading || inventory.length === 0}
+                  className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:opacity-90 disabled:bg-gray-200 disabled:text-gray-400 disabled:from-gray-200 disabled:to-gray-200 disabled:border-gray-200 disabled:shadow-none text-white font-bold game-text text-lg flex items-center justify-center gap-2 transition-all shadow-sm mb-3"
+                >
+                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <BrainCircuit className="w-5 h-5" />}
+                  {loading ? "Menganalisis..." : "Hitung Kapasitas"}
+                </button>
 
-            <button 
-              onClick={() => setIsWeatherModalOpen(true)}
-              className="w-full py-3 bg-white hover:bg-gray-50 text-blue-600 font-bold game-text text-lg flex items-center justify-center gap-2 transition-all border border-blue-600 shadow-sm mb-6"
-            >
-              <CloudRain className="w-5 h-5" />
-              Cek Cuaca
-            </button>
+                <button 
+                  onClick={() => setIsWeatherModalOpen(true)}
+                  className="w-full py-3 bg-white hover:bg-gray-50 text-blue-600 font-bold game-text text-lg flex items-center justify-center gap-2 transition-all border border-blue-600 shadow-sm mb-6"
+                >
+                  <CloudRain className="w-5 h-5" />
+                  Cek Cuaca
+                </button>
 
-
-            {aiReport && (
-              <div className="space-y-4 animate-in fade-in duration-300">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className="bg-white p-3 border border-gray-100 text-center">
-                    <div className="text-xs text-gray-400 font-bold   game-text mb-1">Efisiensi</div>
-                    <div className="text-2xl font-bold text-gray-900 game-title">{aiReport.efficiencyScore}%</div>
-                  </div>
-                  <div className="bg-white p-3 border border-gray-100 text-center">
-                    <div className="text-xs text-gray-400 font-bold   game-text mb-1">Efektivitas</div>
-                    <div className="text-2xl font-bold text-[#00AA13] game-title">{aiReport.effectivenessScore}%</div>
-                  </div>
-                </div>
-
-                <div className="bg-white p-4 border border-gray-100">
-                  <h4 className="text-sm font-bold text-gray-400  game-text mb-1">Status Kapasitas</h4>
-                  <p className="text-gray-900 game-text leading-snug">{aiReport.capacityWarning}</p>
-                </div>
-
-                <div className="bg-white p-4 border border-gray-100 border-l-4 border-l-red-500">
-                  <h4 className="text-sm font-bold text-[#EE2737]  game-text mb-2">Pengingat Kedaluwarsa</h4>
-                  <ul className="list-disc pl-4 space-y-1">
-                    {aiReport.expirationReminders.map((rem, i) => (
-                      <li key={i} className="text-gray-900 text-sm game-text">{rem}</li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="bg-white p-4 border border-gray-100">
-                  <h4 className="text-sm font-bold text-gray-400  game-text mb-1 flex justify-between">
-                    <span>Analisis Produk Utama</span>
-                    <span className="text-xs text-[#EE2737]">DATA PENJUALAN</span>
-                  </h4>
-                  <p className="text-gray-900 text-sm game-text leading-relaxed">{aiReport.dominantProductsAnalysis}</p>
-                </div>
-
-                <div className="bg-[#00AA13]/10 p-4 border border-[#00AA13]">
-                  <h4 className="text-sm font-bold text-[#00AA13]  game-text mb-1">Rekomendasi Analisis</h4>
-                  <p className="text-gray-900 text-sm game-text italic">"{aiReport.actionableAdvice}"</p>
-                </div>
-
-                {aiReport.discountRecommendations && aiReport.discountRecommendations.length > 0 && (
-                  <div className="bg-orange-500/10 p-4 border border-orange-500/50">
-                    <h4 className="text-sm font-bold text-orange-500  game-text mb-3 flex items-center justify-between">
-                       <span>Rekomendasi Diskon Menu</span>
-                       <span className="text-[10px] bg-orange-500 text-black px-2 py-0.5 font-bold">TINGKATKAN PESANAN</span>
-                    </h4>
-                    <div className="space-y-3">
-                      {aiReport.discountRecommendations.map((rec, i) => (
-                        <div key={i} className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-3 border border-orange-500/30 gap-2">
-                          <div className="flex-1">
-                             <div className="text-gray-900 font-bold text-sm game-text">{rec.itemName}</div>
-                             <div className="text-xs text-gray-400 game-text leading-snug">{rec.reason}</div>
-                          </div>
-                          <div className="text-orange-400 font-bold text-lg game-text whitespace-nowrap bg-orange-500/20 px-2 py-1 border border-orange-500/30 shrink-0">
-                            -{rec.suggestedDiscountPercentage}% DISKON
-                          </div>
-                        </div>
-                      ))}
+                {aiReport && (
+                  <div className="space-y-3 animate-in fade-in duration-300">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-gray-50 p-3 border border-gray-100 rounded-lg text-center flex flex-col items-center justify-center">
+                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Efisiensi</span>
+                        <span className="text-2xl font-bold text-gray-900">{aiReport.efficiencyScore}%</span>
+                      </div>
+                      <div className="bg-gray-50 p-3 border border-gray-100 rounded-lg text-center flex flex-col items-center justify-center">
+                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Efektivitas</span>
+                        <span className="text-2xl font-bold text-[#00AA13]">{aiReport.effectivenessScore}%</span>
+                      </div>
                     </div>
+
+                    <div className="bg-white p-3 border border-gray-100 rounded-lg shadow-sm">
+                      <div className="flex items-center gap-2 mb-1.5"><strong className="text-xs text-gray-900 bg-gray-100 px-2 py-0.5 rounded">Status</strong></div>
+                      <p className="text-gray-700 text-xs leading-relaxed">{aiReport.capacityWarning}</p>
+                    </div>
+
+                    {aiReport.expirationReminders.length > 0 && (
+                      <div className="bg-red-50 p-3 border border-red-100 rounded-lg">
+                        <div className="flex items-center gap-2 mb-1.5"><strong className="text-xs text-[#EE2737] bg-white px-2 py-0.5 rounded shadow-sm">Kedaluwarsa</strong></div>
+                        <ul className="text-xs space-y-1 list-disc pl-4 text-red-700">
+                          {aiReport.expirationReminders.map((rem, i) => <li key={i}>{rem}</li>)}
+                        </ul>
+                      </div>
+                    )}
+
+                    <div className="bg-white p-3 border border-gray-100 rounded-lg shadow-sm">
+                       <div className="flex items-center gap-2 mb-1.5"><strong className="text-xs text-[#00AA13] bg-green-50 px-2 py-0.5 rounded">Produk Utama</strong></div>
+                       <p className="text-gray-700 text-xs leading-relaxed">{aiReport.dominantProductsAnalysis}</p>
+                    </div>
+
+                    {aiReport.actionableAdvice && (
+                      <div className="bg-purple-50 p-3 border border-purple-100 rounded-lg">
+                         <p className="text-purple-800 text-xs font-medium italic">"{aiReport.actionableAdvice}"</p>
+                      </div>
+                    )}
+
+                    {aiReport.discountRecommendations && aiReport.discountRecommendations.length > 0 && (
+                      <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                        <div className="text-[10px] font-bold text-orange-600 mb-2 uppercase tracking-wider flex items-center justify-between">
+                          <span>Saran Diskon Promo</span> <span className="bg-white px-1.5 py-0.5 rounded shadow-sm text-black">HOT</span>
+                        </div>
+                        <div className="space-y-2">
+                          {aiReport.discountRecommendations.map((rec, i) => (
+                            <div key={i} className="flex justify-between items-center bg-white p-2 rounded shadow-sm border border-orange-100">
+                              <div className="flex-1 pr-2">
+                                <div className="font-bold text-xs text-gray-900">{rec.itemName}</div>
+                                <div className="text-[10px] text-gray-500 leading-tight mt-0.5">{rec.reason}</div>
+                              </div>
+                              <div className="text-orange-600 font-bold text-xs bg-orange-100 px-2 py-1 rounded shrink-0">
+                                -{rec.suggestedDiscountPercentage}%
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
+              </>
             )}
           </div>
         </div>

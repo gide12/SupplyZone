@@ -197,12 +197,53 @@ export function MenuManager() {
                 </select>
                 )}
               </div>
-              <textarea
-                placeholder="Description"
-                className="px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] md:col-span-2 resize-none h-24 game-text font-bold"
-                value={formData.description}
-                onChange={e => setFormData({ ...formData, description: e.target.value })}
-              />
+              <div className="md:col-span-2">
+                <textarea
+                  placeholder="Description"
+                  className="w-full px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] resize-none h-24 game-text font-bold"
+                  value={formData.description}
+                  onChange={e => setFormData({ ...formData, description: e.target.value })}
+                />
+                {isPremium && restaurant?.inventory && restaurant.inventory.length > 0 && (
+                  <div className="mt-2 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                    <span className="text-xs font-bold text-gray-500 mb-2 block uppercase tracking-wide">Pilih Bahan Pokok dari Inventory:</span>
+                    <div className="flex flex-wrap gap-2">
+                       {restaurant.inventory.map(invItem => {
+                           const desc = formData.description || "";
+                           const parts = desc.split(/Bahan(?:-bahan)?:/i);
+                           const ingredientsStr = parts.length > 1 ? parts[1].trim() : "";
+                           const ingredients = ingredientsStr ? ingredientsStr.split(',').map(i => i.trim()).filter(i => i) : [];
+                           const isSelected = ingredients.includes(invItem.name);
+                           
+                           return (
+                               <button 
+                                 key={invItem.id}
+                                 type="button"
+                                 onClick={() => {
+                                    let newIngredients = [...ingredients];
+                                    if (isSelected) {
+                                        newIngredients = newIngredients.filter(i => i !== invItem.name);
+                                    } else {
+                                        newIngredients.push(invItem.name);
+                                    }
+                                    
+                                    const mainDesc = parts[0].trim();
+                                    if (newIngredients.length > 0) {
+                                        setFormData({ ...formData, description: mainDesc ? `${mainDesc}\n\nBahan: ${newIngredients.join(', ')}` : `Bahan: ${newIngredients.join(', ')}` });
+                                    } else {
+                                        setFormData({ ...formData, description: mainDesc });
+                                    }
+                                 }}
+                                 className={`px-3 py-1 text-sm font-bold rounded-full transition-colors border ${isSelected ? "bg-[#00AA13] text-white border-[#00AA13]" : "bg-white text-gray-600 border-gray-300 hover:border-[#00AA13]"}`}
+                               >
+                                 {invItem.name}
+                               </button>
+                           );
+                       })}
+                    </div>
+                  </div>
+                )}
+              </div>
               <div className="flex gap-2 relative md:col-span-2">
                 <input
                   type="text"
@@ -274,11 +315,52 @@ export function MenuManager() {
                         </select>
                         )}
                       </div>
-                      <textarea
-                        className="px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] md:col-span-2 resize-none h-24 game-text font-bold"
-                        value={formData.description}
-                        onChange={e => setFormData({ ...formData, description: e.target.value })}
-                      />
+                      <div className="md:col-span-2">
+                        <textarea
+                          className="w-full px-4 py-3 bg-white border border-gray-200 text-gray-900 text-lg focus:outline-none focus:border-[#00AA13] resize-none h-24 game-text font-bold"
+                          value={formData.description}
+                          onChange={e => setFormData({ ...formData, description: e.target.value })}
+                        />
+                        {isPremium && restaurant?.inventory && restaurant.inventory.length > 0 && (
+                          <div className="mt-2 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                            <span className="text-xs font-bold text-gray-500 mb-2 block uppercase tracking-wide">Pilih Bahan Pokok dari Inventory:</span>
+                            <div className="flex flex-wrap gap-2">
+                               {restaurant.inventory.map(invItem => {
+                                   const desc = formData.description || "";
+                                   const parts = desc.split(/Bahan(?:-bahan)?:/i);
+                                   const ingredientsStr = parts.length > 1 ? parts[1].trim() : "";
+                                   const ingredients = ingredientsStr ? ingredientsStr.split(',').map(i => i.trim()).filter(i => i) : [];
+                                   const isSelected = ingredients.includes(invItem.name);
+                                   
+                                   return (
+                                       <button 
+                                         key={invItem.id}
+                                         type="button"
+                                         onClick={() => {
+                                            let newIngredients = [...ingredients];
+                                            if (isSelected) {
+                                                newIngredients = newIngredients.filter(i => i !== invItem.name);
+                                            } else {
+                                                newIngredients.push(invItem.name);
+                                            }
+                                            
+                                            const mainDesc = parts[0].trim();
+                                            if (newIngredients.length > 0) {
+                                                setFormData({ ...formData, description: mainDesc ? `${mainDesc}\n\nBahan: ${newIngredients.join(', ')}` : `Bahan: ${newIngredients.join(', ')}` });
+                                            } else {
+                                                setFormData({ ...formData, description: mainDesc });
+                                            }
+                                         }}
+                                         className={`px-3 py-1 text-sm font-bold rounded-full transition-colors border ${isSelected ? "bg-[#00AA13] text-white border-[#00AA13]" : "bg-white text-gray-600 border-gray-300 hover:border-[#00AA13]"}`}
+                                       >
+                                         {invItem.name}
+                                       </button>
+                                   );
+                               })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                       <div className="flex gap-2 relative md:col-span-2">
                         <input
                           type="text"
@@ -339,16 +421,6 @@ export function MenuManager() {
                                 <div className="game-text">
                                   <span className="text-gray-400 text-xs font-bold  tracking-wider block">Estimated Bid Cost</span>
                                   <span className="text-[#EE2737] text-xl font-bold">Rp {dynamicInfo.estimatedPrice.toFixed(2)}</span>
-                                </div>
-                                <div className="flex gap-2">
-                                  <div className="text-center px-2 border-r border-gray-200">
-                                    <span className="block text-[10px] text-gray-400   game-text font-bold">Demand</span>
-                                    <span className="block text-gray-900 text-sm game-text">{dynamicInfo.marketDemand}</span>
-                                  </div>
-                                  <div className="text-center px-2">
-                                    <span className="block text-[10px] text-gray-400   game-text font-bold">Supply</span>
-                                    <span className="block text-gray-900 text-sm game-text">{dynamicInfo.marketSupply}</span>
-                                  </div>
                                 </div>
                              </div>
                           </div>

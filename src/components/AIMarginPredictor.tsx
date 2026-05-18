@@ -84,7 +84,7 @@ Please calculate the maximum allowed price for the variable ingredients to ensur
 
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3-flash-preview",
         contents: `You are an expert restaurant financial analyst and supply chain manager. I will describe a product, its ingredients, and current or changed costs. Your goal is to analyze the costs and output the maximum price I can pay for variable ingredients to maintain the requested profit margin, along with a detailed explanation.
 
 User Input:
