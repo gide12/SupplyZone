@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { MenuItem, Restaurant, Deal, Category, SupplierProfile, ChatMessage, SupplierInventoryItem, RestaurantInventoryItem } from "../types";
 import { v4 as uuidv4 } from "uuid";
 
@@ -27,7 +27,7 @@ interface AppContextType {
   calculateDynamicPrice: (itemName: string) => { estimatedPrice: number; marketSupply: number; marketDemand: number };
   // Deal actions
   proposeDeal: (deal: Omit<Deal, "id" | "status">) => void;
-  updateDealStatus: (dealId: string, status: "Pending" | "Accepted" | "Rejected" | "On Delivery" | "Delivered" | "Sample Requested" | "Sample Arrived") => void;
+  updateDealStatus: (dealId: string, status: "Pending" | "Accepted" | "Rejected" | "On Delivery" | "Delivered" | "Sample Requested" | "Sample Arrived" | "Return Requested" | "Return Accepted" | "Return Rejected" | "Refunded" | "Replaced") => void;
   updateDeal: (dealId: string, updates: Partial<Deal>) => void;
   // Chat actions
   messages: ChatMessage[];
@@ -273,7 +273,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setDeals(prev => [...prev, newDeal]);
   };
 
-  const updateDealStatus = (dealId: string, status: "Pending" | "Accepted" | "Rejected" | "On Delivery" | "Delivered" | "Sample Requested" | "Sample Arrived") => {
+  const updateDealStatus = (dealId: string, status: "Pending" | "Accepted" | "Rejected" | "On Delivery" | "Delivered" | "Sample Requested" | "Sample Arrived" | "Return Requested" | "Return Accepted" | "Return Rejected" | "Refunded" | "Replaced") => {
     setDeals(prev => prev.map(d => d.id === dealId ? { ...d, status } : d));
   };
 
@@ -294,15 +294,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setMessages(prev => [...prev, newMessage]);
   };
 
-  const markMessagesAsRead = (dealId: string, readByRole: "restaurant" | "supplier") => {
-    setMessages(prev => prev.map(m => {
-      // If message is in this deal, and was sent by the OTHER role, and is currently unread
-      if (m.dealId === dealId && m.senderRole !== readByRole && !m.isRead) {
-        return { ...m, isRead: true };
-      }
-      return m;
-    }));
-  };
+  const markMessagesAsRead = useCallback((dealId: string, readByRole: "restaurant" | "supplier") => {
+    setMessages(prev => {
+      let changed = false;
+      const next = prev.map(m => {
+        // If message is in this deal, and was sent by the OTHER role, and is currently unread
+        if (m.dealId === dealId && m.senderRole !== readByRole && !m.isRead) {
+          changed = true;
+          return { ...m, isRead: true };
+        }
+        return m;
+      });
+      return changed ? next : prev;
+    });
+  }, []);
 
   return (
     <AppContext.Provider value={{

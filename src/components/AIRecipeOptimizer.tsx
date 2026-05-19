@@ -3,7 +3,8 @@ import { X, ChefHat, Loader2, Youtube, ExternalLink, RefreshCw } from "lucide-re
 import { MenuItem } from "../types";
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || "dummy" });
+const env = (import.meta as any).env;
+const ai = new GoogleGenAI({ apiKey: env.VITE_GEMINI_API_KEY || (process as any).env.GEMINI_API_KEY || "dummy" });
 
 interface AIRecipeOptimizerProps {
   item: MenuItem;

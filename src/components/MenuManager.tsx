@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { MenuItem, Category } from "../types";
-import { Plus, Edit2, Trash2, X, Check, Sparkles, MapPin, Search, MessageCircle, Handshake, ChefHat } from "lucide-react";
+import { Plus, Edit2, Trash2, X, Check, Sparkles, MapPin, Search, MessageCircle, Handshake, ChefHat, RotateCcw, Upload, Camera } from "lucide-react";
 import { useAppContext } from "../store/AppContext";
 import { PredictSupplyModal } from "./PredictSupplyModal";
 import { ChatModal } from "./ChatModal";
@@ -24,6 +24,9 @@ export function MenuManager() {
   const [findingSuppliersFor, setFindingSuppliersFor] = useState<string | null>(null);
   const [activeChatDeal, setActiveChatDeal] = useState<any | null>(null);
   const [reviewingDeal, setReviewingDeal] = useState<any | null>(null);
+  const [returningDeal, setReturningDeal] = useState<any | null>(null);
+  const [returnReason, setReturnReason] = useState("");
+  const [returnMedia, setReturnMedia] = useState<File | null>(null);
   const [reviewForm, setReviewForm] = useState({ rating: 5, text: "" });
 
   const [formData, setFormData] = useState<Omit<MenuItem, "id">>({
@@ -496,6 +499,16 @@ deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200
                                             }`}>
                                               {deal.status}
                                             </span>
+                                            {deal.status === 'Delivered' && (
+                                              <button 
+                                                onClick={() => setReturningDeal(deal)}
+                                                className="p-1 px-3 game-btn game-btn-red text-white self-stretch flex items-center justify-center shrink-0 relative"
+                                                title="Ajukan Retur (SLA)"
+                                              >
+                                                <RotateCcw className="w-5 h-5 mr-1" />
+                                                <span className="game-text font-bold text-sm">Retur</span>
+                                              </button>
+                                            )}
                                             {/* Show Chat button if deal is Accepted or further along */}
                                             {['Accepted', 'On Delivery', 'Delivered'].includes(deal.status) && (
                                               <button 
@@ -515,7 +528,7 @@ deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200
                                           </div>
                                         )}
                                       </div>
-                                      {deal.review && (
+                                      {deal.review && !['Return Requested', 'Refunded', 'Replaced', 'Return Rejected', 'Return Accepted'].includes(deal.status) && (
                                         <div className="mt-2 text-left bg-gray-50 border border-gray-100 p-2">
                                           <div className="flex items-center gap-1 mb-1">
                                             {[1,2,3,4,5].map(s => (
@@ -523,6 +536,17 @@ deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200
                                             ))}
                                           </div>
                                           <p className="text-sm font-bold game-text text-gray-700 italic">"{deal.review}"</p>
+                                        </div>
+                                      )}
+                                      {deal.review && ['Return Requested', 'Refunded', 'Replaced', 'Return Rejected', 'Return Accepted'].includes(deal.status) && (
+                                        <div className="mt-2 text-left bg-red-50 border border-red-100 p-2">
+                                          <strong className="text-xs text-red-800 block mb-1">Bukti & Alasan Retur:</strong>
+                                          <p className="text-xs font-bold game-text text-red-700 italic">"{deal.review}"</p>
+                                          {deal.mediaUrl && (
+                                            <div className="mt-2 text-center">
+                                              <img src={deal.mediaUrl} alt="Bukti retur" className="max-h-24 object-contain bg-white border border-red-200 inline-block" />
+                                            </div>
+                                          )}
                                         </div>
                                       )}
                                   </div>
@@ -672,6 +696,78 @@ deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200
           onClose={() => setActiveChatDeal(null)} 
           currentUserRole="restaurant" 
         />
+      )}
+
+      {returningDeal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col p-6 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center mb-4 pb-2 border-b border-gray-100">
+              <h3 className="text-xl font-bold text-[#EE2737] game-title">Ajukan Retur Barang</h3>
+              <button onClick={() => setReturningDeal(null)} className="text-gray-400 hover:text-gray-900 transition-colors">
+                <X className="w-5 h-5"/>
+              </button>
+            </div>
+            
+            <div className="bg-red-50 border border-red-100 p-4 rounded-lg mb-6">
+               <h4 className="font-bold text-red-800 text-sm mb-2 uppercase tracking-wide">Kebijakan Retur (SLA):</h4>
+               <ul className="text-sm text-red-700 space-y-2 list-disc pl-5">
+                 <li><span className="font-bold">Respon Awal Supplier:</span> Maksimal 24 jam</li>
+                 <li><span className="font-bold">Keputusan Retur:</span> 2 × 24 jam</li>
+                 <li><span className="font-bold">Refund:</span> 3 - 7 hari kerja</li>
+                 <li><span className="font-bold">Penggantian Barang:</span> 1 - 3 hari</li>
+               </ul>
+            </div>
+
+            <div className="flex gap-4 mb-6">
+              <div className="flex-1">
+                <label className="block text-sm font-bold text-gray-700 mb-2">Alasan Retur / Kerusakan (Wajib)</label>
+                <textarea 
+                  className="w-full bg-gray-50 border border-gray-200 text-gray-900 p-3 rounded-lg resize-none h-32 focus:outline-none focus:border-[#EE2737] focus:ring-1 focus:ring-[#EE2737] transition-all game-text"
+                  placeholder="Jelaskan kondisi barang dan lampirkan bukti jika ada..."
+                  value={returnReason}
+                  onChange={e => setReturnReason(e.target.value)}
+                />
+              </div>
+              <div className="w-1/3 flex flex-col">
+                <label className="block text-sm font-bold text-gray-700 mb-2">Bukti Foto / Video (Wajib)</label>
+                <label className="flex-1 flex flex-col items-center justify-center bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors group p-4 text-center">
+                   <Upload className="w-8 h-8 text-gray-400 group-hover:text-[#EE2737] mb-2" />
+                   <span className="text-xs text-gray-500 font-bold">
+                     {returnMedia ? returnMedia.name : "Klik untuk upload bukti"}
+                   </span>
+                   <input type="file" accept="image/*,video/*" className="hidden" onChange={(e) => setReturnMedia(e.target.files?.[0] || null)} />
+                </label>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2 border-t border-gray-100">
+               <button 
+                 onClick={() => {
+                   setReturningDeal(null);
+                   setReturnMedia(null);
+                 }}
+                 className="flex-1 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-50 transition-colors game-text"
+               >
+                 Batal
+               </button>
+               <button 
+                 disabled={returnReason.trim() === "" || !returnMedia}
+                 onClick={() => {
+                   updateDealStatus(returningDeal.id, 'Return Requested');
+                   // Simulate file URL
+                   const mockMediaUrl = returnMedia ? URL.createObjectURL(returnMedia) : undefined;
+                   updateDeal(returningDeal.id, { review: returnReason, mediaUrl: mockMediaUrl });
+                   setReturningDeal(null);
+                   setReturnReason("");
+                   setReturnMedia(null);
+                 }}
+                 className="flex-1 py-3 bg-[#EE2737] hover:bg-red-700 text-white font-bold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm border border-[#EE2737] game-text"
+               >
+                 Kirim Pengajuan Retur
+               </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

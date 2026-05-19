@@ -67,7 +67,7 @@ export interface Deal {
   supplierId: string;
   menuItemId: string; // The item the supplier wants to supply ingredients for
   proposedPrice: number;
-  status: "Pending" | "Accepted" | "Rejected" | "On Delivery" | "Delivered" | "Sample Requested" | "Sample Arrived";
+  status: "Pending" | "Accepted" | "Rejected" | "On Delivery" | "Delivered" | "Sample Requested" | "Sample Arrived" | "Return Requested" | "Return Accepted" | "Return Rejected" | "Refunded" | "Replaced";
   review?: string;
   rating?: number;
   mediaUrl?: string;

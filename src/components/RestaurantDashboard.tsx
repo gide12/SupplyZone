@@ -7,6 +7,7 @@ import { useAppContext } from "../store/AppContext";
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from "react-leaflet";
 import L from "leaflet";
 import { translate } from "../lib/i18n";
+import { PaymentModal } from "./PaymentModal";
 
 // Fix Leaflet's default icon path issues
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -164,12 +165,22 @@ export function RestaurantDashboard() {
   const [profileLat, setProfileLat] = useState<number | undefined>(restaurant?.lat);
   const [profileLng, setProfileLng] = useState<number | undefined>(restaurant?.lng);
   const [profileSubscription, setProfileSubscription] = useState<"basic" | "premium">(restaurant?.subscriptionPlan || "basic");
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   const handleProfileSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!restaurant) return;
-    
-    // Use the lat/lng from autocomplete if available, otherwise fallback
+
+    if (profileSubscription === "premium" && restaurant.subscriptionPlan !== "premium") {
+      setIsPaymentModalOpen(true);
+      return;
+    }
+
+    saveProfile();
+  };
+
+  const saveProfile = () => {
+    if (!restaurant) return;
     let finalLat = profileLat ?? restaurant.lat;
     let finalLng = profileLng ?? restaurant.lng;
     
@@ -349,6 +360,16 @@ export function RestaurantDashboard() {
           )}
         </div>
       </main>
+
+      <PaymentModal 
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        onSuccess={() => {
+          setIsPaymentModalOpen(false);
+          saveProfile();
+        }}
+        amount={150000}
+      />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Package, Trash2, Plus, BrainCircuit, Loader2, UploadCloud, Camera } from "lucide-react";
+import { Package, Trash2, Plus, BrainCircuit, Loader2, UploadCloud, Camera, Handshake } from "lucide-react";
 import { useAppContext } from "../store/AppContext";
 import { WeatherForecastModal } from "./WeatherForecastModal";
 import { CloudRain } from "lucide-react";
@@ -8,7 +8,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 export function RestaurantInventory() {
-  const { restaurants, activeRestaurantId, updateRestaurantInventory } = useAppContext();
+  const { restaurants, activeRestaurantId, updateRestaurantInventory, deals, suppliers, messages, updateDealStatus } = useAppContext();
   const restaurant = restaurants.find(r => r.id === activeRestaurantId);
   const inventory = restaurant?.inventory || [];
   const isPremium = restaurant?.subscriptionPlan === "premium";
@@ -343,6 +343,42 @@ export function RestaurantInventory() {
                     {item.preOrderDate && (
                       <div className="mt-2 text-xs font-bold text-[#1A92D4] game-text">
                          Keep Order: {item.preOrderDate}
+                      </div>
+                    )}
+                    
+                    {/* Deals rendering for Keep Order */}
+                    {item.preOrderDate && deals.filter(d => d.menuItemId === item.id).length > 0 && (
+                      <div className="mt-4 pt-3 border-t border-gray-100">
+                        <h5 className="text-xs font-bold text-[#F1B51A] tracking-wider mb-2 flex items-center gap-1"><Handshake className="w-3 h-3" /> Tawaran Masuk:</h5>
+                        <div className="space-y-2">
+                          {deals.filter(d => d.menuItemId === item.id).map(deal => {
+                            const supplier = suppliers.find(s => s.id === deal.supplierId);
+                            return (
+                              <div key={deal.id} className="bg-gray-50 border border-gray-200 p-2 rounded flex justify-between items-center text-sm">
+                                <div>
+                                  <div className="font-bold text-gray-900 text-xs">{supplier?.name || "Pemasok"}</div>
+                                  <div className="text-xs text-[#00AA13] font-bold">Rp {deal.proposedPrice.toFixed(2)}</div>
+                                </div>
+                                
+                                {deal.status === 'Pending' ? (
+                                  <div className="flex gap-1">
+                                    <button onClick={() => updateDealStatus(deal.id, 'Accepted')} className="px-2 py-1 bg-[#00AA13] text-white text-[10px] font-bold rounded">Terima</button>
+                                    <button onClick={() => updateDealStatus(deal.id, 'Rejected')} className="px-2 py-1 bg-[#EE2737] text-white text-[10px] font-bold rounded">Tolak</button>
+                                  </div>
+                                ) : (
+                                  <span className={`text-[10px] font-bold px-2 py-1 rounded ${
+                                    deal.status === 'Accepted' ? 'bg-[#00AA13]/10 text-[#00AA13]' :
+                                    deal.status === 'Rejected' || deal.status === 'Return Rejected' ? 'bg-[#EE2737]/10 text-[#EE2737]' :
+                                    deal.status === 'Sample Arrived' || deal.status === 'Sample Requested' ? 'bg-blue-100 text-blue-800' :
+                                    deal.status === 'Return Requested' ? 'bg-orange-100 text-orange-700' :
+                                    deal.status === 'Return Accepted' || deal.status === 'Refunded' || deal.status === 'Replaced' ? 'bg-teal-100 text-teal-800' :
+                                    'bg-indigo-100 text-indigo-700'
+                                  }`}>{deal.status === 'Accepted' ? 'Diterima' : deal.status === 'Rejected' ? 'Ditolak' : deal.status === 'Sample Arrived' ? 'Sampel Tiba' : deal.status === 'Sample Requested' ? 'Diminta Sampel' : deal.status === 'On Delivery' ? 'Sedang Dikirim' : deal.status === 'Delivered' ? 'Terkirim' : deal.status === 'Return Requested' ? 'Ajuan Retur' : deal.status === 'Return Rejected' ? 'Retur Ditolak' : deal.status}</span>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     )}
                   </div>
