@@ -35,13 +35,13 @@ export function AIRecipeOptimizer({ item, onClose, onUpdate }: AIRecipeOptimizer
 Deskripsi saat ini: "${item.description}"
 Harga saat ini: Rp ${item.price}
 
-AI harus mencari/menyimulasikan sumber referensi resep populer dari platform seperti Cookpad atau YouTube.
+AI harus mencari/menyimulasikan referensi resep dari berbagai sumber populer seperti Cookpad, YouTube, TikTok, Instagram, atau Blog Kuliner terpercaya. Pastikan bahannya lengkap dan detail.
 Untuk setiap resep, berikan:
-1. Nama variasi (misal: "Nasi Goreng Spesial ala Cookpad", dll)
+1. Nama variasi (misal: "Nasi Goreng Spesial", dll)
 2. Deskripsi singkat (menggugah selera)
-3. Daftar bahan-bahan utama (ingredients)
-4. Instruksi singkat (instructions)
-5. referensi link (simulasi URL Cookpad/Youtube yang relevan) 
+3. Daftar bahan-bahan secara LENGKAP dengan takarannya (ingredients)
+4. Instruksi memasak singkat dan jelas (instructions)
+5. 2-3 referensi link (simulasi URL Cookpad/Youtube/TikTok/Blog yang relevan) 
 6. Estimasi Harga Pokok Produksi (estimatedCost)
 7. Harga Jual yang Direkomendasikan (suggestedPrice)
 
@@ -202,12 +202,11 @@ PENTING: Output HARUS dalam format JSON valid sesuai schema.`;
                     </div>
 
                     <div className="mb-4">
-                      <h5 className="font-bold text-sm text-gray-900 mb-2">Bahan Utama:</h5>
+                      <h5 className="font-bold text-sm text-gray-900 mb-2">Bahan Lengkap:</h5>
                       <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
-                        {recipe.ingredients.slice(0, 4).map((ing, i) => (
-                          <li key={i} className="truncate">{ing}</li>
+                        {recipe.ingredients.map((ing, i) => (
+                          <li key={i}>{ing}</li>
                         ))}
-                        {recipe.ingredients.length > 4 && <li>dan {recipe.ingredients.length - 4} bahan lainnya...</li>}
                       </ul>
                     </div>
 
@@ -215,9 +214,10 @@ PENTING: Output HARUS dalam format JSON valid sesuai schema.`;
                        <h5 className="font-bold text-sm text-gray-900 mb-2">Referensi (Simulasi):</h5>
                        {recipe.referenceLinks.map((link, i) => (
                          <div key={i} className="flex items-center gap-2 text-xs">
-                           {link.platform.toLowerCase() === 'youtube' ? <Youtube className="w-4 h-4 text-red-500" /> : <ChefHat className="w-4 h-4 text-orange-500" />}
-                           <span className="text-gray-700 truncate max-w-[200px]">{link.title}</span>
-                           <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-700 flex items-center gap-1 ml-auto">
+                           {link.platform.toLowerCase() === 'youtube' ? <Youtube className="w-4 h-4 text-red-500 shrink-0" /> : <ChefHat className="w-4 h-4 text-orange-500 shrink-0" />}
+                           <span className="text-gray-700 truncate">{link.title}</span>
+                           <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded whitespace-nowrap">{link.platform}</span>
+                           <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-700 flex items-center gap-1 ml-auto shrink-0">
                              Link <ExternalLink className="w-3 h-3" />
                            </a>
                          </div>

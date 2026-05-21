@@ -27,6 +27,14 @@ export function RestaurantInventory() {
   const [newPreOrderDate, setNewPreOrderDate] = useState("");
 
   const [loading, setLoading] = useState(false);
+  const [isStorageLoading, setIsStorageLoading] = useState(false);
+  const [storageWarnings, setStorageWarnings] = useState<{
+    crossContamination: string[];
+    frozenRequired: string[];
+    roomTempRequired: string[];
+    sunDriedRequired: string[];
+  } | null>(null);
+
   const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
   const [aiReport, setAiReport] = useState<{
     efficiencyScore: number;
@@ -144,6 +152,52 @@ export function RestaurantInventory() {
     } finally {
       setLoading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleCheckStorage = async () => {
+    setIsStorageLoading(true);
+    try {
+      const prompt = `Sebagai AI food safety expert, periksa daftar bahan inventaris berikut (fokus pada peringatan penting): ${inventory.map(i => i.name).join(", ")}.
+      Tugas: Berikan peringatan alert pada penyimpanan yang salah atau butuh perhatian ekstra!
+      1. crossContamination: Peringatan kontaminasi silang (misal bahan etilen seperti apel dengan sayuran yang bisa busuk, daging mentah dengan sayuran).
+      2. frozenRequired: Wajib Frozen/Chiller (daging mentah, ayam, frozen food).
+      3. roomTempRequired: Suhu Ruangan (bahan kering, pantang masuk kulkas).
+      4. sunDriedRequired: Wajib Dijemur/Kering (ikan asin mentah, kerupuk mentah, bahan berjamur).
+      
+      Respons strictly dalam format JSON ini, berupa array string (maks 1 array item kalimat per bahan):
+      {
+         "crossContamination": ["Peringatan: Apel memproduksi etilen tinggi, jauhkan dari bayam agar tidak cepat busuk."],
+         "frozenRequired": ["Daging Sapi harus disimpan dalam freezer di bawah -18°C."],
+         "roomTempRequired": ["Bawang Merah wajib disimpan di suhu ruangan."],
+         "sunDriedRequired": ["Ikan Asin perlu dijemur berkala agar tidak berjamur."]
+      }
+      Jika tidak ada bahan di kategori tersebut, biarkan arraynya [].`;
+
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              crossContamination: { type: Type.ARRAY, items: { type: Type.STRING } },
+              frozenRequired: { type: Type.ARRAY, items: { type: Type.STRING } },
+              roomTempRequired: { type: Type.ARRAY, items: { type: Type.STRING } },
+              sunDriedRequired: { type: Type.ARRAY, items: { type: Type.STRING } },
+            },
+            required: ["crossContamination", "frozenRequired", "roomTempRequired", "sunDriedRequired"]
+          }
+        }
+      });
+      if (response.text) {
+        setStorageWarnings(JSON.parse(response.text));
+      }
+    } catch(err: any) {
+      alert("Gagal menganalisis keamanan penyimpanan");
+    } finally {
+      setIsStorageLoading(false);
     }
   };
 
@@ -388,7 +442,65 @@ export function RestaurantInventory() {
           </div>
         </div>
 
-        <div>
+        <div className="flex flex-col">
+          <div className="bg-white border border-gray-200 p-6 relative shadow-sm mb-6">
+            <h3 className="font-bold text-[#EE2737] text-xl game-title flex items-center gap-2 mb-2">
+               <BrainCircuit className="w-5 h-5" /> Smart AI Storage Warning
+            </h3>
+            <p className="game-text text-gray-700 text-sm mb-4 leading-relaxed">
+               Peringatan otomatis untuk semua paket (kontaminasi silang, pendinginan, dan cara simpan) agar bahan di gudang tetap aman & awet.
+            </p>
+            <button 
+              onClick={handleCheckStorage}
+              disabled={isStorageLoading || inventory.length === 0}
+              className="w-full py-3 bg-white border border-[#EE2737] text-[#EE2737] hover:bg-red-50 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-200 font-bold game-text text-lg flex items-center justify-center gap-2 transition-all shadow-sm mb-4"
+            >
+              {isStorageLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <BrainCircuit className="w-5 h-5" />}
+              {isStorageLoading ? "Mengecek Keamanan..." : "Cek Keamanan Penyimpanan"}
+            </button>
+            {storageWarnings && (
+              <div className="space-y-3 animate-in fade-in duration-300">
+                {storageWarnings.crossContamination.length > 0 && (
+                  <div className="bg-red-50 p-3 border border-red-200 rounded-lg">
+                    <strong className="text-xs text-red-800 block mb-1">🚨 Peringatan Kontaminasi Silang</strong>
+                    <ul className="text-xs text-red-700 list-disc pl-4 space-y-1">
+                      {storageWarnings.crossContamination.map((w,i) => <li key={i}>{w}</li>)}
+                    </ul>
+                  </div>
+                )}
+                {storageWarnings.frozenRequired.length > 0 && (
+                  <div className="bg-blue-50 p-3 border border-blue-200 rounded-lg">
+                    <strong className="text-xs text-blue-800 block mb-1">❄️ Wajib Frozen/Chiller</strong>
+                    <ul className="text-xs text-blue-700 list-disc pl-4 space-y-1">
+                      {storageWarnings.frozenRequired.map((w,i) => <li key={i}>{w}</li>)}
+                    </ul>
+                  </div>
+                )}
+                {storageWarnings.roomTempRequired.length > 0 && (
+                  <div className="bg-orange-50 p-3 border border-orange-200 rounded-lg">
+                    <strong className="text-xs text-orange-800 block mb-1">🌡️ Wajib Suhu Ruangan</strong>
+                    <ul className="text-xs text-orange-700 list-disc pl-4 space-y-1">
+                      {storageWarnings.roomTempRequired.map((w,i) => <li key={i}>{w}</li>)}
+                    </ul>
+                  </div>
+                )}
+                {storageWarnings.sunDriedRequired.length > 0 && (
+                  <div className="bg-yellow-50 p-3 border border-yellow-200 rounded-lg">
+                    <strong className="text-xs text-yellow-800 block mb-1">☀️ Wajib Dijemur/Kering</strong>
+                    <ul className="text-xs text-yellow-700 list-disc pl-4 space-y-1">
+                      {storageWarnings.sunDriedRequired.map((w,i) => <li key={i}>{w}</li>)}
+                    </ul>
+                  </div>
+                )}
+                {storageWarnings.crossContamination.length === 0 && storageWarnings.frozenRequired.length === 0 && storageWarnings.roomTempRequired.length === 0 && storageWarnings.sunDriedRequired.length === 0 && (
+                  <div className="bg-green-50 p-3 border border-green-200 rounded-lg text-center">
+                    <strong className="text-xs text-green-800">✅ Penyimpanan saat ini aman dan tidak ada peringatan.</strong>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           <div className="bg-white border border-gray-200 p-6 h-full relative shadow-sm">
             <h3 className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 text-xl game-title flex items-center gap-2 mb-4">
                <BrainCircuit className="w-6 h-6 text-purple-600" /> <span className="text-gray-900">Analisa</span> Artificial Intelligence

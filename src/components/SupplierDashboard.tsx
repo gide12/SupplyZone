@@ -563,7 +563,7 @@ export function SupplierDashboard() {
                           onClick={() => updateDealStatus(deal.id, 'Delivered')}
                           className="flex-1 py-2 bg-[#00AA13] text-white hover:bg-[#009110] rounded-full text-xs font-bold transition-colors shadow-sm"
                         >
-                          Mark Terkirim
+                          Tandai Terkirim
                         </button>
                       )}
                       {deal.status === 'Return Requested' && (

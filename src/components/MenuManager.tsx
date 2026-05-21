@@ -474,7 +474,7 @@ export function MenuManager() {
                                         ) : deal.status === 'Sample Requested' ? (
                                           <div className="flex w-full items-center gap-2">
                                             <span className="text-lg font-bold px-2 py-1 border flex-1 text-center game-text shadow-sm bg-gray-100 text-gray-500 border-gray-300">
-                                              Waiting for Sample
+                                              Menunggu sampel
                                             </span>
                                           </div>
                                         ) : deal.status === 'Sampel Tiba' ? (
@@ -497,7 +497,7 @@ deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200
                                               deal.status === 'Delivered' ? 'bg-purple-600 text-gray-900 border-purple-600' : 
                                               'bg-white text-gray-400 border-gray-600'
                                             }`}>
-                                              {deal.status}
+                                              {deal.status === 'Accepted' ? 'Disetujui' : deal.status === 'On Delivery' ? 'Sedang Dikirim' : deal.status === 'Delivered' ? 'Terkirim' : deal.status === 'Sample Requested' ? 'Menunggu sampel' : deal.status === 'Sample Arrived' ? 'Sampel Tiba' : deal.status === 'Return Requested' ? 'Ajuan Retur' : deal.status === 'Return Accepted' ? 'Retur Diterima' : deal.status === 'Return Rejected' ? 'Retur Ditolak' : deal.status}
                                             </span>
                                             {deal.status === 'Delivered' && (
                                               <button 
@@ -674,7 +674,7 @@ deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200
                  }}
                  className="flex-1 py-3 game-btn game-btn-green"
                >
-                 <span className="game-text text-sm">Accept Deal</span>
+                 <span className="game-text text-sm">Terima Penawaran</span>
                </button>
                <button 
                  onClick={() => {
@@ -683,7 +683,7 @@ deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200
                  }}
                  className="flex-1 py-3 game-btn game-btn-red"
                >
-                 <span className="game-text text-sm">Reject Deal</span>
+                 <span className="game-text text-sm">Tolak Penawaran</span>
                </button>
             </div>
           </div>
