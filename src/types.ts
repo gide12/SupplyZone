@@ -1,4 +1,4 @@
-export type Category = "Appetizer" | "Main Course" | "Dessert" | "Beverage" | "Other";
+export type Category = "Makanan Pembuka / Cemilan" | "Menu Utama" | "Makanan Penutup / Menu Manis" | "Minuman" | "Lainnya";
 
 export interface MenuItem {
   id: string;

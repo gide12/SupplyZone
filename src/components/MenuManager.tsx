@@ -33,7 +33,7 @@ export function MenuManager() {
     name: "",
     description: "",
     price: 0,
-    category: isPremium ? "Main Course" : "Bahan Pokok" as any,
+    category: isPremium ? "Menu Utama" : "Bahan Pokok" as any,
     quantity: "",
   });
 
@@ -113,10 +113,10 @@ export function MenuManager() {
       <div className="flex justify-between items-center bg-white">
         <div>
           <h2 className="text-3xl font-bold text-gray-900 border-b-4 border-[#00AA13] pb-2 game-text">
-            {isPremium ? "Menu Management" : "Bahan Pokok Management"}
+            {isPremium ? "Kelola Menu" : "Kelola Bahan Pokok"}
           </h2>
           <p className="text-lg text-gray-700 mt-2 font-bold game-text">
-            {isPremium ? "Add, update, or remove items from your menu." : "Add, update, or remove raw materials."}
+            {isPremium ? "Tambah, perbarui, atau hapus item dari menu Anda." : "Tambah, perbarui, atau hapus daftar bahan pokok Anda."}
           </p>
         </div>
         {!isAdding && (
@@ -192,11 +192,11 @@ export function MenuManager() {
                   value={formData.category}
                   onChange={e => setFormData({ ...formData, category: e.target.value as Category })}
                 >
-                  <option value="Appetizer">Appetizer</option>
-                  <option value="Main Course">Main Course</option>
-                  <option value="Dessert">Dessert</option>
-                  <option value="Beverage">Beverage</option>
-                  <option value="Other">Other</option>
+                          <option value="Makanan Pembuka / Cemilan">Makanan Pembuka / Cemilan</option>
+                          <option value="Menu Utama">Menu Utama</option>
+                          <option value="Makanan Penutup / Menu Manis">Makanan Penutup / Menu Manis</option>
+                          <option value="Minuman">Minuman</option>
+                          <option value="Lainnya">Lainnya</option>
                 </select>
                 )}
               </div>
@@ -310,11 +310,11 @@ export function MenuManager() {
                           value={formData.category}
                           onChange={e => setFormData({ ...formData, category: e.target.value as Category })}
                         >
-                          <option value="Appetizer">Appetizer</option>
-                          <option value="Main Course">Main Course</option>
-                          <option value="Dessert">Dessert</option>
-                          <option value="Beverage">Beverage</option>
-                          <option value="Other">Other</option>
+                          <option value="Makanan Pembuka / Cemilan">Makanan Pembuka / Cemilan</option>
+                          <option value="Menu Utama">Menu Utama</option>
+                          <option value="Makanan Penutup / Menu Manis">Makanan Penutup / Menu Manis</option>
+                          <option value="Minuman">Minuman</option>
+                          <option value="Lainnya">Lainnya</option>
                         </select>
                         )}
                       </div>

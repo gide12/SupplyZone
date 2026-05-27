@@ -47,8 +47,8 @@ const defaultRestaurants: Restaurant[] = [
     lat: -5.147665,
     lng: 119.432731,
     menu: [
-      { id: "m-1", name: "Avocado Toast", description: "Sourdough, smashed avocado, poached egg", price: 12.5, category: "Appetizer" },
-      { id: "m-2", name: "Truffle Pasta", description: "Fresh tagliatelle, black truffle siding", price: 24.0, category: "Main Course" },
+      { id: "m-1", name: "Avocado Toast", description: "Sourdough, smashed avocado, poached egg", price: 12.5, category: "Makanan Pembuka / Cemilan" },
+      { id: "m-2", name: "Truffle Pasta", description: "Fresh tagliatelle, black truffle siding", price: 24.0, category: "Menu Utama" },
     ],
   },
   {
@@ -57,8 +57,8 @@ const defaultRestaurants: Restaurant[] = [
     lat: -5.15,
     lng: 119.44,
     menu: [
-      { id: "m-3", name: "Classic Cheeseburger", description: "Beef patty, cheddar, lettuce, tomato", price: 14.0, category: "Main Course" },
-      { id: "m-4", name: "Sweet Potato Fries", description: "Crispy fries with aioli", price: 6.5, category: "Appetizer" },
+      { id: "m-3", name: "Classic Cheeseburger", description: "Beef patty, cheddar, lettuce, tomato", price: 14.0, category: "Menu Utama" },
+      { id: "m-4", name: "Sweet Potato Fries", description: "Crispy fries with aioli", price: 6.5, category: "Makanan Pembuka / Cemilan" },
     ],
   }
 ];

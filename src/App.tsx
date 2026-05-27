@@ -8,6 +8,7 @@ import { RestaurantDashboard } from "./components/RestaurantDashboard";
 import { SupplierDashboard } from "./components/SupplierDashboard";
 import { LandingPage } from "./components/LandingPage";
 import { ContactSupport } from "./components/ContactSupport";
+import { GuidelineModal } from "./components/GuidelineModal";
 import { Store, Truck, Globe } from "lucide-react";
 import { translate } from "./lib/i18n";
 
@@ -87,6 +88,7 @@ export default function App() {
     <AppProvider>
       <Main />
       <ContactSupport />
+      <GuidelineModal />
     </AppProvider>
   );
 }
