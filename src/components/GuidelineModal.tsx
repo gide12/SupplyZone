@@ -89,7 +89,7 @@ export function GuidelineModal() {
                 <ul className="space-y-2 text-gray-600 text-sm list-disc list-inside">
                   <li><strong>AI Weather Predictor (Cuaca):</strong> Memprediksi resiko cuaca (misal curah hujan / panas) untuk 1-7 hari kedepan dan menganalisis apakah stok gudang Anda aman agar dapat mengantisipasi pasokan terhambat.</li>
                   <li><strong>Smart Supply Prediction (Saran AI):</strong> AI memprediksikan rekomendasi pemesanan ulang berdasarkan kecepatan perputaran menu Anda (Menu Velocity). AI menghitung stok saat ini untuk setiap resep, lalu menyarankan Restoran perlu order barang apa saja agar tidak "Kehabisan Stok".</li>
-                  <li><strong>Smart AI Storage Warning:</strong> AI mendeteksi apakah barang Anda aman untuk disimpan bersama. AI akan mewarning jika ada bahan etilen (bisa bikin busuk) yang dicampur dengan sayuran, atau apakah bahan wajib masuk pendingin / dijemur matahari agar awet!.</li>
+                  <li><strong>Cara penyimpanan secara pintar:</strong> AI mendeteksi apakah barang Anda aman untuk disimpan bersama. AI akan mewarning jika ada bahan etilen (bisa bikin busuk) yang dicampur dengan sayuran, atau apakah bahan wajib masuk pendingin / dijemur matahari agar awet!.</li>
                   <li><strong>AI Recipe Optimizer:</strong> Menyediakan inspirasi peracikan produk dengan takaran otomatis berdasarkan referensi dari Internet (Cookpad/Tiktok) agar inovasi makanan tetap berjalan, sudah dilengkapi dengan analisis harga jual ideal.</li>
                 </ul>
               </div>

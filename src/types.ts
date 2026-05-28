@@ -48,6 +48,7 @@ export interface SupplierProfile {
   lat: number;
   lng: number;
   address?: string;
+  phone?: string;
   inventory: SupplierInventoryItem[];
 }
 

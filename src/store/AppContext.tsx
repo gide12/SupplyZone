@@ -20,7 +20,7 @@ interface AppContextType {
   suppliers: SupplierProfile[];
   activeSupplier: SupplierProfile;
   setActiveSupplierId: (id: string) => void;
-  updateSupplierProfile: (id: string, name: string, lat: number, lng: number, address?: string) => void;
+  updateSupplierProfile: (id: string, name: string, lat: number, lng: number, address?: string, phone?: string) => void;
   updateSupplierInventory: (id: string, inventory: SupplierInventoryItem[]) => void;
   addSupplier: (supplier: Omit<SupplierProfile, "id" | "inventory">) => string;
   // Dynamic Pricing
@@ -208,8 +208,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ));
   };
 
-  const updateSupplierProfile = (id: string, name: string, lat: number, lng: number, address?: string) => {
-    setSuppliers(prev => prev.map(s => s.id === id ? { ...s, name, lat, lng, address } : s));
+  const updateSupplierProfile = (id: string, name: string, lat: number, lng: number, address?: string, phone?: string) => {
+    setSuppliers(prev => prev.map(s => s.id === id ? { ...s, name, lat, lng, address, phone } : s));
   };
 
   const addSupplier = (supplier: Omit<SupplierProfile, "id" | "inventory">) => {

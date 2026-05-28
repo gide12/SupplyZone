@@ -422,7 +422,7 @@ export function MenuManager() {
                           <div className="mt-3 inline-block bg-white border border-t-[--color-gta-blue] p-2 bg-[--color-gta-panel] shadow-sm">
                              <div className="flex items-center space-x-4">
                                 <div className="game-text">
-                                  <span className="text-gray-400 text-xs font-bold  tracking-wider block">Estimated Bid Cost</span>
+                                  <span className="text-gray-400 text-xs font-bold  tracking-wider block">Estimasi Harga Nego</span>
                                   <span className="text-[#EE2737] text-xl font-bold">Rp {dynamicInfo.estimatedPrice.toFixed(2)}</span>
                                 </div>
                              </div>

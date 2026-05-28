@@ -445,7 +445,7 @@ export function RestaurantInventory() {
         <div className="flex flex-col">
           <div className="bg-white border border-gray-200 p-6 relative shadow-sm mb-6">
             <h3 className="font-bold text-[#EE2737] text-xl game-title flex items-center gap-2 mb-2">
-               <BrainCircuit className="w-5 h-5" /> Smart AI Storage Warning
+               <BrainCircuit className="w-5 h-5" /> Cara penyimpanan secara pintar
             </h3>
             <p className="game-text text-gray-700 text-sm mb-4 leading-relaxed">
                Peringatan otomatis untuk semua paket (kontaminasi silang, pendinginan, dan cara simpan) agar bahan di gudang tetap aman & awet.
@@ -503,7 +503,7 @@ export function RestaurantInventory() {
 
           <div className="bg-white border border-gray-200 p-6 h-full relative shadow-sm">
             <h3 className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 text-xl game-title flex items-center gap-2 mb-4">
-               <BrainCircuit className="w-6 h-6 text-purple-600" /> <span className="text-gray-900">Analisa</span> Artificial Intelligence
+               <BrainCircuit className="w-6 h-6 text-purple-600" /> <span className="text-gray-900">Analisa</span> dan evaluasi pintar
             </h3>
             <p className="game-text text-gray-700 text-sm mb-6 leading-relaxed">
                Evaluasi efisiensi gudang, efektivitas menu terhadap produk dominan, dan peringatan kedaluwarsa dengan Artificial Intelligence.

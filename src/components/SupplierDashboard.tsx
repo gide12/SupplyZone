@@ -65,6 +65,7 @@ export function SupplierDashboard() {
 
   // Profile Form State
   const [profileName, setProfileName] = useState(activeSupplier.name);
+  const [profilePhone, setProfilePhone] = useState(activeSupplier.phone || "");
   
   const [profileAddress, setProfileAddress] = useState(activeSupplier?.address || "");
   const [profileLat, setProfileLat] = useState<number | undefined>(activeSupplier.lat);
@@ -185,7 +186,7 @@ export function SupplierDashboard() {
     let finalLat = profileLat ?? activeSupplier.lat;
     let finalLng = profileLng ?? activeSupplier.lng;
     
-    updateSupplierProfile(activeSupplier.id, profileName, finalLat, finalLng, profileAddress);
+    updateSupplierProfile(activeSupplier.id, profileName, finalLat, finalLng, profileAddress, profilePhone);
     setMapCenter([finalLat, finalLng]);
     alert("Profile updated successfully with location!");
   };
@@ -615,7 +616,7 @@ export function SupplierDashboard() {
         <div className="absolute top-0 left-0 w-full h-1 bg-[#00AA13]"></div>
         <form onSubmit={handleProfileSave} className="space-y-4">
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1.5">Supplier Name</label>
+            <label className="block text-sm font-bold text-gray-700 mb-1.5">Nama usaha</label>
             <input
               type="text"
               value={profileName}
@@ -634,6 +635,16 @@ export function SupplierDashboard() {
                   setProfileLng(lng);
                }}
              />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-1.5">Nomor Telepon</label>
+            <input
+              type="text"
+              value={profilePhone}
+              onChange={(e) => setProfilePhone(e.target.value)}
+              placeholder="Contoh: 08123456789"
+              className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:border-[#00AA13] focus:ring-1 focus:ring-[#00AA13] outline-none transition-all text-sm"
+            />
           </div>
           <div className="pt-2">
             <button type="submit" className="w-full py-2.5 bg-[#00AA13] hover:bg-[#009110] font-bold transition-all text-sm text-white rounded-full shadow-sm">
