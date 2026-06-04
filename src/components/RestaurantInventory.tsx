@@ -4,6 +4,7 @@ import { useAppContext } from "../store/AppContext";
 import { WeatherForecastModal } from "./WeatherForecastModal";
 import { CloudRain } from "lucide-react";
 import { GoogleGenAI, Type } from "@google/genai";
+import { TermsValidationModal } from "./TermsValidationModal";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -12,6 +13,8 @@ export function RestaurantInventory() {
   const restaurant = restaurants.find(r => r.id === activeRestaurantId);
   const inventory = restaurant?.inventory || [];
   const isPremium = restaurant?.subscriptionPlan === "premium";
+
+  const [pendingAction, setPendingAction] = useState<{ id: string; action: any } | null>(null);
 
   const totalSpace = inventory.reduce((sum, item) => sum + (item.spaceUsed || 0), 0);
   const isExpired = (dateString: string) => {
@@ -416,8 +419,8 @@ export function RestaurantInventory() {
                                 
                                 {deal.status === 'Pending' ? (
                                   <div className="flex gap-1">
-                                    <button onClick={() => updateDealStatus(deal.id, 'Accepted')} className="px-2 py-1 bg-[#00AA13] text-white text-[10px] font-bold rounded">Terima</button>
-                                    <button onClick={() => updateDealStatus(deal.id, 'Rejected')} className="px-2 py-1 bg-[#EE2737] text-white text-[10px] font-bold rounded">Tolak</button>
+                                    <button onClick={() => setPendingAction({ id: deal.id, action: 'Accepted' })} className="px-2 py-1 bg-[#00AA13] text-white text-[10px] font-bold rounded">Terima</button>
+                                    <button onClick={() => setPendingAction({ id: deal.id, action: 'Rejected' })} className="px-2 py-1 bg-[#EE2737] text-white text-[10px] font-bold rounded">Tolak</button>
                                   </div>
                                 ) : (
                                   <span className={`text-[10px] font-bold px-2 py-1 rounded ${
@@ -602,6 +605,17 @@ export function RestaurantInventory() {
         </div>
       </div>
       <WeatherForecastModal isOpen={isWeatherModalOpen} onClose={() => setIsWeatherModalOpen(false)} inventory={inventory} />
+      
+      {pendingAction && (
+        <TermsValidationModal
+          action={pendingAction.action}
+          onConfirm={() => {
+            updateDealStatus(pendingAction.id, pendingAction.action);
+            setPendingAction(null);
+          }}
+          onCancel={() => setPendingAction(null)}
+        />
+      )}
     </div>
   );
 }

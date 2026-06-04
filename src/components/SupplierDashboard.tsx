@@ -10,6 +10,7 @@ import { ChatModal } from "./ChatModal";
 import { SupplierInventory } from "./SupplierInventory";
 import { SupplierCalculator } from "./SupplierCalculator";
 import { translate } from "../lib/i18n";
+import { TermsValidationModal } from "./TermsValidationModal";
 
 // Setup custom leaflet icons because default paths get broken in bundlers
 const customIcon = new L.Icon({
@@ -43,6 +44,7 @@ export function SupplierDashboard() {
   const { restaurants, proposeDeal, deals, updateDealStatus, activeSupplier, updateSupplierProfile, messages, updateSupplierInventory, calculateDynamicPrice, language } = useAppContext();
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
   const [activeTab, setActiveTab] = useState<"market" | "orders" | "inventory" | "profile" | "hitung">("market");
+  const [pendingAction, setPendingAction] = useState<{ id: string; action: any } | null>(null);
   
   // Calculate notifications
   const totalUnreadOrders = deals.filter(d => d.supplierId === activeSupplier.id).reduce((count, deal) => {
@@ -545,7 +547,7 @@ export function SupplierDashboard() {
                       </button>
                       {deal.status === 'Sample Requested' && (
                         <button 
-                          onClick={() => updateDealStatus(deal.id, 'Sample Arrived')}
+                          onClick={() => setPendingAction({ id: deal.id, action: 'Sample Arrived' })}
                           className="flex-1 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-full text-xs font-bold transition-colors"
                         >
                           Mark Sample Terkirim
@@ -553,7 +555,7 @@ export function SupplierDashboard() {
                       )}
                       {deal.status === 'Accepted' && (
                         <button 
-                          onClick={() => updateDealStatus(deal.id, 'On Delivery')}
+                          onClick={() => setPendingAction({ id: deal.id, action: 'On Delivery' })}
                           className="flex-1 py-2 bg-[#F1B51A] text-white hover:bg-[#F1B51A]/90 rounded-full text-xs font-bold transition-colors shadow-sm"
                         >
                           Tandai Sedang Dikirim
@@ -561,7 +563,7 @@ export function SupplierDashboard() {
                       )}
                       {(deal.status === 'Accepted' || deal.status === 'On Delivery') && (
                         <button 
-                          onClick={() => updateDealStatus(deal.id, 'Delivered')}
+                          onClick={() => setPendingAction({ id: deal.id, action: 'Delivered' })}
                           className="flex-1 py-2 bg-[#00AA13] text-white hover:bg-[#009110] rounded-full text-xs font-bold transition-colors shadow-sm"
                         >
                           Tandai Terkirim
@@ -571,9 +573,9 @@ export function SupplierDashboard() {
                         <div className="flex flex-col gap-2 w-full mt-2 border-t border-gray-100 pt-3">
                            <div className="text-xs text-red-600 font-bold mb-1">Tindakan SLA Retur (Sisa: &lt;24h):</div>
                            <div className="flex gap-2">
-                             <button onClick={() => updateDealStatus(deal.id, 'Refunded')} className="flex-1 text-[10px] py-1.5 bg-teal-600 text-white font-bold rounded shadow-sm">Refund</button>
-                             <button onClick={() => updateDealStatus(deal.id, 'Replaced')} className="flex-1 text-[10px] py-1.5 bg-blue-600 text-white font-bold rounded shadow-sm">Ganti Barang</button>
-                             <button onClick={() => updateDealStatus(deal.id, 'Return Rejected')} className="flex-1 text-[10px] py-1.5 bg-red-600 text-white font-bold rounded shadow-sm">Tolak</button>
+                             <button onClick={() => setPendingAction({ id: deal.id, action: 'Refunded' })} className="flex-1 text-[10px] py-1.5 bg-teal-600 text-white font-bold rounded shadow-sm">Refund</button>
+                             <button onClick={() => setPendingAction({ id: deal.id, action: 'Replaced' })} className="flex-1 text-[10px] py-1.5 bg-blue-600 text-white font-bold rounded shadow-sm">Ganti Barang</button>
+                             <button onClick={() => setPendingAction({ id: deal.id, action: 'Return Rejected' })} className="flex-1 text-[10px] py-1.5 bg-red-600 text-white font-bold rounded shadow-sm">Tolak</button>
                            </div>
                         </div>
                       )}
@@ -820,6 +822,17 @@ export function SupplierDashboard() {
           deal={activeChatDeal} 
           onClose={() => setActiveChatDeal(null)} 
           currentUserRole="supplier" 
+        />
+      )}
+      
+      {pendingAction && (
+        <TermsValidationModal
+          action={pendingAction.action}
+          onConfirm={() => {
+            updateDealStatus(pendingAction.id, pendingAction.action);
+            setPendingAction(null);
+          }}
+          onCancel={() => setPendingAction(null)}
         />
       )}
     </div>

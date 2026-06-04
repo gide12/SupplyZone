@@ -9,10 +9,14 @@ import { AIPricingOptimizer } from "./AIPricingOptimizer";
 import { AIRecipeOptimizer } from "./AIRecipeOptimizer";
 import { Calculator, TrendingUp } from "lucide-react";
 
+import { TermsValidationModal } from "./TermsValidationModal";
+
 export function MenuManager() {
   const { restaurants, activeRestaurantId, addMenuItem, updateMenuItem, deleteMenuItem, deals, proposeDeal, updateDealStatus, updateDeal, messages, suppliers, calculateDynamicPrice } = useAppContext();
   const restaurant = restaurants.find(r => r.id === activeRestaurantId);
   const isPremium = restaurant?.subscriptionPlan === "premium";
+
+  const [pendingAction, setPendingAction] = useState<{ id: string; action: any, isReturn?: boolean } | null>(null);
 
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
@@ -453,19 +457,19 @@ export function MenuManager() {
                                       {deal.status === 'Pending' ? (
                                           <div className="flex gap-2 w-full flex-wrap">
                                             <button 
-                                              onClick={() => updateDealStatus(deal.id, 'Accepted')} 
+                                              onClick={() => setPendingAction({ id: deal.id, action: 'Accepted' })} 
                                               className="flex-1 py-2 game-btn game-btn-green text-sm"
                                             >
                                               <span className="game-text text-lg">Terima</span>
                                             </button>
                                             <button 
-                                              onClick={() => updateDealStatus(deal.id, 'Sample Requested')} 
+                                              onClick={() => setPendingAction({ id: deal.id, action: 'Sample Requested' })} 
                                               className="flex-1 py-2 game-btn game-btn-blue text-sm"
                                             >
                                               <span className="game-text text-lg">Minta Sampel</span>
                                             </button>
                                             <button 
-                                              onClick={() => updateDealStatus(deal.id, 'Rejected')} 
+                                              onClick={() => setPendingAction({ id: deal.id, action: 'Rejected' })} 
                                               className="flex-1 py-2 game-btn game-btn-red text-sm"
                                             >
                                               <span className="game-text text-lg">Tolak</span>
@@ -753,13 +757,7 @@ deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200
                <button 
                  disabled={returnReason.trim() === "" || !returnMedia}
                  onClick={() => {
-                   updateDealStatus(returningDeal.id, 'Return Requested');
-                   // Simulate file URL
-                   const mockMediaUrl = returnMedia ? URL.createObjectURL(returnMedia) : undefined;
-                   updateDeal(returningDeal.id, { review: returnReason, mediaUrl: mockMediaUrl });
-                   setReturningDeal(null);
-                   setReturnReason("");
-                   setReturnMedia(null);
+                   setPendingAction({ id: returningDeal.id, action: 'Return Requested', isReturn: true });
                  }}
                  className="flex-1 py-3 bg-[#EE2737] hover:bg-red-700 text-white font-bold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm border border-[#EE2737] game-text"
                >
@@ -769,6 +767,28 @@ deal.status === 'Sampel Tiba' ? 'bg-purple-100 text-purple-800 border-purple-200
           </div>
         </div>
       )}
+
+      {pendingAction && (
+        <TermsValidationModal
+          action={pendingAction.action}
+          onConfirm={() => {
+            updateDealStatus(pendingAction.id, pendingAction.action);
+            
+            if (pendingAction.isReturn) {
+               // Additional logic for return
+               const mockMediaUrl = returnMedia ? URL.createObjectURL(returnMedia) : undefined;
+               updateDeal(pendingAction.id, { review: returnReason, mediaUrl: mockMediaUrl });
+               setReturningDeal(null);
+               setReturnReason("");
+               setReturnMedia(null);
+            }
+            
+            setPendingAction(null);
+          }}
+          onCancel={() => setPendingAction(null)}
+        />
+      )}
+
     </div>
   );
 }
