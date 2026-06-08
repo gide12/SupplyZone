@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import { Store, Truck, Check, Star, Globe, LogIn } from "lucide-react";
 import { useAppContext } from "../store/AppContext";
 import { AddressAutocomplete } from "./AddressAutocomplete";
+import { TermsValidationModal } from "./TermsValidationModal";
 
 export function LandingPage({ onComplete }: { onComplete: () => void }) {
   const { language, setLanguage, setCurrentUserMode, setActiveRestaurantId, setActiveSupplierId, restaurants, suppliers, addRestaurant, addSupplier } = useAppContext();
   const [selectedRole, setSelectedRole] = useState<"restaurant" | "supplier" | null>(null);
   const [step, setStep] = useState<"role" | "register" | "subscription" | "login">("role");
+  const [showTermsModal, setShowTermsModal] = useState(false);
 
   // Mock form
   const [name, setName] = useState("");
@@ -109,8 +111,13 @@ export function LandingPage({ onComplete }: { onComplete: () => void }) {
   const handleRegisterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (name && email) {
-      setStep("subscription");
+      setShowTermsModal(true);
     }
+  };
+
+  const confirmRegistration = () => {
+    setShowTermsModal(false);
+    setStep("subscription");
   };
 
   const handleSubscribe = (plan: string) => {
@@ -332,6 +339,14 @@ export function LandingPage({ onComplete }: { onComplete: () => void }) {
               ← {t.backRole}
             </button>
           </div>
+        )}
+
+        {showTermsModal && (
+          <TermsValidationModal
+            action="Registration"
+            onConfirm={confirmRegistration}
+            onCancel={() => setShowTermsModal(false)}
+          />
         )}
 
         {step === "subscription" && (

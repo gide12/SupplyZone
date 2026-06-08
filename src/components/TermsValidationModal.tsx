@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ShieldAlert, X } from 'lucide-react';
 
 interface TermsValidationModalProps {
-  action: "Accepted" | "Rejected" | "On Delivery" | "Delivered" | "Sample Requested" | "Return Requested" | "Return Accepted" | "Return Rejected" | "Refunded" | "Replaced" | "Transaction";
+  action: "Accepted" | "Rejected" | "On Delivery" | "Delivered" | "Sample Requested" | "Return Requested" | "Return Accepted" | "Return Rejected" | "Refunded" | "Replaced" | "Transaction" | "Registration";
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -19,6 +19,7 @@ export function TermsValidationModal({ action, onConfirm, onCancel }: TermsValid
       case 'Sample Requested': return 'Kebijakan Permintaan Sampel';
       case 'Return Requested': return 'Kebijakan Pengembalian (Return)';
       case 'Transaction': return 'Syarat & Ketentuan Transaksi';
+      case 'Registration': return 'Kebijakan Privasi & Penyimpanan Data';
       default: return 'Syarat & Ketentuan';
     }
   };
@@ -86,6 +87,15 @@ export function TermsValidationModal({ action, onConfirm, onCancel }: TermsValid
             <li>Portal berhak untuk membekukan akun jika ditemukan indikasi penipuan transaksi.</li>
             <li>Informasi yang tertera di faktur adalah yang final.</li>
             <li>Kedua belah pihak wajib mematuhi standar privasi data dan kesepakatan SLA (Service Level Agreement).</li>
+          </ul>
+        );
+      case 'Registration':
+        return (
+          <ul className="list-disc pl-5 space-y-2 text-sm text-gray-700">
+            <li>Data yang Anda masukkan (Nama, Email, Telepon, Lokasi) akan disimpan untuk keperluan operasional akun.</li>
+            <li>Kami tidak akan menjual belikan data pribadi Anda kepada pihak ketiga.</li>
+            <li>Lokasi dan profil usaha akan digunakan murni untuk mencocokkan Supply-Chain antar mitra dalam ekosistem ini.</li>
+            <li>Dengan mendaftar, Anda menyetujui sistem kebijakan portal supply map.</li>
           </ul>
         );
       default:
